@@ -13,16 +13,13 @@ interface MeEnv {
   Variables: { user: SessionUser }
 }
 
-type UserSuburbRow = typeof userSuburbs.$inferSelect
-
-export function toApiRow(row: UserSuburbRow) {
-  return {
-    suburbId: row.suburbId,
-    visited: row.visited,
-    visitedOn: row.visitedOn,
-    notes: row.notes,
-    updatedAt: row.updatedAt.toISOString(),
-  }
+// The columns the API returns. c.json sends updatedAt as an ISO string.
+const apiColumns = {
+  suburbId: userSuburbs.suburbId,
+  visited: userSuburbs.visited,
+  visitedOn: userSuburbs.visitedOn,
+  notes: userSuburbs.notes,
+  updatedAt: userSuburbs.updatedAt,
 }
 
 const requireUser = createMiddleware<MeEnv>(async (c, next) => {
@@ -34,11 +31,6 @@ const requireUser = createMiddleware<MeEnv>(async (c, next) => {
   await next()
   return undefined
 })
-
-function firstIssue(error: { issues: readonly { message: string }[] }) {
-  const [issue] = error.issues
-  return issue ? issue.message : "invalid request"
-}
 
 // D1 enforces foreign keys, so a suburb id that isn't in `suburbs` fails the
 // insert. Drizzle wraps the driver error, so check the causes too.
@@ -55,16 +47,19 @@ export const me = new Hono<MeEnv>()
   .use(requireUser)
   .get("/suburbs", async (c) => {
     const rows = await drizzle(c.env.DB)
-      .select()
+      .select(apiColumns)
       .from(userSuburbs)
       .where(eq(userSuburbs.userId, c.var.user.id))
-    return c.json(rows.map((row) => toApiRow(row)))
+    return c.json(rows)
   })
   .patch(
     "/suburbs/:id",
     zValidator("json", suburbPatchSchema, (result, c) => {
       if (!result.success) {
-        return c.json({ error: firstIssue(result.error) }, 400)
+        return c.json(
+          { error: result.error.issues[0]?.message ?? "invalid request" },
+          400,
+        )
       }
       return undefined
     }),
@@ -76,18 +71,6 @@ export const me = new Hono<MeEnv>()
       // Unvisiting drops the date, so a "want to go" row keeps its notes but
       // not a stale visit.
       const visitedOn = patch.visited === false ? null : patch.visitedOn
-      const set: Partial<typeof userSuburbs.$inferInsert> = {
-        updatedAt: new Date(),
-      }
-      if (patch.visited !== undefined) {
-        set.visited = patch.visited
-      }
-      if (visitedOn !== undefined) {
-        set.visitedOn = visitedOn
-      }
-      if (patch.notes !== undefined) {
-        set.notes = patch.notes
-      }
       const row = and(
         eq(userSuburbs.userId, userId),
         eq(userSuburbs.suburbId, suburbId),
@@ -107,7 +90,8 @@ export const me = new Hono<MeEnv>()
             })
             .onConflictDoUpdate({
               target: [userSuburbs.userId, userSuburbs.suburbId],
-              set,
+              // Drizzle skips undefined keys, so only sent fields change.
+              set: { ...patch, visitedOn, updatedAt: new Date() },
             }),
           db
             .delete(userSuburbs)
@@ -119,7 +103,7 @@ export const me = new Hono<MeEnv>()
                 isNull(userSuburbs.visitedOn),
               ),
             ),
-          db.select().from(userSuburbs).where(row),
+          db.select(apiColumns).from(userSuburbs).where(row),
         ])
       } catch (error) {
         if (error instanceof Error && isForeignKeyError(error)) {
@@ -129,7 +113,7 @@ export const me = new Hono<MeEnv>()
       }
 
       const [_inserted, _deleted, [saved]] = results
-      return saved ? c.json(toApiRow(saved)) : c.body(null, 204)
+      return saved ? c.json(saved) : c.body(null, 204)
     },
   )
   .delete("/suburbs/:id", async (c) => {

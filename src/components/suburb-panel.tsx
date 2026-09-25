@@ -5,19 +5,14 @@ import { useEffect, useEffectEvent, useRef, useState } from "react"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { sydneyToday } from "@/lib/dates"
 import { useUpdateSuburb } from "@/mutations/use-update-suburb"
+import type { SuburbProperties } from "@/types/suburb"
 import type { UserSuburb } from "@/types/user-suburb"
 
 const NOTES_DEBOUNCE_MS = 600
 const NOTES_MAX_LENGTH = 10_000
 
-interface PanelSuburb {
-  id: string
-  name: string
-  lga: string
-}
-
 interface SuburbPanelProps {
-  suburb: PanelSuburb
+  suburb: Pick<SuburbProperties, "id" | "name" | "lga">
   signedIn: boolean
   // The user's rows, or undefined while they load.
   rows: ReadonlyMap<string, UserSuburb> | undefined

@@ -5,13 +5,9 @@ import { secureHeaders } from "hono/secure-headers"
 import { createAuth } from "./auth"
 import { me } from "./me"
 
-interface AppEnv {
-  Bindings: Env
-}
-
 // Only /api/* reaches this Worker (run_worker_first in wrangler.jsonc); static
 // assets and their headers are handled by public/_headers.
-const app = new Hono<AppEnv>()
+const app = new Hono<{ Bindings: Env }>()
   .basePath("/api")
   .use(secureHeaders())
   .use(async (c, next) => {
