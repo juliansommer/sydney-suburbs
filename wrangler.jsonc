@@ -5,21 +5,18 @@
   "compatibility_flags": ["nodejs_compat"],
   "main": "./worker/index.ts",
   "assets": {
-    // Unknown paths get index.html so client routes survive a refresh. Only
-    // /api/* reaches the Worker; everything else is served as a static asset
-    // without invoking it, which keeps requests off the free-tier quota.
     "not_found_handling": "single-page-application",
     "run_worker_first": ["/api/*"],
   },
-  "observability": { "enabled": true },
+  "observability": {
+    "enabled": true,
+  },
   "upload_source_maps": true,
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "sydney-suburbs",
-      // Placeholder until `wrangler d1 create sydney-suburbs` is run against
-      // the real account. Local dev ignores it and uses .wrangler/state.
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "2e98fad8-4d12-4024-9dd4-631063a6934a",
       "migrations_dir": "drizzle/migrations",
     },
   ],

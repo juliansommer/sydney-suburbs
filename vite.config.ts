@@ -21,6 +21,8 @@ export default defineConfig(({ mode }) => ({
     tailwindcss(),
     mode !== "test" && cloudflare(),
   ],
+  server: { port: 3000, strictPort: true },
+  preview: { port: 3000, strictPort: true },
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("src", import.meta.url)),
