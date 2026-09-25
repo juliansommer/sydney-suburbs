@@ -1,7 +1,10 @@
+import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
 
+import { SuburbMap } from "@/components/map/suburb-map"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { authClient } from "@/lib/auth-client"
+import { suburbsTopoQuery } from "@/queries/suburbs-topo"
 
 export const Route = createFileRoute("/")({
   component: MapPage,
@@ -9,13 +12,42 @@ export const Route = createFileRoute("/")({
 
 function MapPage() {
   return (
-    <main className="relative min-h-screen">
+    <main className="relative h-dvh overflow-hidden bg-map-water">
+      <MapView />
+      <h1 className="pointer-events-none absolute top-4 left-4 text-lg font-semibold">
+        Sydney Suburbs
+      </h1>
       <header className="absolute top-4 right-4">
         <Account />
       </header>
-      <h1 className="p-4 text-xl font-semibold">Sydney Suburbs</h1>
+      <p className="absolute right-2 bottom-1 text-xs text-muted-foreground">
+        Boundaries:{" "}
+        <a
+          className="underline"
+          href="https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs-edition-3"
+          rel="noreferrer"
+          target="_blank"
+        >
+          ABS
+        </a>
+        , CC BY 4.0
+      </p>
     </main>
   )
+}
+
+function MapView() {
+  const { data: suburbs, isError } = useQuery(suburbsTopoQuery)
+
+  if (isError) {
+    return (
+      <p className="grid h-full place-items-center text-muted-foreground">
+        The map couldn&rsquo;t load. Try refreshing.
+      </p>
+    )
+  }
+
+  return suburbs ? <SuburbMap suburbs={suburbs} /> : null
 }
 
 function Account() {

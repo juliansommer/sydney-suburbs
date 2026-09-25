@@ -106,7 +106,10 @@ export default defineConfig({
       rules: {
         "anti-slop/no-module-mocking": "off",
         "anti-slop/no-unknown-returns": "off",
+        "eslint/class-methods-use-this": "off",
+        "eslint/no-empty-function": "off",
         "eslint/require-await": "off",
+        "promise/prefer-await-to-callbacks": "off",
         "import/first": "off",
         "typescript/await-thenable": "off",
         "typescript/consistent-type-imports": "off",

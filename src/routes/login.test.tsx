@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { authClient } from "@/lib/auth-client"
+import { suburbsTopology } from "@/test/fixtures"
 import { renderRoute } from "@/test/utils"
 
 vi.mock("@/lib/auth-client", () => ({
@@ -17,6 +18,10 @@ const useSession = vi.mocked(authClient.useSession)
 
 describe("login page", () => {
   beforeEach(() => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => Response.json(suburbsTopology)),
+    )
     useSession.mockReturnValue({
       data: null,
       isPending: false,
