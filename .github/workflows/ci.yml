@@ -1,0 +1,93 @@
+name: Build, Test and Deploy
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build_and_test:
+    name: Build and Test
+    runs-on: ubuntu-26.04
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          cache: "pnpm"
+          node-version-file: .nvmrc
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Lint
+        run: pnpm lint
+
+      - name: Run Tests
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+      - name: Check for missing database migrations
+        run: |
+          pnpm db:generate
+          if [ -n "$(git status --porcelain -- drizzle)" ]; then
+            git status --short -- drizzle
+            echo "::error::worker/db/schema.ts changed without a migration. Run pnpm db:generate and commit the result."
+            exit 1
+          fi
+
+  deploy:
+    name: Deploy to Cloudflare
+    needs: build_and_test
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-26.04
+    environment: production
+    # Never cancel a deploy halfway: a migration could land without the code
+    # that expects it.
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          cache: "pnpm"
+          node-version-file: .nvmrc
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply D1 Migrations
+        run: pnpm db:migrate:remote
+
+      - name: Deploy Worker
+        run: pnpm run deploy
