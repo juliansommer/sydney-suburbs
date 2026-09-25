@@ -101,10 +101,12 @@ export default defineConfig({
         "**/*.{test,spec}.{ts,tsx,js,jsx}",
         "**/__tests__/**/*.{ts,tsx,js,jsx}",
         "src/test/**/*.{ts,tsx}",
+        "worker/test/**/*.ts",
       ],
       plugins: ["vitest"],
       rules: {
         "anti-slop/no-module-mocking": "off",
+        "anti-slop/no-unknown-parameters": "off",
         "anti-slop/no-unknown-returns": "off",
         "eslint/class-methods-use-this": "off",
         "eslint/no-empty-function": "off",

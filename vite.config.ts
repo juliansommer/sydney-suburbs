@@ -29,11 +29,26 @@ export default defineConfig(({ mode }) => ({
     },
   },
   test: {
-    globals: true,
-    environment: "happy-dom",
-    include: ["src/**/*.test.{ts,tsx}"],
-    setupFiles: "./src/test/setup.ts",
     clearMocks: true,
-    pool: "threads",
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: "client",
+          globals: true,
+          environment: "happy-dom",
+          include: ["src/**/*.test.{ts,tsx}"],
+          setupFiles: "./src/test/setup.ts",
+          pool: "threads",
+        },
+      },
+      {
+        test: {
+          name: "worker",
+          environment: "node",
+          include: ["worker/**/*.test.ts"],
+        },
+      },
+    ],
   },
 }))

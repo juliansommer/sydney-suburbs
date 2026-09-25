@@ -13,6 +13,8 @@ import {
 import { SuburbLabels } from "./suburb-labels"
 
 const MAX_ZOOM = 40
+// Pointer travel, in pixels, past which a press is a pan rather than a click.
+const CLICK_DISTANCE = 4
 
 const LANDUSE_FILL: Record<LanduseKind, string> = {
   parkland: "fill-map-surrounds",
@@ -21,15 +23,19 @@ const LANDUSE_FILL: Record<LanduseKind, string> = {
 
 interface SuburbMapProps {
   data: SuburbMapData
+  selectedId: string | null
+  visitedIds: ReadonlySet<string>
+  // Called with null when a click lands off the suburbs (water, surrounds).
+  onSelect: (id: string | null) => void
 }
 
 // Fills its container. The map is drawn once the container has a size.
-export function SuburbMap({ data }: SuburbMapProps) {
+export function SuburbMap(props: SuburbMapProps) {
   const [ref, size] = useElementSize()
   return (
     <div className="size-full" ref={ref}>
       {size && size.width > 0 && size.height > 0 ? (
-        <ZoomableMap data={data} height={size.height} width={size.width} />
+        <ZoomableMap {...props} height={size.height} width={size.width} />
       ) : null}
     </div>
   )
@@ -40,7 +46,14 @@ interface ZoomableMapProps extends SuburbMapProps {
   height: number
 }
 
-function ZoomableMap({ data, width, height }: ZoomableMapProps) {
+function ZoomableMap({
+  data,
+  selectedId,
+  visitedIds,
+  onSelect,
+  width,
+  height,
+}: ZoomableMapProps) {
   const [transform, setTransform] = useState(zoomIdentity)
   // Firefox keeps a transformed group as a scaled bitmap for a few seconds
   // after it stops changing, which looks blurry. Remounting it once a gesture
@@ -60,15 +73,24 @@ function ZoomableMap({ data, width, height }: ZoomableMapProps) {
         [0, 0],
         [width, height],
       ]
+      let startTransform = zoomIdentity
       const behaviour = zoom<SVGSVGElement, unknown>()
         .extent(extent)
         .translateExtent(extent)
         .scaleExtent([1, MAX_ZOOM])
+        .clickDistance(CLICK_DISTANCE)
+        .on("start", (event: D3ZoomEvent<SVGSVGElement, unknown>) => {
+          startTransform = event.transform
+        })
         .on("zoom", (event: D3ZoomEvent<SVGSVGElement, unknown>) => {
           setTransform(event.transform)
         })
-        .on("end", () => {
-          setGesture((n) => n + 1)
+        .on("end", (event: D3ZoomEvent<SVGSVGElement, unknown>) => {
+          // A plain click starts and ends a gesture too, and remounting then
+          // would swap the paths out from under the click.
+          if (event.transform !== startTransform) {
+            setGesture((n) => n + 1)
+          }
         })
       const selection = select(svg)
       selection.call(behaviour)
@@ -80,19 +102,33 @@ function ZoomableMap({ data, width, height }: ZoomableMapProps) {
   )
 
   return (
+    // Keyboard users select through the suburb paths and clear with Escape;
+    // this handler only adds "click off the suburbs to deselect".
+    // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
     <svg
       aria-label="Map of Sydney suburbs"
       className="block touch-none select-none"
       height={height}
+      onClick={(event) => {
+        if (event.target instanceof Element) {
+          const suburb = event.target.closest<SVGElement>("[data-suburb-id]")
+          onSelect(suburb?.dataset.suburbId ?? null)
+        }
+      }}
       ref={svgRef}
       width={width}
     >
       <rect className="fill-map-water" height={height} width={width} />
       <g key={gesture} transform={transform.toString()}>
         <path className="fill-map-surrounds" d={projected.surrounds} />
-        <LandPaths suburbs={projected.suburbs} />
+        <LandPaths suburbs={projected.suburbs} visitedIds={visitedIds} />
         <LandusePaths landuse={projected.landuse} />
-        <SuburbPaths suburbs={projected.suburbs} />
+        <SuburbPaths
+          onSelect={onSelect}
+          selectedId={selectedId}
+          suburbs={projected.suburbs}
+        />
+        <SelectedOutline selectedId={selectedId} suburbs={projected.suburbs} />
       </g>
       <SuburbLabels
         height={height}
@@ -104,14 +140,32 @@ function ZoomableMap({ data, width, height }: ZoomableMapProps) {
   )
 }
 
-interface SuburbPathsProps {
+interface LandPathsProps {
   suburbs: ProjectedSuburb[]
+  visitedIds: ReadonlySet<string>
 }
 
-// Plain land under the parks and water, joined into one path so it's cheap.
-function LandPaths({ suburbs }: SuburbPathsProps) {
-  const d = useMemo(() => suburbs.map((s) => s.d).join(""), [suburbs])
-  return <path className="fill-map-land" d={d} />
+// Land under the parks and water, so a park still reads as a park inside a
+// visited suburb. One joined path per fill keeps it cheap.
+function LandPaths({ suburbs, visitedIds }: LandPathsProps) {
+  const [land, visited] = useMemo(() => {
+    const plain: string[] = []
+    const seen: string[] = []
+    for (const s of suburbs) {
+      if (visitedIds.has(s.id)) {
+        seen.push(s.d)
+      } else {
+        plain.push(s.d)
+      }
+    }
+    return [plain.join(""), seen.join("")]
+  }, [suburbs, visitedIds])
+  return (
+    <>
+      <path className="fill-map-land" d={land} />
+      {visited ? <path className="fill-map-visited" d={visited} /> : null}
+    </>
+  )
 }
 
 interface LandusePathsProps {
@@ -124,8 +178,16 @@ function LandusePaths({ landuse }: LandusePathsProps) {
   ))
 }
 
+interface SuburbPathsProps {
+  suburbs: ProjectedSuburb[]
+  selectedId: string | null
+  onSelect: (id: string) => void
+}
+
 // Transparent on top of the land use, so borders and hover show over parks.
-function SuburbPaths({ suburbs }: SuburbPathsProps) {
+// Hover is an outline rather than a fill so it still reads on visited green.
+// Clicks reach the SVG's handler through `data-suburb-id`.
+function SuburbPaths({ suburbs, selectedId, onSelect }: SuburbPathsProps) {
   return (
     <g
       className="fill-transparent stroke-map-border"
@@ -135,12 +197,48 @@ function SuburbPaths({ suburbs }: SuburbPathsProps) {
       {suburbs.map((s) => (
         <path
           aria-label={s.name}
-          className="hover:fill-map-label/10"
+          aria-pressed={s.id === selectedId}
+          className="cursor-pointer outline-none hover:stroke-map-label hover:stroke-2 focus-visible:stroke-ring focus-visible:stroke-2"
           d={s.d}
+          data-suburb-id={s.id}
           key={s.id}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault()
+              onSelect(s.id)
+            }
+          }}
+          // A <button> can't live inside an SVG, so the path takes its role.
+          // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
+          role="button"
+          tabIndex={0}
           vectorEffect="non-scaling-stroke"
         />
       ))}
     </g>
+  )
+}
+
+interface SelectedOutlineProps {
+  suburbs: ProjectedSuburb[]
+  selectedId: string | null
+}
+
+// SVG has no z-index, so the selected suburb is drawn again last to keep its
+// outline above the neighbouring borders.
+function SelectedOutline({ suburbs, selectedId }: SelectedOutlineProps) {
+  const selected = suburbs.find((s) => s.id === selectedId)
+  if (!selected) {
+    return null
+  }
+  return (
+    <path
+      className="pointer-events-none stroke-foreground"
+      d={selected.d}
+      fill="none"
+      strokeLinejoin="round"
+      strokeWidth={2.5}
+      vectorEffect="non-scaling-stroke"
+    />
   )
 }

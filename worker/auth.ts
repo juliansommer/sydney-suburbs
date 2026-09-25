@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { drizzle } from "drizzle-orm/d1"
+import type { Context } from "hono"
 
 import * as schema from "./db/schema"
 
@@ -30,3 +31,16 @@ export function createAuth(env: Env) {
 }
 
 export type Auth = ReturnType<typeof createAuth>
+
+export type SessionUser = Auth["$Infer"]["Session"]["user"]
+
+// The one place requests are matched to a user, kept separate so tests can
+// swap it for a header lookup instead of a real Better Auth session.
+export async function getSessionUser<E extends { Bindings: Env }>(
+  c: Context<E>,
+): Promise<SessionUser | null> {
+  const session = await createAuth(c.env).api.getSession({
+    headers: c.req.raw.headers,
+  })
+  return session?.user ?? null
+}
