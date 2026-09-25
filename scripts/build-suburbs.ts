@@ -16,7 +16,7 @@ import { gzipSync } from "node:zlib"
 
 import geo from "mapshaper"
 import polylabel from "polylabel"
-import { z } from "zod"
+import { z } from "zod/mini"
 
 // Everything tied to the ASGS edition lives here, so moving to Edition 4
 // (2026) is a matter of updating this block.
@@ -186,9 +186,9 @@ const suburbCollection = z.object({
         }),
       ]),
       properties: z.object({
-        id: z.string().min(1),
-        name: z.string().min(1),
-        lga: z.string().min(1),
+        id: z.string().check(z.minLength(1)),
+        name: z.string().check(z.minLength(1)),
+        lga: z.string().check(z.minLength(1)),
       }),
     }),
   ),
