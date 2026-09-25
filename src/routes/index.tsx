@@ -20,18 +20,6 @@ function MapPage() {
       <header className="absolute top-4 right-4">
         <Account />
       </header>
-      <p className="absolute right-2 bottom-1 text-xs text-muted-foreground">
-        Boundaries:{" "}
-        <a
-          className="underline"
-          href="https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs-edition-3"
-          rel="noreferrer"
-          target="_blank"
-        >
-          ABS
-        </a>
-        , CC BY 4.0
-      </p>
     </main>
   )
 }
