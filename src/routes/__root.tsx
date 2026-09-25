@@ -16,7 +16,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
 function RootLayout() {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
+    <div className="min-h-screen bg-background text-foreground">
       <Outlet />
     </div>
   )
@@ -24,7 +24,7 @@ function RootLayout() {
 
 function NotFound() {
   return (
-    <p className="p-4 text-slate-600">
+    <p className="p-4 text-muted-foreground">
       No such page. <Link to="/">Back to the map</Link>
     </p>
   )

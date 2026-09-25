@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
 
+import { Button } from "@/components/ui/button"
 import { authClient } from "@/lib/auth-client"
 
 export const Route = createFileRoute("/")({
@@ -17,15 +18,13 @@ function MapPage() {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center gap-4">
         <h1 className="text-2xl font-semibold">Sydney Suburbs</h1>
-        <button
-          className="rounded-md bg-slate-900 px-4 py-2 text-white hover:bg-slate-700"
+        <Button
           onClick={async () => {
             await authClient.signIn.social({ provider: "google" })
           }}
-          type="button"
         >
           Sign in with Google
-        </button>
+        </Button>
       </main>
     )
   }
@@ -33,16 +32,16 @@ function MapPage() {
   return (
     <main className="p-4">
       <h1 className="text-xl font-semibold">Sydney Suburbs</h1>
-      <p className="text-slate-600">Signed in as {session.user.email}</p>
-      <button
-        className="mt-2 text-sm text-slate-500 underline"
+      <p className="text-muted-foreground">Signed in as {session.user.email}</p>
+      <Button
+        className="mt-2"
         onClick={async () => {
           await authClient.signOut()
         }}
-        type="button"
+        variant="link"
       >
         Sign out
-      </button>
+      </Button>
     </main>
   )
 }

@@ -1,9 +1,8 @@
 {
   "name": "sydney-suburbs",
-  "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite dev --port 3000",
+    "dev": "vite dev",
     "build": "vite build",
     "preview": "vite build && vite preview",
     "deploy": "vite build && wrangler deploy",
@@ -11,7 +10,7 @@
     "fix": "oxlint --fix && oxfmt",
     "test": "vitest run",
     "test:watch": "vitest",
-    "cf-typegen": "wrangler types",
+    "cf-typegen": "wrangler types worker/worker-configuration.d.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply sydney-suburbs --local",
     "db:migrate:remote": "wrangler d1 migrations apply sydney-suburbs --remote"
@@ -34,6 +33,7 @@
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.57.1",
+    "@shadcn/lint": "^0.1.5",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/eslint-plugin-query": "^5.103.2",
     "@tanstack/eslint-plugin-router": "^1.162.0",
