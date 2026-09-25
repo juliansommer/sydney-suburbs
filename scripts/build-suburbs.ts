@@ -40,13 +40,86 @@ const SOURCE = {
 const EXCLUDED_LGAS = [
   "Blue Mountains",
   "Central Coast",
-  "Hawkesbury",
   "Oberon",
   "Wollondilly",
 ]
 
-// Localities that are only national park, with nobody living there.
-const EXCLUDED_SUBURBS = ["Royal National Park"]
+const EXCLUDED_SUBURBS = [
+  // National park, with next to nobody living there.
+  "Ku-ring-gai Chase",
+  "Royal National Park",
+  // Rural fringe north of Glenorie.
+  "Canoelands",
+  "Cattai",
+  "Fiddletown",
+  "Forest Glen",
+  "Laughtondale",
+  "Leets Vale",
+  "Lower Portland",
+  "Maroota",
+  "Sackville North",
+  "Singletons Mill",
+  "South Maroota",
+  "Wisemans Ferry",
+  // Hawkesbury River settlements past Berowra.
+  "Brooklyn",
+  "Cowan",
+  "Dangar Island",
+  "Milsons Passage",
+  // Hawkesbury council outside the Windsor-Richmond towns: across the river,
+  // the floodplain between the towns, Scheyville park, and the rural west.
+  "Berambing",
+  "Bilpin",
+  "Blaxlands Ridge",
+  "Bowen Mountain",
+  "Central Colo",
+  "Central Macdonald",
+  "Colo",
+  "Colo Heights",
+  "Cornwallis",
+  "Cumberland Reach",
+  "East Kurrajong",
+  "Ebenezer",
+  "Fernances",
+  "Freemans Reach",
+  "Glossodia",
+  "Grose Vale",
+  "Grose Wold",
+  "Higher Macdonald",
+  "Kurmond",
+  "Kurrajong",
+  "Kurrajong Heights",
+  "Kurrajong Hills",
+  "Lower Macdonald",
+  "Mellong",
+  "Mogo Creek",
+  "Mountain Lagoon",
+  "North Richmond",
+  "Perrys Crossing",
+  "Pitt Town Bottoms",
+  "Richmond Lowlands",
+  "Sackville",
+  "Scheyville",
+  "St Albans",
+  "Ten Mile Hollow",
+  "Tennyson",
+  "The Devils Wilderness",
+  "The Slopes",
+  "Upper Colo",
+  "Upper Macdonald",
+  "Webbs Creek",
+  "Wheeny Creek",
+  "Wilberforce",
+  "Womerah",
+  "Wrights Creek",
+  "Yarramundi",
+]
+
+// Land around the map is drawn from every locality inside this box
+// [west, south, east, north], so wide screens don't show land ending at a
+// straight edge. Coarser simplification keeps it small.
+const SURROUNDS_BBOX = [148.5, -35.5, 153.5, -32]
+const SURROUNDS_SIMPLIFY = "interval=500"
 
 // Suburbs cut down to their populated part with a bounding box
 // [west, south, east, north]. Holsworthy is mostly Army land; its houses are
@@ -144,6 +217,25 @@ async function buildGeoJson() {
   return suburbCollection.parse(JSON.parse(out["suburbs.json"] ?? "null"))
 }
 
+// All land in the box as one shape. Large water bodies aren't in any
+// locality, so the sea, harbour and big rivers stay as gaps.
+async function buildSurrounds() {
+  const out = await geo.applyCommands(
+    [
+      `-i "${cacheDir}${SOURCE.sal}"`,
+      `-clip bbox=${SURROUNDS_BBOX.join(",")}`,
+      "-dissolve",
+      `-simplify visvalingam weighted ${SURROUNDS_SIMPLIFY} keep-shapes`,
+      "-o surrounds.json format=geojson precision=0.00001",
+    ].join(" "),
+  )
+  const surrounds = out["surrounds.json"]
+  if (surrounds === undefined) {
+    throw new Error("mapshaper produced no surrounds")
+  }
+  return surrounds
+}
+
 // Label point: the pole of inaccessibility of the largest polygon, so the
 // name sits well inside odd shapes. Longitude is scaled by cos(latitude) to
 // approximate equal-area space at Sydney's latitude.
@@ -181,10 +273,10 @@ function labelPoint(geometry: Geometry) {
   return { lx: round(x / LON_SCALE), ly: round(y) }
 }
 
-async function writeTopoJson(geojson: string) {
+async function writeTopoJson(suburbsJson: string, surroundsJson: string) {
   const out = await geo.applyCommands(
-    "-i suburbs.json -rename-layers suburbs -o out.json format=topojson quantization=100000",
-    { "suburbs.json": geojson },
+    "-i suburbs.json surrounds.json combine-files -rename-layers suburbs,surrounds -o out.json format=topojson quantization=1000000",
+    { "suburbs.json": suburbsJson, "surrounds.json": surroundsJson },
   )
   const topo = out["out.json"]
   if (topo === undefined) {
@@ -265,7 +357,10 @@ function check(suburbs: Suburb[], gzipBytes: number) {
 await mkdir(cacheDir, { recursive: true })
 await Promise.all([SOURCE.sal, SOURCE.gccsa, SOURCE.lga].map(download))
 
-const collection = await buildGeoJson()
+const [collection, surrounds] = await Promise.all([
+  buildGeoJson(),
+  buildSurrounds(),
+])
 const features = collection.features.map((f) => ({
   ...f,
   properties: { ...f.properties, ...labelPoint(f.geometry) },
@@ -274,6 +369,7 @@ const suburbs = features.map((f) => f.properties)
 
 const gzipBytes = await writeTopoJson(
   JSON.stringify({ ...collection, features }),
+  surrounds,
 )
 check(suburbs, gzipBytes)
 const migration = await writeSeedMigration(seedSql(suburbs))

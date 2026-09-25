@@ -37,7 +37,7 @@ function MapPage() {
 }
 
 function MapView() {
-  const { data: suburbs, isError } = useQuery(suburbsTopoQuery)
+  const { data, isError } = useQuery(suburbsTopoQuery)
 
   if (isError) {
     return (
@@ -47,7 +47,7 @@ function MapView() {
     )
   }
 
-  return suburbs ? <SuburbMap suburbs={suburbs} /> : null
+  return data ? <SuburbMap data={data} /> : null
 }
 
 function Account() {

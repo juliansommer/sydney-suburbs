@@ -10,3 +10,11 @@ export interface SuburbProperties {
 }
 
 export type SuburbFeature = Feature<Polygon | MultiPolygon, SuburbProperties>
+
+// Land around and under the suburbs, drawn behind them.
+export type Surrounds = Feature<Polygon | MultiPolygon>
+
+export interface SuburbMapData {
+  suburbs: SuburbFeature[]
+  surrounds: Surrounds
+}

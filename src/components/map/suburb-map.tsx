@@ -3,28 +3,24 @@ import { type D3ZoomEvent, zoom, zoomIdentity } from "d3-zoom"
 import { useCallback, useMemo, useState } from "react"
 
 import { useElementSize } from "@/hooks/use-element-size"
-import type { SuburbFeature } from "@/types/suburb"
+import type { SuburbMapData } from "@/types/suburb"
 
-import { projectSuburbs, type ProjectedSuburb } from "./project"
+import { projectMap, type ProjectedSuburb } from "./project"
 import { SuburbLabels } from "./suburb-labels"
 
 const MAX_ZOOM = 40
 
 interface SuburbMapProps {
-  suburbs: SuburbFeature[]
+  data: SuburbMapData
 }
 
 // Fills its container. The map is drawn once the container has a size.
-export function SuburbMap({ suburbs }: SuburbMapProps) {
+export function SuburbMap({ data }: SuburbMapProps) {
   const [ref, size] = useElementSize()
   return (
     <div className="size-full" ref={ref}>
       {size && size.width > 0 && size.height > 0 ? (
-        <ZoomableMap
-          height={size.height}
-          suburbs={suburbs}
-          width={size.width}
-        />
+        <ZoomableMap data={data} height={size.height} width={size.width} />
       ) : null}
     </div>
   )
@@ -35,15 +31,15 @@ interface ZoomableMapProps extends SuburbMapProps {
   height: number
 }
 
-function ZoomableMap({ suburbs, width, height }: ZoomableMapProps) {
+function ZoomableMap({ data, width, height }: ZoomableMapProps) {
   const [transform, setTransform] = useState(zoomIdentity)
   // Firefox keeps a transformed group as a scaled bitmap for a few seconds
   // after it stops changing, which looks blurry. Remounting it once a gesture
   // ends makes it redraw sharp straight away.
   const [gesture, setGesture] = useState(0)
   const projected = useMemo(
-    () => projectSuburbs(suburbs, width, height),
-    [suburbs, width, height],
+    () => projectMap(data, width, height),
+    [data, width, height],
   )
 
   const svgRef = useCallback(
@@ -84,11 +80,12 @@ function ZoomableMap({ suburbs, width, height }: ZoomableMapProps) {
     >
       <rect className="fill-map-water" height={height} width={width} />
       <g key={gesture} transform={transform.toString()}>
-        <SuburbPaths suburbs={projected} />
+        <path className="fill-map-surrounds" d={projected.surrounds} />
+        <SuburbPaths suburbs={projected.suburbs} />
       </g>
       <SuburbLabels
         height={height}
-        suburbs={projected}
+        suburbs={projected.suburbs}
         transform={transform}
         width={width}
       />

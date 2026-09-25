@@ -3,7 +3,7 @@ import { feature } from "topojson-client"
 import type { Topology } from "topojson-specification"
 import { z } from "zod/mini"
 
-import type { SuburbFeature } from "@/types/suburb"
+import type { SuburbFeature, SuburbMapData, Surrounds } from "@/types/suburb"
 
 const topologyHeader = z.object({
   type: z.literal("Topology"),
@@ -21,13 +21,17 @@ const suburbProperties = z.object({
   ly: z.number(),
 })
 
-export function toSuburbFeatures(topology: Topology): SuburbFeature[] {
-  const layer = topology.objects.suburbs
-  if (layer?.type !== "GeometryCollection") {
-    throw new Error("TopoJSON has no suburbs layer")
+function layer(topology: Topology, name: string) {
+  const object = topology.objects[name]
+  if (object?.type !== "GeometryCollection") {
+    throw new Error(`TopoJSON has no ${name} layer`)
   }
+  return feature(topology, object).features
+}
+
+export function toSuburbMap(topology: Topology): SuburbMapData {
   const suburbs: SuburbFeature[] = []
-  for (const f of feature(topology, layer).features) {
+  for (const f of layer(topology, "suburbs")) {
     if (f.geometry.type === "Polygon" || f.geometry.type === "MultiPolygon") {
       const properties = suburbProperties.parse(f.properties)
       suburbs.push({
@@ -38,7 +42,19 @@ export function toSuburbFeatures(topology: Topology): SuburbFeature[] {
       })
     }
   }
-  return suburbs
+  const [land] = layer(topology, "surrounds")
+  if (
+    land?.geometry.type !== "Polygon" &&
+    land?.geometry.type !== "MultiPolygon"
+  ) {
+    throw new Error("TopoJSON surrounds layer is empty")
+  }
+  const surrounds: Surrounds = {
+    type: "Feature",
+    geometry: land.geometry,
+    properties: {},
+  }
+  return { suburbs, surrounds }
 }
 
 // The file only changes on deploy, so it never goes stale in a session.
@@ -50,7 +66,7 @@ export const suburbsTopoQuery = queryOptions({
       throw new Error(`Map data failed to load (${res.status})`)
     }
     const json: unknown = await res.json()
-    return toSuburbFeatures(topologySchema.parse(json))
+    return toSuburbMap(topologySchema.parse(json))
   },
   staleTime: Infinity,
 })

@@ -66,6 +66,7 @@
   --color-background: var(--background);
   --color-map-water: var(--map-water);
   --color-map-land: var(--map-land);
+  --color-map-surrounds: var(--map-surrounds);
   --color-map-hover: var(--map-hover);
   --color-map-border: var(--map-border);
   --color-map-visited: var(--map-visited);
@@ -140,6 +141,7 @@
   --tracking-normal: 0em;
   --map-water: oklch(0.93 0.03 230);
   --map-land: oklch(0.985 0.005 95);
+  --map-surrounds: oklch(0.9 0.06 145);
   --map-hover: oklch(0.94 0.02 95);
   --map-border: oklch(0.8 0.01 95);
   --map-visited: oklch(0.82 0.13 150);
@@ -206,6 +208,7 @@
   --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
   --map-water: oklch(0.22 0.03 250);
   --map-land: oklch(0.28 0.005 95);
+  --map-surrounds: oklch(0.32 0.05 150);
   --map-hover: oklch(0.34 0.01 95);
   --map-border: oklch(0.42 0.01 95);
   --map-visited: oklch(0.52 0.12 150);

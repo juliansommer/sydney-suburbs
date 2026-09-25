@@ -10,10 +10,16 @@ function square(x: number, y: number): [number, number][] {
   ]
 }
 
-// Three unquantised square suburbs side by side near the CBD.
+// Three unquantised square suburbs side by side near the CBD, plus a square
+// of surrounding land.
 export const suburbsTopology: Topology = {
   type: "Topology",
-  arcs: [square(151.2, -33.8), square(151.21, -33.8), square(151.22, -33.8)],
+  arcs: [
+    square(151.2, -33.8),
+    square(151.21, -33.8),
+    square(151.22, -33.8),
+    square(151.19, -33.79),
+  ],
   objects: {
     suburbs: {
       type: "GeometryCollection",
@@ -52,6 +58,10 @@ export const suburbsTopology: Topology = {
           },
         },
       ],
+    },
+    surrounds: {
+      type: "GeometryCollection",
+      geometries: [{ type: "Polygon", arcs: [[3]] }],
     },
   },
 }
