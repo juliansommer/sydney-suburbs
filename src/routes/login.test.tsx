@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react"
+import { screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -15,7 +15,7 @@ vi.mock("@/lib/auth-client", () => ({
 
 const useSession = vi.mocked(authClient.useSession)
 
-describe("map page", () => {
+describe("login page", () => {
   beforeEach(() => {
     useSession.mockReturnValue({
       data: null,
@@ -23,27 +23,29 @@ describe("map page", () => {
     } as ReturnType<typeof authClient.useSession>)
   })
 
-  it("links to the login page when signed out", async () => {
-    await renderRoute("/")
+  it("offers Google sign-in", async () => {
+    await renderRoute("/login")
 
-    await expect(
-      screen.findByRole("link", { name: "Sign in" }),
-    ).resolves.toHaveAttribute("href", "/login")
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Sign in with Google" }),
+    )
+
+    expect(authClient.signIn.social).toHaveBeenCalledWith({
+      provider: "google",
+      callbackURL: "/",
+    })
   })
 
-  it("shows the signed-in user and signs out", async () => {
+  it("sends signed-in users to the map", async () => {
     useSession.mockReturnValue({
       data: { user: { email: "someone@example.com" } },
       isPending: false,
     } as ReturnType<typeof authClient.useSession>)
 
-    await renderRoute("/")
+    const { router } = await renderRoute("/login")
 
-    await expect(
-      screen.findByText("someone@example.com"),
-    ).resolves.toBeInTheDocument()
-    await userEvent.click(screen.getByRole("button", { name: "Sign out" }))
-
-    expect(authClient.signOut).toHaveBeenCalledWith()
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe("/")
+    })
   })
 })

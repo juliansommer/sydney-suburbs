@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, Link } from "@tanstack/react-router"
 
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { authClient } from "@/lib/auth-client"
 
 export const Route = createFileRoute("/")({
@@ -8,6 +8,17 @@ export const Route = createFileRoute("/")({
 })
 
 function MapPage() {
+  return (
+    <main className="relative min-h-screen">
+      <header className="absolute top-4 right-4">
+        <Account />
+      </header>
+      <h1 className="p-4 text-xl font-semibold">Sydney Suburbs</h1>
+    </main>
+  )
+}
+
+function Account() {
   const { data: session, isPending } = authClient.useSession()
 
   if (isPending) {
@@ -16,32 +27,23 @@ function MapPage() {
 
   if (!session) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-4">
-        <h1 className="text-2xl font-semibold">Sydney Suburbs</h1>
-        <Button
-          onClick={async () => {
-            await authClient.signIn.social({ provider: "google" })
-          }}
-        >
-          Sign in with Google
-        </Button>
-      </main>
+      <Link className={buttonVariants()} to="/login">
+        Sign in
+      </Link>
     )
   }
 
   return (
-    <main className="p-4">
-      <h1 className="text-xl font-semibold">Sydney Suburbs</h1>
-      <p className="text-muted-foreground">Signed in as {session.user.email}</p>
+    <div className="flex items-center gap-2 text-sm">
+      <span className="text-muted-foreground">{session.user.email}</span>
       <Button
-        className="mt-2"
         onClick={async () => {
           await authClient.signOut()
         }}
-        variant="link"
+        variant="outline"
       >
         Sign out
       </Button>
-    </main>
+    </div>
   )
 }
