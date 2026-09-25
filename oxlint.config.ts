@@ -123,6 +123,12 @@ export default defineConfig({
         "vitest/require-mock-type-parameters": "off",
       },
     },
+    {
+      files: ["scripts/**/*.ts"],
+      rules: {
+        "eslint/no-console": "off",
+      },
+    },
   ],
   ignorePatterns: [
     ...(core.ignorePatterns ?? []),

@@ -14,6 +14,7 @@ export default defineConfig({
   ignorePatterns: [
     "dist/**",
     "drizzle/**",
+    "public/sydney-suburbs.topo.json",
     "src/routeTree.gen.ts",
     "worker/worker-configuration.d.ts",
   ],
