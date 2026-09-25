@@ -45,8 +45,19 @@ const EXCLUDED_LGAS = [
   "Wollondilly",
 ]
 
-// Percentage of vertices kept. Tuned by eye against the size budget.
-const SIMPLIFY = "8%"
+// Localities that are only national park, with nobody living there.
+const EXCLUDED_SUBURBS = ["Royal National Park"]
+
+// Suburbs cut down to their populated part with a bounding box
+// [west, south, east, north]. Holsworthy is mostly Army land; its houses are
+// all at the northern tip, so the map keeps the gap south of it.
+const TRIMMED_SUBURBS = [
+  { name: "Holsworthy", bbox: [150.8, -33.967, 151.1, -33.9] },
+]
+
+// Simplification tolerance in metres. A fixed distance, unlike a percentage,
+// doesn't shift when other steps change what mapshaper has loaded.
+const SIMPLIFY = "interval=150"
 const MIN_SUBURBS = 600
 const MAX_SUBURBS = 700
 const MAX_GZIP_BYTES = 400 * 1024
@@ -112,9 +123,18 @@ async function buildGeoJson() {
       // A suburb is in Greater Sydney if its inner point is.
       `-join target=sal gcc point-method fields=${f.gccsa}`,
       `-filter '${f.gccsa} === "${SOURCE.greaterSydney}"'`,
-      `-join lga point-method fields=${f.lgaName}`,
       // Strip ABS disambiguators: "Mount Pleasant (Penrith - NSW)", "Bayside (NSW)".
-      `-each 'id = ${f.salCode}, name = ${f.salName}.replace(/ \\(.*\\)$/, ""), lga = ${f.lgaName}.replace(/ \\(.*\\)$/, "")'`,
+      `-each 'id = ${f.salCode}, name = ${f.salName}.replace(/ \\(.*\\)$/, "")'`,
+      `-filter '!${JSON.stringify(EXCLUDED_SUBURBS)}.includes(name)'`,
+      ...TRIMMED_SUBURBS.flatMap((t) => [
+        `-filter 'name === "${t.name}"' + name=trimmed`,
+        `-filter target=sal 'name !== "${t.name}"'`,
+        `-clip target=trimmed bbox=${t.bbox.join(",")}`,
+        "-merge-layers target=sal,trimmed name=sal force",
+      ]),
+      // After trimming, so a suburb's council comes from what's left of it.
+      `-join lga point-method fields=${f.lgaName}`,
+      `-each 'lga = ${f.lgaName}.replace(/ \\(.*\\)$/, "")'`,
       `-filter '!${JSON.stringify(EXCLUDED_LGAS)}.includes(lga)'`,
       "-filter-fields id,name,lga",
       `-simplify visvalingam weighted ${SIMPLIFY} keep-shapes`,
@@ -182,7 +202,11 @@ function seedSql(suburbs: Suburb[]) {
   const rows = suburbs
     .toSorted((a, b) => a.id.localeCompare(b.id))
     .map((s) => `(${quote(s.id)}, ${quote(s.name)}, ${quote(s.lga)})`)
-  const statements: string[] = []
+  // Each seed is the full list, so suburbs dropped since the last one go too.
+  const ids = suburbs.map((s) => quote(s.id)).toSorted()
+  const statements = [
+    `DELETE FROM suburbs WHERE id NOT IN (${ids.join(", ")});`,
+  ]
   for (let i = 0; i < rows.length; i += SEED_CHUNK) {
     statements.push(
       `INSERT INTO suburbs (id, name, lga) VALUES\n${rows.slice(i, i + SEED_CHUNK).join(",\n")}\nON CONFLICT(id) DO UPDATE SET name = excluded.name, lga = excluded.lga;`,

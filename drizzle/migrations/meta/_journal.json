@@ -15,6 +15,13 @@
       "when": 1790306869256,
       "tag": "0001_seed_suburbs",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1790310060499,
+      "tag": "0002_seed_suburbs",
+      "breakpoints": true
     }
   ]
 }
