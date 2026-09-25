@@ -4,7 +4,9 @@
 // Source: ABS ASGS Edition 3 (2021), licensed CC BY 4.0.
 //   Suburbs and Localities (SAL), filtered to Greater Sydney (GCCSA 1GSYD),
 //   with each suburb's LGA attached, minus the outer councils below.
-//   Mesh Blocks, for parks and water inside the mapped suburbs.
+//   Mesh Blocks, for parks inside the mapped suburbs.
+// Source: NSW Spatial Services Hydro Area, licensed CC BY 4.0, for rivers,
+//   lakes and reservoirs.
 
 import { execSync } from "node:child_process"
 import { existsSync } from "node:fs"
@@ -36,6 +38,23 @@ const SOURCE = {
   nsw: "1",
   greaterSydney: "1GSYD",
 } as const
+
+// Rivers (watercourse areas) and any other water body over 2 ha, fetched
+// once for a box around the map.
+const HYDRO = {
+  file: "nsw-hydro-area.geojson",
+  url: `https://portal.spatial.nsw.gov.au/server/rest/services/NSW_Water_Theme/FeatureServer/6/query?${new URLSearchParams(
+    {
+      where: "classsubtype = 2 OR Shape__Area > 20000",
+      geometry: "150.52,-34.2,151.35,-33.55",
+      geometryType: "esriGeometryEnvelope",
+      inSR: "4326",
+      outSR: "4326",
+      outFields: "classsubtype",
+      f: "geojson",
+    },
+  )}`,
+}
 
 // The ABS Greater Sydney area stretches to the Central Coast and Blue
 // Mountains. We stop at Penrith, Campbelltown and the Hawkesbury River by
@@ -118,12 +137,12 @@ const EXCLUDED_SUBURBS = [
   "Yarramundi",
 ]
 
-// Councils for suburbs whose inner point lands in the wrong one. Holsworthy
-// is mostly Army land in Campbelltown; its houses are all in Liverpool.
-const LGA_OVERRIDES = { Holsworthy: "Liverpool" } satisfies Record<
-  string,
-  string
->
+// Suburbs cut down to their populated part with a bounding box
+// [west, south, east, north]. Holsworthy is mostly Army land; its houses are
+// all at the northern tip, so the map keeps the gap south of it.
+const TRIMMED_SUBURBS = [
+  { name: "Holsworthy", bbox: [150.8, -33.967, 151.1, -33.9] },
+]
 
 // Land around the map is drawn from every locality inside this box
 // [west, south, east, north], so wide screens don't show land ending at a
@@ -131,10 +150,11 @@ const LGA_OVERRIDES = { Holsworthy: "Liverpool" } satisfies Record<
 const SURROUNDS_BBOX = [148.5, -35.5, 153.5, -32]
 const SURROUNDS_SIMPLIFY_METRES = 500
 
-// Mesh block categories drawn as land use, and the smallest patch kept in
-// square metres. Small parks would add points without being visible.
-const LANDUSE_CATEGORIES = ["Parkland", "Water"]
-const LANDUSE_MIN_AREA = 100_000
+// The smallest park kept, in square metres. Small parks would add points
+// without being visible.
+const PARK_MIN_AREA = 100_000
+// Rivers are narrow, so water keeps more detail than everything else.
+const WATER_SIMPLIFY_METRES = 50
 
 // Simplification tolerance in metres. A fixed distance, unlike a percentage,
 // doesn't shift when other steps change what mapshaper has loaded.
@@ -178,13 +198,13 @@ type Ring = z.infer<typeof ring>
 type Geometry = z.infer<typeof suburbCollection>["features"][number]["geometry"]
 type Suburb = z.infer<typeof suburbCollection>["features"][number]["properties"]
 
-async function download(file: string) {
+async function download(file: string, url = `${SOURCE.baseUrl}/${file}`) {
   const path = cacheDir + file
   if (existsSync(path)) {
     return
   }
   console.log(`Downloading ${file}`)
-  const res = await fetch(`${SOURCE.baseUrl}/${file}`)
+  const res = await fetch(url)
   if (!res.ok) {
     throw new Error(`Download failed: ${file} (${res.status})`)
   }
@@ -207,8 +227,15 @@ async function buildGeoJson() {
       // Strip ABS disambiguators: "Mount Pleasant (Penrith - NSW)", "Bayside (NSW)".
       `-each 'id = ${f.salCode}, name = ${f.salName}.replace(/ \\(.*\\)$/, "")'`,
       `-filter '!${JSON.stringify(EXCLUDED_SUBURBS)}.includes(name)'`,
+      ...TRIMMED_SUBURBS.flatMap((t) => [
+        `-filter 'name === "${t.name}"' + name=trimmed`,
+        `-filter target=sal 'name !== "${t.name}"'`,
+        `-clip target=trimmed bbox=${t.bbox.join(",")}`,
+        "-merge-layers target=sal,trimmed name=sal force",
+      ]),
+      // After trimming, so a suburb's council comes from what's left of it.
       `-join lga point-method fields=${f.lgaName}`,
-      `-each 'lga = ${JSON.stringify(LGA_OVERRIDES)}[name] ?? ${f.lgaName}.replace(/ \\(.*\\)$/, "")'`,
+      `-each 'lga = ${f.lgaName}.replace(/ \\(.*\\)$/, "")'`,
       `-filter '!${JSON.stringify(EXCLUDED_LGAS)}.includes(lga)'`,
       "-filter-fields id,name,lga",
       `-simplify visvalingam weighted interval=${SIMPLIFY_METRES} keep-shapes`,
@@ -218,27 +245,50 @@ async function buildGeoJson() {
   return suburbCollection.parse(JSON.parse(out["suburbs.json"] ?? "null"))
 }
 
-// Parks and water, clipped to the simplified suburbs so they never spill past
-// a coastline that simplification has moved.
-async function buildLanduse(suburbsJson: string) {
+// Parks as fresh shapes. Mesh blocks import with national topology, which
+// splits park edges at every neighbouring block and defeats simplification.
+async function extractParks() {
   const f = SOURCE.fields
   const out = await geo.applyCommands(
     [
-      "-i suburbs.json name=suburbs",
-      `-i "${cacheDir}${SOURCE.mb}" name=landuse`,
-      `-filter '${f.gccsa} === "${SOURCE.greaterSydney}" && ${JSON.stringify(LANDUSE_CATEGORIES)}.includes(${f.mbCategory})'`,
-      `-dissolve ${f.mbCategory}`,
+      `-i "${cacheDir}${SOURCE.mb}"`,
+      `-filter '${f.gccsa} === "${SOURCE.greaterSydney}" && ${f.mbCategory} === "Parkland"'`,
+      "-dissolve",
       "-explode",
-      `-filter 'this.area > ${LANDUSE_MIN_AREA}'`,
+      `-filter 'this.area > ${PARK_MIN_AREA}'`,
+      "-o parks.json format=geojson",
+    ].join(" "),
+  )
+  const parks = out["parks.json"]
+  if (parks === undefined) {
+    throw new Error("mapshaper produced no parks")
+  }
+  return parks
+}
+
+// Parks and water, clipped to the simplified suburbs so they never spill past
+// a coastline that simplification has moved. Water goes last to draw on top.
+async function buildLanduse(suburbsJson: string) {
+  const out = await geo.applyCommands(
+    [
+      "-i suburbs.json name=suburbs",
+      "-i parks.json name=parkland",
       `-simplify visvalingam weighted interval=${SIMPLIFY_METRES} keep-shapes`,
       "-clip suburbs",
-      `-filter 'this.area > ${LANDUSE_MIN_AREA / 10}'`,
-      `-dissolve ${f.mbCategory}`,
-      `-each 'kind = ${f.mbCategory}.toLowerCase()'`,
+      `-filter 'this.area > ${PARK_MIN_AREA / 10}'`,
+      "-dissolve",
+      `-each 'kind = "parkland"'`,
+      `-i "${cacheDir}${HYDRO.file}" name=water`,
+      "-dissolve",
+      `-simplify visvalingam weighted interval=${WATER_SIMPLIFY_METRES} keep-shapes`,
+      "-clip suburbs",
+      "-dissolve",
+      `-each 'kind = "water"'`,
+      "-merge-layers target=parkland,water name=landuse force",
       "-filter-fields kind",
       "-o landuse.json format=geojson precision=0.00001",
     ].join(" "),
-    { "suburbs.json": suburbsJson },
+    { "suburbs.json": suburbsJson, "parks.json": await extractParks() },
   )
   const landuse = out["landuse.json"]
   if (landuse === undefined) {
@@ -312,7 +362,7 @@ async function writeTopoJson(
   landuseJson: string,
 ) {
   const out = await geo.applyCommands(
-    "-i suburbs.json surrounds.json landuse.json combine-files -rename-layers suburbs,surrounds,landuse -o out.json format=topojson quantization=1000000",
+    "-i suburbs.json surrounds.json landuse.json combine-files -rename-layers suburbs,surrounds,landuse -o out.json format=topojson quantization=100000",
     {
       "suburbs.json": suburbsJson,
       "surrounds.json": surroundsJson,
@@ -396,9 +446,13 @@ function check(suburbs: Suburb[], gzipBytes: number) {
 }
 
 await mkdir(cacheDir, { recursive: true })
-await Promise.all(
-  [SOURCE.sal, SOURCE.gccsa, SOURCE.lga, SOURCE.mb].map(download),
-)
+await Promise.all([
+  download(SOURCE.sal),
+  download(SOURCE.gccsa),
+  download(SOURCE.lga),
+  download(SOURCE.mb),
+  download(HYDRO.file, HYDRO.url),
+])
 
 const collection = await buildGeoJson()
 const surrounds = await buildSurrounds(
