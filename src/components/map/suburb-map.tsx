@@ -121,8 +121,9 @@ function ZoomableMap({
       <rect className="fill-map-water" height={height} width={width} />
       <g key={gesture} transform={transform.toString()}>
         <path className="fill-map-surrounds" d={projected.surrounds} />
-        <LandPaths suburbs={projected.suburbs} visitedIds={visitedIds} />
+        <LandPaths suburbs={projected.suburbs} />
         <LandusePaths landuse={projected.landuse} />
+        <VisitedPaths suburbs={projected.suburbs} visitedIds={visitedIds} />
         <SuburbPaths
           onSelect={onSelect}
           selectedId={selectedId}
@@ -142,30 +143,31 @@ function ZoomableMap({
 
 interface LandPathsProps {
   suburbs: ProjectedSuburb[]
+}
+
+// Plain land under the parks and water, joined into one path so it's cheap.
+function LandPaths({ suburbs }: LandPathsProps) {
+  const d = useMemo(() => suburbs.map((s) => s.d).join(""), [suburbs])
+  return <path className="fill-map-land" d={d} />
+}
+
+interface VisitedPathsProps {
+  suburbs: ProjectedSuburb[]
   visitedIds: ReadonlySet<string>
 }
 
-// Land under the parks and water, so a park still reads as a park inside a
-// visited suburb. One joined path per fill keeps it cheap.
-function LandPaths({ suburbs, visitedIds }: LandPathsProps) {
-  const [land, visited] = useMemo(() => {
-    const plain: string[] = []
-    const seen: string[] = []
-    for (const s of suburbs) {
-      if (visitedIds.has(s.id)) {
-        seen.push(s.d)
-      } else {
-        plain.push(s.d)
-      }
-    }
-    return [plain.join(""), seen.join("")]
-  }, [suburbs, visitedIds])
-  return (
-    <>
-      <path className="fill-map-land" d={land} />
-      {visited ? <path className="fill-map-visited" d={visited} /> : null}
-    </>
+// Over the parks and water, so a visited suburb is filled edge to edge. One
+// joined path keeps it cheap.
+function VisitedPaths({ suburbs, visitedIds }: VisitedPathsProps) {
+  const d = useMemo(
+    () =>
+      suburbs
+        .filter((s) => visitedIds.has(s.id))
+        .map((s) => s.d)
+        .join(""),
+    [suburbs, visitedIds],
   )
+  return d ? <path className="fill-map-visited" d={d} /> : null
 }
 
 interface LandusePathsProps {
