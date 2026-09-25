@@ -37,6 +37,10 @@ interface ZoomableMapProps extends SuburbMapProps {
 
 function ZoomableMap({ suburbs, width, height }: ZoomableMapProps) {
   const [transform, setTransform] = useState(zoomIdentity)
+  // Firefox keeps a transformed group as a scaled bitmap for a few seconds
+  // after it stops changing, which looks blurry. Remounting it once a gesture
+  // ends makes it redraw sharp straight away.
+  const [gesture, setGesture] = useState(0)
   const projected = useMemo(
     () => projectSuburbs(suburbs, width, height),
     [suburbs, width, height],
@@ -58,6 +62,9 @@ function ZoomableMap({ suburbs, width, height }: ZoomableMapProps) {
         .on("zoom", (event: D3ZoomEvent<SVGSVGElement, unknown>) => {
           setTransform(event.transform)
         })
+        .on("end", () => {
+          setGesture((n) => n + 1)
+        })
       const selection = select(svg)
       selection.call(behaviour)
       return () => {
@@ -76,10 +83,15 @@ function ZoomableMap({ suburbs, width, height }: ZoomableMapProps) {
       width={width}
     >
       <rect className="fill-map-water" height={height} width={width} />
-      <g transform={transform.toString()}>
+      <g key={gesture} transform={transform.toString()}>
         <SuburbPaths suburbs={projected} />
-        <SuburbLabels k={transform.k} suburbs={projected} />
       </g>
+      <SuburbLabels
+        height={height}
+        suburbs={projected}
+        transform={transform}
+        width={width}
+      />
     </svg>
   )
 }
