@@ -1,0 +1,8 @@
+node_modules
+dist
+docs/
+.env
+.wrangler
+.tanstack
+*.tsbuildinfo
+.pnpm-store
