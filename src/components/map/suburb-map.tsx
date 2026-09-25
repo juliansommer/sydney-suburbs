@@ -3,12 +3,21 @@ import { type D3ZoomEvent, zoom, zoomIdentity } from "d3-zoom"
 import { useCallback, useMemo, useState } from "react"
 
 import { useElementSize } from "@/hooks/use-element-size"
-import type { SuburbMapData } from "@/types/suburb"
+import type { LanduseKind, SuburbMapData } from "@/types/suburb"
 
-import { projectMap, type ProjectedSuburb } from "./project"
+import {
+  projectMap,
+  type ProjectedLanduse,
+  type ProjectedSuburb,
+} from "./project"
 import { SuburbLabels } from "./suburb-labels"
 
 const MAX_ZOOM = 40
+
+const LANDUSE_FILL: Record<LanduseKind, string> = {
+  parkland: "fill-map-surrounds",
+  water: "fill-map-water",
+}
 
 interface SuburbMapProps {
   data: SuburbMapData
@@ -81,6 +90,8 @@ function ZoomableMap({ data, width, height }: ZoomableMapProps) {
       <rect className="fill-map-water" height={height} width={width} />
       <g key={gesture} transform={transform.toString()}>
         <path className="fill-map-surrounds" d={projected.surrounds} />
+        <LandPaths suburbs={projected.suburbs} />
+        <LandusePaths landuse={projected.landuse} />
         <SuburbPaths suburbs={projected.suburbs} />
       </g>
       <SuburbLabels
@@ -97,17 +108,34 @@ interface SuburbPathsProps {
   suburbs: ProjectedSuburb[]
 }
 
+// Plain land under the parks and water, joined into one path so it's cheap.
+function LandPaths({ suburbs }: SuburbPathsProps) {
+  const d = useMemo(() => suburbs.map((s) => s.d).join(""), [suburbs])
+  return <path className="fill-map-land" d={d} />
+}
+
+interface LandusePathsProps {
+  landuse: ProjectedLanduse[]
+}
+
+function LandusePaths({ landuse }: LandusePathsProps) {
+  return landuse.map((l) => (
+    <path className={LANDUSE_FILL[l.kind]} d={l.d} key={l.kind} />
+  ))
+}
+
+// Transparent on top of the land use, so borders and hover show over parks.
 function SuburbPaths({ suburbs }: SuburbPathsProps) {
   return (
     <g
-      className="fill-map-land stroke-map-border"
+      className="fill-transparent stroke-map-border"
       strokeLinejoin="round"
       strokeWidth={0.75}
     >
       {suburbs.map((s) => (
         <path
           aria-label={s.name}
-          className="hover:fill-map-hover"
+          className="hover:fill-map-label/10"
           d={s.d}
           key={s.id}
           vectorEffect="non-scaling-stroke"

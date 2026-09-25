@@ -14,7 +14,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply sydney-suburbs --local",
     "db:migrate:remote": "wrangler d1 migrations apply sydney-suburbs --remote",
-    "build:suburbs": "node scripts/build-suburbs.ts"
+    "build:suburbs": "node --max-old-space-size=8192 scripts/build-suburbs.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

@@ -20,7 +20,7 @@ Track which Sydney suburbs you've visited.
 
 ## Data
 
-Suburb boundaries come from the ABS Australian Statistical Geography Standard (ASGS) Edition 3, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The area is the ABS Greater Sydney region minus the Blue Mountains, Central Coast, Oberon and Wollondilly councils, national parks, and the rural fringe (listed in `scripts/build-suburbs.ts`). `pnpm build:suburbs` rebuilds the map file and the seed migration.
+Suburb boundaries come from the ABS Australian Statistical Geography Standard (ASGS) Edition 3, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The area is the ABS Greater Sydney region minus the Blue Mountains, Central Coast, Oberon and Wollondilly councils, national parks, and the rural fringe (listed in `scripts/build-suburbs.ts`). Parks and water come from ABS Mesh Blocks. `pnpm build:suburbs` rebuilds the map file and the seed migration.
 
 ## Development
 

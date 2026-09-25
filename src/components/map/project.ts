@@ -1,6 +1,6 @@
 import { geoMercator, geoPath } from "d3-geo"
 
-import type { SuburbMapData } from "@/types/suburb"
+import type { LanduseKind, SuburbMapData } from "@/types/suburb"
 
 export interface ProjectedSuburb {
   id: string
@@ -11,15 +11,21 @@ export interface ProjectedSuburb {
   label: [number, number] | null
 }
 
+export interface ProjectedLanduse {
+  kind: LanduseKind
+  d: string
+}
+
 export interface ProjectedMap {
   suburbs: ProjectedSuburb[]
   surrounds: string
+  landuse: ProjectedLanduse[]
 }
 
 // Fits the suburbs to the viewport and projects everything to SVG path
 // strings, bounding box sizes and label positions, all in unzoomed pixels.
 export function projectMap(
-  { suburbs, surrounds }: SuburbMapData,
+  { suburbs, surrounds, landuse }: SuburbMapData,
   width: number,
   height: number,
 ): ProjectedMap {
@@ -41,5 +47,9 @@ export function projectMap(
       }
     }),
     surrounds: path(surrounds) ?? "",
+    landuse: landuse.map((l) => ({
+      kind: l.properties.kind,
+      d: path(l) ?? "",
+    })),
   }
 }

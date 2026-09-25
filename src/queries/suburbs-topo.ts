@@ -3,7 +3,12 @@ import { feature } from "topojson-client"
 import type { Topology } from "topojson-specification"
 import { z } from "zod/mini"
 
-import type { SuburbFeature, SuburbMapData, Surrounds } from "@/types/suburb"
+import type {
+  Landuse,
+  SuburbFeature,
+  SuburbMapData,
+  Surrounds,
+} from "@/types/suburb"
 
 const topologyHeader = z.object({
   type: z.literal("Topology"),
@@ -19,6 +24,10 @@ const suburbProperties = z.object({
   lga: z.string(),
   lx: z.number(),
   ly: z.number(),
+})
+
+const landuseProperties = z.object({
+  kind: z.enum(["parkland", "water"]),
 })
 
 function layer(topology: Topology, name: string) {
@@ -54,7 +63,17 @@ export function toSuburbMap(topology: Topology): SuburbMapData {
     geometry: land.geometry,
     properties: {},
   }
-  return { suburbs, surrounds }
+  const landuse: Landuse[] = []
+  for (const f of layer(topology, "landuse")) {
+    if (f.geometry.type === "Polygon" || f.geometry.type === "MultiPolygon") {
+      landuse.push({
+        type: "Feature",
+        geometry: f.geometry,
+        properties: landuseProperties.parse(f.properties),
+      })
+    }
+  }
+  return { suburbs, surrounds, landuse }
 }
 
 // The file only changes on deploy, so it never goes stale in a session.
