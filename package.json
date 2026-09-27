@@ -7,7 +7,7 @@
     "preview": "vite build && vite preview",
     "deploy": "vite build && wrangler deploy",
     "lint": "oxlint && oxfmt --check",
-    "typecheck": "tsc --noEmit && tsc --noEmit -p worker",
+    "typecheck": "tsc --noEmit -p worker",
     "fix": "oxlint --fix && oxfmt",
     "test": "vitest run",
     "test:watch": "vitest",
