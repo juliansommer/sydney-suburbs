@@ -5,7 +5,6 @@
     "dev": "vite dev",
     "build": "vite build",
     "vercel-build": "if [ \"$VERCEL_ENV\" = production ]; then pnpm db:migrate; fi && vite build",
-    "preview": "vite build && vite preview",
     "lint": "oxlint && oxfmt --check",
     "typecheck": "tsc --noEmit -p server",
     "fix": "oxlint --fix && oxfmt",
