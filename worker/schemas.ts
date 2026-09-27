@@ -1,10 +1,12 @@
 import { z } from "zod/mini"
 
 // Visits are dated in Sydney time, whatever the Worker's own clock zone.
+const sydneyDateFormat = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Australia/Sydney",
+})
+
 function sydneyToday() {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Australia/Sydney",
-  }).format(new Date())
+  return sydneyDateFormat.format(new Date())
 }
 
 // Every key is optional so overlapping edits (the visited toggle and the notes
