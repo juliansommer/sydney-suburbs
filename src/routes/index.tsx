@@ -1,9 +1,10 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
-import { useEffect, useEffectEvent, useMemo } from "react"
+import { useEffect, useEffectEvent, useMemo, useRef } from "react"
 import { z } from "zod/mini"
 
-import { SuburbMap } from "@/components/map/suburb-map"
+import { SuburbMap, type SuburbMapHandle } from "@/components/map/suburb-map"
+import { SuburbSearch } from "@/components/map/suburb-search"
 import { SuburbPanel } from "@/components/suburb-panel"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { authClient } from "@/lib/auth-client"
@@ -67,11 +68,10 @@ interface MapViewProps {
 function MapView({ data, signedIn, rows }: MapViewProps) {
   const { suburb: selectedId } = Route.useSearch()
   const navigate = Route.useNavigate()
+  const map = useRef<SuburbMapHandle>(null)
 
-  const byId = useMemo(
-    () => new Map(data.suburbs.map((s) => [s.properties.id, s.properties])),
-    [data],
-  )
+  const suburbs = useMemo(() => data.suburbs.map((s) => s.properties), [data])
+  const byId = useMemo(() => new Map(suburbs.map((s) => [s.id, s])), [suburbs])
   const visitedIds = useMemo(
     () =>
       new Set(
@@ -118,9 +118,20 @@ function MapView({ data, signedIn, rows }: MapViewProps) {
       <SuburbMap
         data={data}
         onSelect={select}
+        ref={map}
         selectedId={selected?.id ?? null}
         visitedIds={visitedIds}
       />
+      <div className="absolute inset-x-4 top-14 md:right-auto md:w-72">
+        <SuburbSearch
+          onPick={(id) => {
+            select(id)
+            map.current?.zoomTo(id)
+          }}
+          suburbs={suburbs}
+          visitedIds={visitedIds}
+        />
+      </div>
       {selected ? (
         <SuburbPanel
           key={selected.id}

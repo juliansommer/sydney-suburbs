@@ -1,8 +1,24 @@
-import { select } from "d3-selection"
-import { type D3ZoomEvent, zoom, zoomIdentity } from "d3-zoom"
-import { useCallback, useMemo, useState } from "react"
+import { type Selection, select } from "d3-selection"
+import "d3-transition"
+import {
+  type D3ZoomEvent,
+  zoom,
+  type ZoomBehavior,
+  zoomIdentity,
+} from "d3-zoom"
+import {
+  type Ref,
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 
 import { useElementSize } from "@/hooks/use-element-size"
+import { fitBounds } from "@/lib/zoom"
 import type { LanduseKind, SuburbMapData } from "@/types/suburb"
 
 import {
@@ -15,6 +31,7 @@ import { SuburbLabels } from "./suburb-labels"
 const MAX_ZOOM = 40
 // Pointer travel, in pixels, past which a press is a pan rather than a click.
 const CLICK_DISTANCE = 4
+const ZOOM_TO_MS = 600
 
 const LANDUSE_FILL: Record<LanduseKind, string> = {
   parkland: "fill-map-surrounds",
@@ -27,9 +44,29 @@ interface SuburbMapProps {
   visitedIds: ReadonlySet<string>
   // Called with null when a click lands off the suburbs (water, surrounds).
   onSelect: (id: string | null) => void
+  ref?: Ref<SuburbMapHandle>
 }
 
-// Fills its container. The map is drawn once the container has a size.
+export interface SuburbMapHandle {
+  // Animates to fit the suburb on screen. Does nothing before the first draw.
+  zoomTo: (id: string) => void
+}
+
+interface Zoomer {
+  selection: Selection<SVGSVGElement, unknown, null, undefined>
+  behaviour: ZoomBehavior<SVGSVGElement, unknown>
+}
+
+function viewExtent(width: number, height: number) {
+  const extent: [[number, number], [number, number]] = [
+    [0, 0],
+    [width, height],
+  ]
+  return extent
+}
+
+// Fills its container. The map is drawn once the container has a size, and
+// then zooms to the selected suburb, if any.
 export function SuburbMap(props: SuburbMapProps) {
   const [ref, size] = useElementSize()
   return (
@@ -51,6 +88,7 @@ function ZoomableMap({
   selectedId,
   visitedIds,
   onSelect,
+  ref,
   width,
   height,
 }: ZoomableMapProps) {
@@ -63,16 +101,58 @@ function ZoomableMap({
     () => projectMap(data, width, height),
     [data, width, height],
   )
+  const zoomer = useRef<Zoomer | null>(null)
+
+  function zoomTo(id: string, animate: boolean) {
+    const suburb = projected.suburbs.find((s) => s.id === id)
+    if (!suburb || !zoomer.current) {
+      return
+    }
+    const { selection, behaviour } = zoomer.current
+    const { x, y, k } = fitBounds(suburb.bounds, width, height)
+    const extent = viewExtent(width, height)
+    // Unlike gestures, a programmatic transform skips the pan limits.
+    const target = behaviour.constrain()(
+      zoomIdentity.translate(x, y).scale(k),
+      extent,
+      extent,
+    )
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches
+    if (animate && !reduceMotion) {
+      selection
+        .transition()
+        .duration(ZOOM_TO_MS)
+        .call((t) => {
+          behaviour.transform(t, target)
+        })
+    } else {
+      behaviour.transform(selection, target)
+    }
+  }
+
+  useImperativeHandle(ref, () => ({
+    zoomTo: (id) => {
+      zoomTo(id, true)
+    },
+  }))
+
+  const onDrawn = useEffectEvent(() => {
+    if (selectedId) {
+      zoomTo(selectedId, false)
+    }
+  })
+  useEffect(() => {
+    onDrawn()
+  }, [])
 
   const svgRef = useCallback(
     (svg: SVGSVGElement | null) => {
       if (!svg) {
         return undefined
       }
-      const extent: [[number, number], [number, number]] = [
-        [0, 0],
-        [width, height],
-      ]
+      const extent = viewExtent(width, height)
       let startTransform = zoomIdentity
       const behaviour = zoom<SVGSVGElement, unknown>()
         .extent(extent)
@@ -94,8 +174,10 @@ function ZoomableMap({
         })
       const selection = select(svg)
       selection.call(behaviour)
+      zoomer.current = { selection, behaviour }
       return () => {
-        selection.on(".zoom", null)
+        zoomer.current = null
+        selection.interrupt().on(".zoom", null)
       }
     },
     [width, height],
