@@ -12,7 +12,6 @@ import {
   useEffect,
   useEffectEvent,
   useImperativeHandle,
-  useMemo,
   useRef,
   useState,
 } from "react"
@@ -100,10 +99,7 @@ function ZoomableMap({
   // after it stops changing, which looks blurry. Remounting it once a gesture
   // ends makes it redraw sharp straight away.
   const [gesture, setGesture] = useState(0)
-  const projected = useMemo(
-    () => projectMap(data, width, height),
-    [data, width, height],
-  )
+  const projected = projectMap(data, width, height)
   const zoomer = useRef<Zoomer | null>(null)
 
   const [outlinedLga, setOutlinedLga] = useState<string | null>(null)
@@ -258,7 +254,7 @@ interface LandPathsProps {
 
 // Plain land under the parks and water, joined into one path so it's cheap.
 function LandPaths({ suburbs }: LandPathsProps) {
-  const d = useMemo(() => suburbs.map((s) => s.d).join(""), [suburbs])
+  const d = suburbs.map((s) => s.d).join("")
   return <path className="fill-map-land" d={d} />
 }
 
@@ -270,14 +266,10 @@ interface VisitedPathsProps {
 // Over the parks and water, so a visited suburb is filled edge to edge. One
 // joined path keeps it cheap.
 function VisitedPaths({ suburbs, visitedIds }: VisitedPathsProps) {
-  const d = useMemo(
-    () =>
-      suburbs
-        .filter((s) => visitedIds.has(s.id))
-        .map((s) => s.d)
-        .join(""),
-    [suburbs, visitedIds],
-  )
+  const d = suburbs
+    .filter((s) => visitedIds.has(s.id))
+    .map((s) => s.d)
+    .join("")
   return d ? <path className="fill-map-visited" d={d} /> : null
 }
 

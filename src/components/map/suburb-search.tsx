@@ -1,5 +1,5 @@
 import { SearchIcon } from "lucide-react"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import {
   Combobox,
@@ -30,8 +30,8 @@ export function SuburbSearch({
   const [query, setQuery] = useState("")
   const [open, setOpen] = useState(false)
   const input = useRef<HTMLInputElement>(null)
-  const index = useMemo(() => buildIndex(suburbs, (s) => s.name), [suburbs])
-  const results = useMemo(() => search(index, query), [index, query])
+  const index = buildIndex(suburbs, (s) => s.name)
+  const results = search(index, query)
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {

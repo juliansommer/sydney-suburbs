@@ -5,7 +5,6 @@ import {
   type RefObject,
   useEffect,
   useEffectEvent,
-  useMemo,
   useRef,
 } from "react"
 import { z } from "zod/mini"
@@ -43,18 +42,11 @@ function MapPage() {
   const { data: session, isPending } = authClient.useSession()
   const { data: rows } = useQuery({ ...mySuburbsQuery, enabled: !!session })
   const map = useRef<SuburbMapHandle>(null)
-  const suburbs = useMemo(
-    () => data?.suburbs.map((s) => s.properties) ?? [],
-    [data],
-  )
-  const visitedIds = useMemo(
-    () =>
-      new Set(
-        [...(rows?.values() ?? [])]
-          .filter((row) => row.visited)
-          .map((row) => row.suburbId),
-      ),
-    [rows],
+  const suburbs = data?.suburbs.map((s) => s.properties) ?? []
+  const visitedIds = new Set(
+    [...(rows?.values() ?? [])]
+      .filter((row) => row.visited)
+      .map((row) => row.suburbId),
   )
 
   return (
@@ -116,7 +108,7 @@ function MapView({
   const { suburb: selectedId } = Route.useSearch()
   const navigate = Route.useNavigate()
 
-  const byId = useMemo(() => new Map(suburbs.map((s) => [s.id, s])), [suburbs])
+  const byId = new Map(suburbs.map((s) => [s.id, s]))
   // An id the map doesn't draw is no selection at all.
   const selected =
     selectedId === undefined ? undefined : byId.get(String(selectedId))

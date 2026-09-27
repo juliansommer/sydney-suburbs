@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -23,10 +23,7 @@ export function CouncilProgressButton({
   onZoom,
 }: CouncilProgressProps) {
   const [open, setOpen] = useState(false)
-  const councils = useMemo(
-    () => councilProgress(suburbs, visitedIds),
-    [suburbs, visitedIds],
-  )
+  const councils = councilProgress(suburbs, visitedIds)
   const visited = councils.reduce((sum, c) => sum + c.visited, 0)
 
   return (
