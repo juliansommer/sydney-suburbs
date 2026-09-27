@@ -168,16 +168,14 @@ function MapView({
           visitedIds={visitedIds}
         />
       </div>
-      {selected ? (
-        <SuburbPanel
-          onClose={() => {
-            select(null)
-          }}
-          rows={rows}
-          signedIn={signedIn}
-          suburb={selected}
-        />
-      ) : null}
+      <SuburbPanel
+        onClose={() => {
+          select(null)
+        }}
+        rows={rows}
+        signedIn={signedIn}
+        suburb={selected}
+      />
     </>
   )
 }

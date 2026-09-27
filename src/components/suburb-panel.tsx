@@ -13,8 +13,11 @@ import type { UserSuburb } from "@/types/user-suburb"
 const NOTES_DEBOUNCE_MS = 600
 const NOTES_MAX_LENGTH = 10_000
 
+type Suburb = Pick<SuburbProperties, "id" | "name" | "lga">
+
 interface SuburbPanelProps {
-  suburb: Pick<SuburbProperties, "id" | "name" | "lga">
+  // Undefined when nothing is selected.
+  suburb: Suburb | undefined
   signedIn: boolean
   // The user's rows, or undefined while they load.
   rows: ReadonlyMap<string, UserSuburb> | undefined
@@ -33,6 +36,9 @@ export function SuburbPanel(props: SuburbPanelProps) {
 }
 
 function SuburbCard({ suburb, signedIn, rows, onClose }: SuburbPanelProps) {
+  if (!suburb) {
+    return null
+  }
   return (
     <section
       aria-label={suburb.name}
@@ -56,9 +62,14 @@ function SuburbCard({ suburb, signedIn, rows, onClose }: SuburbPanelProps) {
 }
 
 // Non-modal, so the map stays usable above it and tapping another suburb
-// swaps the content in place. Swiping down from the peek closes it.
+// swaps the content in place. Swiping down from the peek closes it. Stays
+// mounted so it can slide in and out, keeping the last suburb while it leaves.
 function SuburbSheet({ suburb, signedIn, rows, onClose }: SuburbPanelProps) {
   const [snapPoint, setSnapPoint] = useState<Drawer.Root.SnapPoint | null>(PEEK)
+  const [shown, setShown] = useState(suburb)
+  if (suburb && suburb !== shown) {
+    setShown(suburb)
+  }
   return (
     <Drawer.Root
       disablePointerDismissal
@@ -68,46 +79,68 @@ function SuburbSheet({ suburb, signedIn, rows, onClose }: SuburbPanelProps) {
           onClose()
         }
       }}
+      onOpenChangeComplete={(open) => {
+        if (!open) {
+          setSnapPoint(PEEK)
+        }
+      }}
       onSnapPointChange={setSnapPoint}
-      open
+      open={!!suburb}
       snapPoint={snapPoint}
       snapPoints={SNAP_POINTS}
     >
       <Drawer.VirtualKeyboardProvider>
-        <Drawer.Portal>
-          <Drawer.Viewport className="pointer-events-none fixed inset-0 flex items-end">
-            <Drawer.Popup
-              aria-label={suburb.name}
-              className="pointer-events-auto flex max-h-[calc(100dvh-4rem)] w-full [transform:translateY(calc(var(--drawer-snap-point-offset)+var(--drawer-swipe-movement-y)))] touch-none flex-col rounded-t-xl border-t bg-card text-card-foreground shadow-lg transition-transform duration-450 ease-sheet outline-none data-ending-style:[transform:translateY(100%)] data-starting-style:[transform:translateY(100%)] data-swiping:select-none motion-reduce:transition-none"
-              initialFocus={false}
-            >
-              <div className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-muted-foreground/30" />
-              <header className="flex shrink-0 items-start justify-between gap-2 px-4 pt-2 pb-4">
-                <div>
-                  <Drawer.Title className="text-lg font-semibold">
-                    {suburb.name}
-                  </Drawer.Title>
-                  <Drawer.Description className="text-sm text-muted-foreground">
-                    {suburb.lga}
-                  </Drawer.Description>
-                </div>
-                <CloseButton onClose={onClose} />
-              </header>
-              <Drawer.Content className="min-h-0 flex-1 touch-auto overflow-y-auto overscroll-contain px-4 pb-safe-bottom">
-                <div className="pb-4">
-                  <PanelBody
-                    key={suburb.id}
-                    rows={rows}
-                    signedIn={signedIn}
-                    suburbId={suburb.id}
-                  />
-                </div>
-              </Drawer.Content>
-            </Drawer.Popup>
-          </Drawer.Viewport>
-        </Drawer.Portal>
+        {shown ? (
+          <SheetPopup
+            onClose={onClose}
+            rows={rows}
+            signedIn={signedIn}
+            suburb={shown}
+          />
+        ) : null}
       </Drawer.VirtualKeyboardProvider>
     </Drawer.Root>
+  )
+}
+
+interface SheetPopupProps extends SuburbPanelProps {
+  suburb: Suburb
+}
+
+function SheetPopup({ suburb, signedIn, rows, onClose }: SheetPopupProps) {
+  return (
+    <Drawer.Portal>
+      <Drawer.Viewport className="pointer-events-none fixed inset-0 flex items-end">
+        <Drawer.Popup
+          aria-label={suburb.name}
+          className="pointer-events-auto flex max-h-[calc(100dvh-4rem)] w-full [transform:translateY(calc(var(--drawer-snap-point-offset)+var(--drawer-swipe-movement-y)))] touch-none flex-col rounded-t-xl border-t bg-card text-card-foreground shadow-lg transition-transform duration-450 ease-sheet outline-none data-ending-style:[transform:translateY(100%)] data-starting-style:[transform:translateY(100%)] data-swiping:select-none motion-reduce:transition-none"
+          initialFocus={false}
+        >
+          <div className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-muted-foreground/30" />
+          <header className="flex shrink-0 items-start justify-between gap-2 px-4 pt-2 pb-4">
+            <div>
+              <Drawer.Title className="text-lg font-semibold">
+                {suburb.name}
+              </Drawer.Title>
+              <Drawer.Description className="text-sm text-muted-foreground">
+                {suburb.lga}
+              </Drawer.Description>
+            </div>
+            <CloseButton onClose={onClose} />
+          </header>
+          <Drawer.Content className="min-h-0 flex-1 touch-auto overflow-y-auto overscroll-contain px-4 pb-safe-bottom">
+            <div className="pb-4">
+              <PanelBody
+                key={suburb.id}
+                rows={rows}
+                signedIn={signedIn}
+                suburbId={suburb.id}
+              />
+            </div>
+          </Drawer.Content>
+        </Drawer.Popup>
+      </Drawer.Viewport>
+    </Drawer.Portal>
   )
 }
 
