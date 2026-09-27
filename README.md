@@ -2,6 +2,8 @@
 
 Track which Sydney suburbs you've visited.
 
+![Map of Greater Sydney's suburbs](.github/assets/screenshot.png)
+
 - A pannable, zoomable map of Greater Sydney's 648 suburbs, from Penrith to Berowra to Campbelltown
 - Major centres like Parramatta and Chatswood stay labelled when zoomed out
 - Click a suburb to select it, then mark it visited; visited suburbs turn green
@@ -21,9 +23,7 @@ Track which Sydney suburbs you've visited.
 
 ## Data
 
-Suburb boundaries come from the ABS Australian Statistical Geography Standard (ASGS) Edition 3, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The area is the ABS Greater Sydney region minus the Blue Mountains, Central Coast, Oberon and Wollondilly councils, national parks, and the rural fringe (listed in `scripts/build-suburbs.ts`). Parks come from ABS Mesh Blocks, and rivers and lakes from NSW Spatial Services Hydro Area (CC BY 4.0). `pnpm build:suburbs` rebuilds the map file and the seed migration.
-
-Label priority follows the strategic centres in the NSW Greater Sydney Region Plan.
+Suburb boundaries come from the ABS Australian Statistical Geography Standard (ASGS) Edition 3, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The area is the ABS Greater Sydney region minus the Blue Mountains, Central Coast, Oberon and Wollondilly councils, national parks, and the rural fringe. Parks come from ABS Mesh Blocks, and rivers and lakes from NSW Spatial Services Hydro Area (CC BY 4.0). Label priority follows the strategic centres in the NSW Greater Sydney Region Plan.
 
 ## Development
 
