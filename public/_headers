@@ -12,3 +12,15 @@
 
 /sydney-suburbs.topo.json
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+/favicon.ico
+  Cache-Control: public, max-age=86400
+
+/favicon.svg
+  Cache-Control: public, max-age=86400
+
+/apple-touch-icon.png
+  Cache-Control: public, max-age=86400
+
+/og-image.png
+  Cache-Control: public, max-age=86400
