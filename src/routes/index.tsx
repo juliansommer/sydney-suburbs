@@ -134,7 +134,6 @@ function MapView({ data, signedIn, rows }: MapViewProps) {
       </div>
       {selected ? (
         <SuburbPanel
-          key={selected.id}
           onClose={() => {
             select(null)
           }}

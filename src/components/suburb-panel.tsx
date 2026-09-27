@@ -1,8 +1,10 @@
+import { Drawer } from "@base-ui/react/drawer"
 import { Link } from "@tanstack/react-router"
 import { XIcon } from "lucide-react"
 import { useEffect, useEffectEvent, useRef, useState } from "react"
 
 import { Button, buttonVariants } from "@/components/ui/button"
+import { useMediaQuery } from "@/hooks/use-media-query"
 import { sydneyToday } from "@/lib/dates"
 import { useUpdateSuburb } from "@/mutations/use-update-suburb"
 import type { SuburbProperties } from "@/types/suburb"
@@ -19,34 +21,105 @@ interface SuburbPanelProps {
   onClose: () => void
 }
 
-// Render with `key={suburb.id}` so the notes start fresh for each suburb.
-export function SuburbPanel({
-  suburb,
-  signedIn,
-  rows,
-  onClose,
-}: SuburbPanelProps) {
+// Tailwind's `md`: a card beside the map from here up, a bottom sheet below.
+const DESKTOP = "(min-width: 768px)"
+// Tall enough for the name, the council and the visited button.
+const PEEK = "9.5rem"
+const SNAP_POINTS = [PEEK, 1]
+
+export function SuburbPanel(props: SuburbPanelProps) {
+  const desktop = useMediaQuery(DESKTOP)
+  return desktop ? <SuburbCard {...props} /> : <SuburbSheet {...props} />
+}
+
+function SuburbCard({ suburb, signedIn, rows, onClose }: SuburbPanelProps) {
   return (
     <section
       aria-label={suburb.name}
-      className="absolute inset-x-0 bottom-0 flex flex-col gap-4 rounded-t-xl border bg-card p-4 text-card-foreground shadow-lg md:inset-x-auto md:top-16 md:right-4 md:bottom-auto md:w-80 md:rounded-xl"
+      className="absolute top-16 right-4 flex w-80 flex-col gap-4 rounded-xl border bg-card p-4 text-card-foreground shadow-lg"
     >
       <header className="flex items-start justify-between gap-2">
         <div>
           <h2 className="text-lg font-semibold">{suburb.name}</h2>
           <p className="text-sm text-muted-foreground">{suburb.lga}</p>
         </div>
-        <Button
-          aria-label="Close"
-          onClick={onClose}
-          size="icon-sm"
-          variant="ghost"
-        >
-          <XIcon />
-        </Button>
+        <CloseButton onClose={onClose} />
       </header>
-      <PanelBody rows={rows} signedIn={signedIn} suburbId={suburb.id} />
+      <PanelBody
+        key={suburb.id}
+        rows={rows}
+        signedIn={signedIn}
+        suburbId={suburb.id}
+      />
     </section>
+  )
+}
+
+// Non-modal, so the map stays usable above it and tapping another suburb
+// swaps the content in place. Swiping down from the peek closes it.
+function SuburbSheet({ suburb, signedIn, rows, onClose }: SuburbPanelProps) {
+  const [snapPoint, setSnapPoint] = useState<Drawer.Root.SnapPoint | null>(PEEK)
+  return (
+    <Drawer.Root
+      disablePointerDismissal
+      modal={false}
+      onOpenChange={(open) => {
+        if (!open) {
+          onClose()
+        }
+      }}
+      onSnapPointChange={setSnapPoint}
+      open
+      snapPoint={snapPoint}
+      snapPoints={SNAP_POINTS}
+    >
+      <Drawer.VirtualKeyboardProvider>
+        <Drawer.Portal>
+          <Drawer.Viewport className="pointer-events-none fixed inset-0 flex items-end">
+            <Drawer.Popup
+              aria-label={suburb.name}
+              className="pointer-events-auto flex max-h-[calc(100dvh-4rem)] w-full [transform:translateY(calc(var(--drawer-snap-point-offset)+var(--drawer-swipe-movement-y)))] touch-none flex-col rounded-t-xl border-t bg-card text-card-foreground shadow-lg transition-transform duration-450 ease-sheet outline-none data-ending-style:[transform:translateY(100%)] data-starting-style:[transform:translateY(100%)] data-swiping:select-none motion-reduce:transition-none"
+              initialFocus={false}
+            >
+              <div className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-muted-foreground/30" />
+              <header className="flex shrink-0 items-start justify-between gap-2 px-4 pt-2 pb-4">
+                <div>
+                  <Drawer.Title className="text-lg font-semibold">
+                    {suburb.name}
+                  </Drawer.Title>
+                  <Drawer.Description className="text-sm text-muted-foreground">
+                    {suburb.lga}
+                  </Drawer.Description>
+                </div>
+                <CloseButton onClose={onClose} />
+              </header>
+              <Drawer.Content className="min-h-0 flex-1 touch-auto overflow-y-auto overscroll-contain px-4 pb-safe-bottom">
+                <div className="pb-4">
+                  <PanelBody
+                    key={suburb.id}
+                    rows={rows}
+                    signedIn={signedIn}
+                    suburbId={suburb.id}
+                  />
+                </div>
+              </Drawer.Content>
+            </Drawer.Popup>
+          </Drawer.Viewport>
+        </Drawer.Portal>
+      </Drawer.VirtualKeyboardProvider>
+    </Drawer.Root>
+  )
+}
+
+interface CloseButtonProps {
+  onClose: () => void
+}
+
+function CloseButton({ onClose }: CloseButtonProps) {
+  return (
+    <Button aria-label="Close" onClick={onClose} size="icon-sm" variant="ghost">
+      <XIcon />
+    </Button>
   )
 }
 
