@@ -1,6 +1,6 @@
 import type { ZoomTransform } from "d3-zoom"
 
-import { labelFits } from "@/lib/labels"
+import { labelVisible, placeLabels } from "@/lib/labels"
 
 import type { ProjectedSuburb } from "./project"
 
@@ -15,13 +15,23 @@ interface SuburbLabelsProps {
 }
 
 // Drawn in screen space, outside the zoomed group, so text is never scaled
-// and stays sharp. Labels off screen are skipped.
+// and stays sharp. Labels off screen are skipped, and overlapping ones give
+// way to higher priority neighbours.
 export function SuburbLabels({
   suburbs,
   transform,
   width,
   height,
 }: SuburbLabelsProps) {
+  const candidates = suburbs.flatMap((s) => {
+    if (!s.label || !labelVisible(s, transform.k, FONT_SIZE)) {
+      return []
+    }
+    const [x, y] = transform.apply(s.label)
+    const offScreen = x < 0 || x > width || y < 0 || y > height
+    return offScreen ? [] : [{ ...s, x, y }]
+  })
+
   return (
     <g
       className="pointer-events-none fill-map-label stroke-map-halo [paint-order:stroke]"
@@ -31,20 +41,11 @@ export function SuburbLabels({
       strokeWidth={HALO_WIDTH}
       textAnchor="middle"
     >
-      {suburbs.map((s) => {
-        if (!s.label || !labelFits(s, transform.k, s.name, FONT_SIZE)) {
-          return null
-        }
-        const [x, y] = transform.apply(s.label)
-        if (x < 0 || x > width || y < 0 || y > height) {
-          return null
-        }
-        return (
-          <text key={s.id} x={x} y={y}>
-            {s.name}
-          </text>
-        )
-      })}
+      {placeLabels(candidates, FONT_SIZE).map((c) => (
+        <text key={c.id} x={c.x} y={c.y}>
+          {c.name}
+        </text>
+      ))}
     </g>
   )
 }
