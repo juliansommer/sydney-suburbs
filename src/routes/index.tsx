@@ -169,11 +169,11 @@ function Account({ email, rows, total }: AccountProps) {
   return (
     <div className="flex items-center gap-2 text-sm">
       {rows && total !== undefined ? (
-        <span className="font-medium">
+        <span className="hidden font-medium md:inline">
           {visited} / {total} suburbs
         </span>
       ) : null}
-      <span className="text-muted-foreground">{email}</span>
+      <span className="hidden text-muted-foreground md:inline">{email}</span>
       <Button
         onClick={async () => {
           await authClient.signOut()
