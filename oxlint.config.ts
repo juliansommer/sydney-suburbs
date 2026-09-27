@@ -101,7 +101,7 @@ export default defineConfig({
         "**/*.{test,spec}.{ts,tsx,js,jsx}",
         "**/__tests__/**/*.{ts,tsx,js,jsx}",
         "src/test/**/*.{ts,tsx}",
-        "worker/test/**/*.ts",
+        "server/test/**/*.ts",
       ],
       plugins: ["vitest"],
       rules: {
@@ -135,9 +135,5 @@ export default defineConfig({
       },
     },
   ],
-  ignorePatterns: [
-    ...(core.ignorePatterns ?? []),
-    "drizzle/**",
-    "worker/worker-configuration.d.ts",
-  ],
+  ignorePatterns: [...(core.ignorePatterns ?? []), "drizzle/**"],
 })

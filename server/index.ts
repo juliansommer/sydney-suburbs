@@ -1,13 +1,15 @@
+import { sql } from "drizzle-orm"
 import { Hono } from "hono"
 import { HTTPException } from "hono/http-exception"
 import { secureHeaders } from "hono/secure-headers"
 
-import { createAuth } from "./auth"
-import { me } from "./me"
+import { getAuth } from "./auth.js"
+import { getDb } from "./db/client.js"
+import { me } from "./me.js"
 
-// Only /api/* reaches this Worker (run_worker_first in wrangler.jsonc); static
-// assets and their headers are handled by public/_headers.
-const app = new Hono<{ Bindings: Env }>()
+// Only /api/* reaches this app (see vercel.json); static assets and their
+// headers are served by Vercel directly.
+const app = new Hono()
   .basePath("/api")
   .use(secureHeaders())
   .use(async (c, next) => {
@@ -18,10 +20,10 @@ const app = new Hono<{ Bindings: Env }>()
   .on(
     ["GET", "POST"],
     "/auth/*",
-    async (c) => await createAuth(c.env).handler(c.req.raw),
+    async (c) => await getAuth().handler(c.req.raw),
   )
   .get("/healthz", async (c) => {
-    await c.env.DB.prepare("SELECT 1").first()
+    await getDb().execute(sql`SELECT 1`)
     return c.json({ ok: true })
   })
   .route("/me", me)
@@ -38,4 +40,4 @@ app.onError((thrown, c) => {
   throw thrown
 })
 
-export default app satisfies ExportedHandler<Env>
+export default app

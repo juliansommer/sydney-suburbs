@@ -1,36 +1,37 @@
-import { sql } from "drizzle-orm"
-import { integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core"
+import {
+  boolean,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core"
 
 const createdAt = () =>
-  integer("created_at", { mode: "timestamp_ms" })
-    .notNull()
-    .default(sql`(unixepoch('subsec') * 1000)`)
+  timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
 
 const updatedAt = () =>
-  integer("updated_at", { mode: "timestamp_ms" })
+  timestamp("updated_at", { withTimezone: true })
     .notNull()
-    .default(sql`(unixepoch('subsec') * 1000)`)
+    .defaultNow()
     .$onUpdate(() => new Date())
 
 // Better Auth core tables. Field names are what its Drizzle adapter expects;
 // see https://www.better-auth.com/docs/concepts/database#core-schema.
 
-export const user = sqliteTable("user", {
+export const user = pgTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
-  emailVerified: integer("email_verified", { mode: "boolean" })
-    .notNull()
-    .default(false),
+  emailVerified: boolean("email_verified").notNull().default(false),
   image: text("image"),
   createdAt: createdAt(),
   updatedAt: updatedAt(),
 })
 
-export const session = sqliteTable("session", {
+export const session = pgTable("session", {
   id: text("id").primaryKey(),
   token: text("token").notNull().unique(),
-  expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
   ipAddress: text("ip_address"),
   userAgent: text("user_agent"),
   userId: text("user_id")
@@ -40,7 +41,7 @@ export const session = sqliteTable("session", {
   updatedAt: updatedAt(),
 })
 
-export const account = sqliteTable("account", {
+export const account = pgTable("account", {
   id: text("id").primaryKey(),
   accountId: text("account_id").notNull(),
   providerId: text("provider_id").notNull(),
@@ -50,11 +51,11 @@ export const account = sqliteTable("account", {
   accessToken: text("access_token"),
   refreshToken: text("refresh_token"),
   idToken: text("id_token"),
-  accessTokenExpiresAt: integer("access_token_expires_at", {
-    mode: "timestamp_ms",
+  accessTokenExpiresAt: timestamp("access_token_expires_at", {
+    withTimezone: true,
   }),
-  refreshTokenExpiresAt: integer("refresh_token_expires_at", {
-    mode: "timestamp_ms",
+  refreshTokenExpiresAt: timestamp("refresh_token_expires_at", {
+    withTimezone: true,
   }),
   scope: text("scope"),
   password: text("password"),
@@ -62,11 +63,11 @@ export const account = sqliteTable("account", {
   updatedAt: updatedAt(),
 })
 
-export const verification = sqliteTable("verification", {
+export const verification = pgTable("verification", {
   id: text("id").primaryKey(),
   identifier: text("identifier").notNull(),
   value: text("value").notNull(),
-  expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
   createdAt: createdAt(),
   updatedAt: updatedAt(),
 })
@@ -76,7 +77,7 @@ export const verification = sqliteTable("verification", {
 // Seeded from the same ABS data as the map's TopoJSON. Geometry never lives
 // here; the table exists so user_suburbs cannot reference a suburb that the map
 // does not draw.
-export const suburbs = sqliteTable("suburbs", {
+export const suburbs = pgTable("suburbs", {
   // ABS SAL_CODE21.
   id: text("id").primaryKey(),
   name: text("name").notNull(),
@@ -85,7 +86,7 @@ export const suburbs = sqliteTable("suburbs", {
 
 // One row per suburb a user has touched. A row that is unvisited with empty
 // notes is deleted rather than kept, so every row means something.
-export const userSuburbs = sqliteTable(
+export const userSuburbs = pgTable(
   "user_suburbs",
   {
     userId: text("user_id")
@@ -94,7 +95,7 @@ export const userSuburbs = sqliteTable(
     suburbId: text("suburb_id")
       .notNull()
       .references(() => suburbs.id),
-    visited: integer("visited", { mode: "boolean" }).notNull().default(false),
+    visited: boolean("visited").notNull().default(false),
     // YYYY-MM-DD, user-entered.
     visitedOn: text("visited_on"),
     notes: text("notes").notNull().default(""),

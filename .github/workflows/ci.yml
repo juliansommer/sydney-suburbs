@@ -1,4 +1,4 @@
-name: Build, Test and Deploy
+name: Build and Test
 
 on:
   push:
@@ -54,46 +54,6 @@ jobs:
           pnpm db:generate
           if [ -n "$(git status --porcelain -- drizzle)" ]; then
             git status --short -- drizzle
-            echo "::error::worker/db/schema.ts changed without a migration. Run pnpm db:generate and commit the result."
+            echo "::error::server/db/schema.ts changed without a migration. Run pnpm db:generate and commit the result."
             exit 1
           fi
-
-  deploy:
-    name: Deploy to Cloudflare
-    needs: build_and_test
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    runs-on: ubuntu-26.04
-    environment: production
-    # Never cancel a deploy halfway: a migration could land without the code
-    # that expects it.
-    concurrency:
-      group: deploy-production
-      cancel-in-progress: false
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v7
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
-        with:
-          cache: "pnpm"
-          node-version-file: package.json
-
-      - name: Install Dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
-
-      - name: Apply D1 Migrations
-        run: pnpm db:migrate:remote
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-
-      - name: Deploy Worker
-        run: pnpm run deploy
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

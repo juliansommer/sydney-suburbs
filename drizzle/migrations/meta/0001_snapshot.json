@@ -1,104 +1,92 @@
 {
-  "id": "68151fa4-f5d0-4b16-98ce-52d2b63afd76",
-  "prevId": "f6bf84bb-00c0-4975-ae04-4d8f9b35a5c4",
-  "version": "6",
-  "dialect": "sqlite",
+  "id": "be8302e4-0bc5-4bee-8d78-565670a93f99",
+  "prevId": "78a3ee7b-ab79-4003-b708-d08da2d33e85",
+  "version": "7",
+  "dialect": "postgresql",
   "tables": {
-    "account": {
+    "public.account": {
       "name": "account",
+      "schema": "",
       "columns": {
         "id": {
           "name": "id",
           "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": true
         },
         "account_id": {
           "name": "account_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": true
         },
         "provider_id": {
           "name": "provider_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": true
         },
         "user_id": {
           "name": "user_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": true
         },
         "access_token": {
           "name": "access_token",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": false
         },
         "refresh_token": {
           "name": "refresh_token",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": false
         },
         "id_token": {
           "name": "id_token",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": false
         },
         "access_token_expires_at": {
           "name": "access_token_expires_at",
-          "type": "integer",
+          "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": false
         },
         "refresh_token_expires_at": {
           "name": "refresh_token_expires_at",
-          "type": "integer",
+          "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": false
         },
         "scope": {
           "name": "scope",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": false
         },
         "password": {
           "name": "password",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",
-          "type": "integer",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": "(unixepoch('subsec') * 1000)"
+          "default": "now()"
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "integer",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": "(unixepoch('subsec') * 1000)"
+          "default": "now()"
         }
       },
       "indexes": {},
@@ -119,79 +107,66 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {}
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "session": {
+    "public.session": {
       "name": "session",
+      "schema": "",
       "columns": {
         "id": {
           "name": "id",
           "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": true
         },
         "token": {
           "name": "token",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": true
         },
         "expires_at": {
           "name": "expires_at",
-          "type": "integer",
+          "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": true
         },
         "ip_address": {
           "name": "ip_address",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": false
         },
         "user_agent": {
           "name": "user_agent",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": false
         },
         "user_id": {
           "name": "user_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": true
         },
         "created_at": {
           "name": "created_at",
-          "type": "integer",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": "(unixepoch('subsec') * 1000)"
+          "default": "now()"
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "integer",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": "(unixepoch('subsec') * 1000)"
+          "default": "now()"
         }
       },
-      "indexes": {
-        "session_token_unique": {
-          "name": "session_token_unique",
-          "columns": [
-            "token"
-          ],
-          "isUnique": true
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
         "session_user_id_user_id_fk": {
           "name": "session_user_id_user_id_fk",
@@ -208,165 +183,165 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
+      "uniqueConstraints": {
+        "session_token_unique": {
+          "name": "session_token_unique",
+          "columns": [
+            "token"
+          ],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "suburbs": {
+    "public.suburbs": {
       "name": "suburbs",
+      "schema": "",
       "columns": {
         "id": {
           "name": "id",
           "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": true
         },
         "name": {
           "name": "name",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": true
         },
         "lga": {
           "name": "lga",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": true
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {}
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "user": {
+    "public.user": {
       "name": "user",
+      "schema": "",
       "columns": {
         "id": {
           "name": "id",
           "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": true
         },
         "name": {
           "name": "name",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": true
         },
         "email": {
           "name": "email",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": true
         },
         "email_verified": {
           "name": "email_verified",
-          "type": "integer",
+          "type": "boolean",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
           "default": false
         },
         "image": {
           "name": "image",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",
-          "type": "integer",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": "(unixepoch('subsec') * 1000)"
+          "default": "now()"
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "integer",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": "(unixepoch('subsec') * 1000)"
+          "default": "now()"
         }
       },
-      "indexes": {
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
         "user_email_unique": {
           "name": "user_email_unique",
           "columns": [
             "email"
           ],
-          "isUnique": true
+          "nullsNotDistinct": false
         }
       },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "user_suburbs": {
+    "public.user_suburbs": {
       "name": "user_suburbs",
+      "schema": "",
       "columns": {
         "user_id": {
           "name": "user_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": true
         },
         "suburb_id": {
           "name": "suburb_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": true
         },
         "visited": {
           "name": "visited",
-          "type": "integer",
+          "type": "boolean",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
           "default": false
         },
         "visited_on": {
           "name": "visited_on",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": false
         },
         "notes": {
           "name": "notes",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
           "default": "''"
         },
         "created_at": {
           "name": "created_at",
-          "type": "integer",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": "(unixepoch('subsec') * 1000)"
+          "default": "now()"
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "integer",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": "(unixepoch('subsec') * 1000)"
+          "default": "now()"
         }
       },
       "indexes": {},
@@ -400,79 +375,79 @@
       },
       "compositePrimaryKeys": {
         "user_suburbs_user_id_suburb_id_pk": {
+          "name": "user_suburbs_user_id_suburb_id_pk",
           "columns": [
             "user_id",
             "suburb_id"
-          ],
-          "name": "user_suburbs_user_id_suburb_id_pk"
+          ]
         }
       },
       "uniqueConstraints": {},
-      "checkConstraints": {}
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "verification": {
+    "public.verification": {
       "name": "verification",
+      "schema": "",
       "columns": {
         "id": {
           "name": "id",
           "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": true
         },
         "identifier": {
           "name": "identifier",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": true
         },
         "value": {
           "name": "value",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": true
         },
         "expires_at": {
           "name": "expires_at",
-          "type": "integer",
+          "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": true
         },
         "created_at": {
           "name": "created_at",
-          "type": "integer",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": "(unixepoch('subsec') * 1000)"
+          "default": "now()"
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "integer",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": "(unixepoch('subsec') * 1000)"
+          "default": "now()"
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {}
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
-  "views": {},
   "enums": {},
+  "schemas": {},
+  "views": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
   "_meta": {
     "columns": {},
     "schemas": {},
     "tables": {}
-  },
-  "internal": {
-    "indexes": {}
   }
 }

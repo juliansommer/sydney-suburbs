@@ -1,9 +1,18 @@
+import { existsSync } from "node:fs"
+
 import { defineConfig } from "drizzle-kit"
 
-// Generate only. Migrations are applied by wrangler (pnpm db:migrate:*), which
-// tracks them in D1 itself, so drizzle-kit never needs database credentials.
+if (existsSync(".env")) {
+  process.loadEnvFile()
+}
+
+// Migrations run over the direct connection: pgbouncer's transaction pooling
+// doesn't suit them. Generating needs no credentials at all.
 export default defineConfig({
-  dialect: "sqlite",
-  schema: "./worker/db/schema.ts",
+  dialect: "postgresql",
+  schema: "./server/db/schema.ts",
   out: "./drizzle/migrations",
+  dbCredentials: {
+    url: process.env.DATABASE_URL_UNPOOLED ?? process.env.DATABASE_URL ?? "",
+  },
 })

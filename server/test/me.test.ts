@@ -1,32 +1,29 @@
 import type { Context } from "hono"
-import {
-  afterAll,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 
-import app from "../index"
-import { createTestEnv } from "./d1"
+import { getDb } from "../db/client.js"
+import { user as userTable } from "../db/schema.js"
+import app from "../index.js"
 
 // Better Auth isn't under test: the caller is whoever the header names.
-vi.mock("../auth", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("../auth")>()),
+vi.mock("../auth.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../auth.js")>()),
   getSessionUser: async (c: Context) => {
     const id = c.req.header("x-test-user")
     return id ? { id } : null
   },
 }))
 
+// Every query runs against one in-memory Postgres for the whole file.
+vi.mock("../db/client.js", async () => {
+  const { createTestDb } = await import("./db.js")
+  const db = await createTestDb()
+  return { getDb: () => db }
+})
+
 // Seeded suburbs (ABS SAL codes).
 const SUBURB = "10002"
 const OTHER_SUBURB = "10003"
-
-let env: Env
-let dispose: () => Promise<void>
 
 interface CallOptions {
   user?: string
@@ -45,43 +42,31 @@ async function call(
   if (body !== undefined) {
     headers.set("content-type", "application/json")
   }
-  return await app.request(
-    `/api/me${path}`,
-    {
-      method,
-      headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
-    },
-    env,
-  )
+  return await app.request(`/api/me${path}`, {
+    method,
+    headers,
+    body: body === undefined ? undefined : JSON.stringify(body),
+  })
 }
 
 async function patch(body: unknown, suburb = SUBURB, user = "alice") {
   return await call("PATCH", `/suburbs/${suburb}`, { body, user })
 }
 
-async function list(user = "alice") {
+async function list(user = "alice"): Promise<unknown> {
   const res = await call("GET", "/suburbs", { user })
   return await res.json()
 }
 
 describe("/api/me/suburbs", () => {
-  beforeAll(async () => {
-    ;({ env, dispose } = await createTestEnv())
-  })
-
   beforeEach(async () => {
     // Deleting users cascades to their user_suburbs rows.
-    await env.DB.batch([
-      env.DB.prepare("DELETE FROM user"),
-      env.DB.prepare(
-        "INSERT INTO user (id, name, email) VALUES ('alice', 'Alice', 'alice@example.com'), ('bob', 'Bob', 'bob@example.com')",
-      ),
+    const db = getDb()
+    await db.delete(userTable)
+    await db.insert(userTable).values([
+      { id: "alice", name: "Alice", email: "alice@example.com" },
+      { id: "bob", name: "Bob", email: "bob@example.com" },
     ])
-  })
-
-  afterAll(async () => {
-    await dispose()
   })
 
   it.each([
@@ -189,15 +174,11 @@ describe("/api/me/suburbs", () => {
   })
 
   it("400s on malformed JSON", async () => {
-    const res = await app.request(
-      `/api/me/suburbs/${SUBURB}`,
-      {
-        method: "PATCH",
-        headers: { "x-test-user": "alice", "content-type": "application/json" },
-        body: "{",
-      },
-      env,
-    )
+    const res = await app.request(`/api/me/suburbs/${SUBURB}`, {
+      method: "PATCH",
+      headers: { "x-test-user": "alice", "content-type": "application/json" },
+      body: "{",
+    })
 
     expect(res.status).toBe(400)
     await expect(res.json()).resolves.toStrictEqual({

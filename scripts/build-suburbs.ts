@@ -162,7 +162,7 @@ const SIMPLIFY_METRES = 150
 const MIN_SUBURBS = 600
 const MAX_SUBURBS = 700
 const MAX_GZIP_BYTES = 400 * 1024
-// D1 caps statement size, so the seed inserts in chunks.
+// The seed inserts in chunks to keep each statement a manageable size.
 const SEED_CHUNK = 200
 
 const root = fileURLToPath(new URL("..", import.meta.url))

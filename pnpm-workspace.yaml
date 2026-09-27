@@ -3,7 +3,6 @@ allowBuilds:
   esbuild: true
   msgpackr-extract: false
   sharp: false
-  workerd: true
 minimumReleaseAge: 4320
 trustPolicy: no-downgrade
 trustPolicyExclude:

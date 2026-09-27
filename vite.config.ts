@@ -1,11 +1,17 @@
 /// <reference types="vitest/config" />
+import { existsSync } from "node:fs"
 import { fileURLToPath, URL } from "node:url"
 
-import { cloudflare } from "@cloudflare/vite-plugin"
+import devServer from "@hono/vite-dev-server"
 import tailwindcss from "@tailwindcss/vite"
 import { tanstackRouter } from "@tanstack/router-plugin/vite"
 import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
+
+// The dev API reads process.env like the deployed function does.
+if (existsSync(".env")) {
+  process.loadEnvFile()
+}
 
 export default defineConfig(({ mode }) => ({
   build: {
@@ -19,7 +25,14 @@ export default defineConfig(({ mode }) => ({
     }),
     react({ compiler: mode !== "test" }),
     tailwindcss(),
-    mode !== "test" && cloudflare(),
+    // Serves the Hono app for /api in dev; everything else falls through to
+    // Vite, as Vercel's rewrites do in production.
+    mode !== "test" &&
+      devServer({
+        entry: "server/index.ts",
+        exclude: [/^(?!\/api(?:\/|$))/],
+        injectClientScript: false,
+      }),
   ],
   server: { port: 3000, strictPort: true },
   preview: { port: 3000, strictPort: true },
@@ -44,9 +57,9 @@ export default defineConfig(({ mode }) => ({
       },
       {
         test: {
-          name: "worker",
+          name: "server",
           environment: "node",
-          include: ["worker/**/*.test.ts"],
+          include: ["server/**/*.test.ts"],
         },
       },
     ],

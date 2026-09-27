@@ -1,11 +1,11 @@
 {
-  "include": ["./**/*.ts"],
+  "include": ["./**/*.ts", "../api/**/*.ts"],
   "compilerOptions": {
     "target": "ES2023",
-    "lib": ["ES2023"],
+    "lib": ["ES2023", "DOM"],
     "types": ["node"],
-    "module": "preserve",
-    "moduleResolution": "bundler",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "verbatimModuleSyntax": true,
     "noEmit": true,
     "skipLibCheck": true,

@@ -6,7 +6,7 @@
     "vite.config.ts",
     "drizzle.config.ts"
   ],
-  "exclude": ["node_modules", "worker"],
+  "exclude": ["node_modules", "server", "api"],
   "compilerOptions": {
     "jsx": "react-jsx",
     "target": "ES2023",

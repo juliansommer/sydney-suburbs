@@ -12,10 +12,10 @@ Track which Sydney suburbs you've visited.
 
 - **Frontend:** Vite, React 19, TypeScript, TanStack Router and Query, Tailwind CSS v4, shadcn/ui (Base UI)
 - **Map:** SVG drawn with d3-geo and d3-zoom from a TopoJSON file
-- **API:** Hono on a Cloudflare Worker
+- **API:** Hono in a Vercel Function (Sydney)
 - **Auth:** Better Auth with Google sign-in
-- **Database:** Cloudflare D1 with Drizzle ORM
-- **Hosting:** Cloudflare Workers, deployed by GitHub Actions
+- **Database:** Neon Postgres (Sydney) with Drizzle ORM
+- **Hosting:** Vercel, deployed on push to `main`; GitHub Actions runs lint, typecheck and tests
 - **Tooling:** pnpm, Vitest, oxlint and oxfmt (Ultracite)
 
 ## Data
@@ -26,8 +26,8 @@ Suburb boundaries come from the ABS Australian Statistical Geography Standard (A
 
 ```sh
 pnpm install
-pnpm db:migrate:local
+pnpm db:migrate
 pnpm dev
 ```
 
-Copy `.env.example` to `.env` and fill in the Google OAuth and Better Auth secrets first.
+Copy `.env.example` to `.env` and fill in the database URLs and the Google OAuth and Better Auth secrets first.

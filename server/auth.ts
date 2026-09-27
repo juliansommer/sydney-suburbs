@@ -1,20 +1,18 @@
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
-import { drizzle } from "drizzle-orm/d1"
 import type { Context } from "hono"
 
-import * as schema from "./db/schema"
+import { getDb } from "./db/client.js"
+import * as schema from "./db/schema.js"
+import { getEnv } from "./env.js"
 
-// Built per request: bindings arrive with the request on Workers, and the
-// instance is cheap to construct.
-export function createAuth(env: Env) {
+function createAuth() {
+  const env = getEnv()
   return betterAuth({
     baseURL: env.BETTER_AUTH_URL,
     basePath: "/api/auth",
     secret: env.BETTER_AUTH_SECRET,
-    database: drizzleAdapter(drizzle(env.DB, { schema }), {
-      provider: "sqlite",
-    }),
+    database: drizzleAdapter(getDb(), { provider: "pg", schema }),
     socialProviders: {
       google: {
         clientId: env.GOOGLE_CLIENT_ID,
@@ -24,7 +22,7 @@ export function createAuth(env: Env) {
     session: {
       expiresIn: 60 * 60 * 24 * 30,
       // A signed copy of the session in a short-lived cookie, so most requests
-      // skip the D1 session lookup.
+      // skip the database session lookup.
       cookieCache: { enabled: true, maxAge: 5 * 60 },
     },
   })
@@ -34,12 +32,17 @@ export type Auth = ReturnType<typeof createAuth>
 
 export type SessionUser = Auth["$Infer"]["Session"]["user"]
 
+let auth: Auth | undefined
+
+export function getAuth(): Auth {
+  auth ??= createAuth()
+  return auth
+}
+
 // The one place requests are matched to a user, kept separate so tests can
 // swap it for a header lookup instead of a real Better Auth session.
-export async function getSessionUser<E extends { Bindings: Env }>(
-  c: Context<E>,
-): Promise<SessionUser | null> {
-  const session = await createAuth(c.env).api.getSession({
+export async function getSessionUser(c: Context): Promise<SessionUser | null> {
+  const session = await getAuth().api.getSession({
     headers: c.req.raw.headers,
   })
   return session?.user ?? null
