@@ -19,8 +19,12 @@ export type LanduseKind = "parkland" | "water"
 // Parks and water inside the mapped suburbs, one feature per kind.
 export type Landuse = Feature<Polygon | MultiPolygon, { kind: LanduseKind }>
 
+// A council's suburbs merged into one shape, for its outline.
+export type Council = Feature<MultiPolygon, { lga: string }>
+
 export interface SuburbMapData {
   suburbs: SuburbFeature[]
+  councils: Council[]
   surrounds: Surrounds
   landuse: Landuse[]
 }

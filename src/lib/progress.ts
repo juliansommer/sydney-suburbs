@@ -1,6 +1,5 @@
 export interface CouncilProgress {
   lga: string
-  ids: string[]
   visited: number
   total: number
 }
@@ -14,10 +13,9 @@ export function councilProgress(
   for (const { id, lga } of suburbs) {
     let council = councils.get(lga)
     if (!council) {
-      council = { lga, ids: [], visited: 0, total: 0 }
+      council = { lga, visited: 0, total: 0 }
       councils.set(lga, council)
     }
-    council.ids.push(id)
     council.total += 1
     if (visitedIds.has(id)) {
       council.visited += 1

@@ -12,21 +12,6 @@ export const MIN_FOCUS_ZOOM = 2
 export const MAX_FOCUS_ZOOM = 12
 const PADDING = 48
 
-// The box around all of `bounds`.
-export function mergeBounds(bounds: readonly Bounds[]): Bounds {
-  let [x0, y0, x1, y1] = [Infinity, Infinity, -Infinity, -Infinity]
-  for (const [[bx0, by0], [bx1, by1]] of bounds) {
-    x0 = Math.min(x0, bx0)
-    y0 = Math.min(y0, by0)
-    x1 = Math.max(x1, bx1)
-    y1 = Math.max(y1, by1)
-  }
-  return [
-    [x0, y0],
-    [x1, y1],
-  ]
-}
-
 // The transform that centres `bounds` in the viewport, fitted with padding and
 // clamped to between `minZoom` and the focus maximum.
 export function fitBounds(

@@ -18,11 +18,12 @@ import {
 } from "react"
 
 import { useElementSize } from "@/hooks/use-element-size"
-import { fitBounds, mergeBounds } from "@/lib/zoom"
+import { type Bounds, fitBounds } from "@/lib/zoom"
 import type { LanduseKind, SuburbMapData } from "@/types/suburb"
 
 import {
   projectMap,
+  type ProjectedCouncil,
   type ProjectedLanduse,
   type ProjectedSuburb,
 } from "./project"
@@ -48,8 +49,10 @@ interface SuburbMapProps {
 }
 
 export interface SuburbMapHandle {
-  // Animates to fit the suburbs on screen. Does nothing before the first draw.
-  zoomTo: (ids: readonly string[]) => void
+  // Both animate to fit the area on screen, and do nothing before the first
+  // draw. A council stays outlined until a suburb is picked.
+  zoomTo: (id: string) => void
+  zoomToCouncil: (lga: string) => void
 }
 
 interface Zoomer {
@@ -103,22 +106,21 @@ function ZoomableMap({
   )
   const zoomer = useRef<Zoomer | null>(null)
 
-  function zoomTo(ids: readonly string[], animate: boolean) {
-    const wanted = new Set(ids)
-    const bounds = projected.suburbs
-      .filter((s) => wanted.has(s.id))
-      .map((s) => s.bounds)
-    if (bounds.length === 0 || !zoomer.current) {
+  const [outlinedLga, setOutlinedLga] = useState<string | null>(null)
+
+  function pick(id: string | null) {
+    if (id) {
+      setOutlinedLga(null)
+    }
+    onSelect(id)
+  }
+
+  function zoomToBounds(bounds: Bounds, animate: boolean, minZoom?: number) {
+    if (!zoomer.current) {
       return
     }
     const { selection, behaviour } = zoomer.current
-    // A whole council can be too big for the 2x minimum meant for suburbs.
-    const { x, y, k } = fitBounds(
-      mergeBounds(bounds),
-      width,
-      height,
-      bounds.length > 1 ? 1 : undefined,
-    )
+    const { x, y, k } = fitBounds(bounds, width, height, minZoom)
     const extent = viewExtent(width, height)
     // Unlike gestures, a programmatic transform skips the pan limits.
     const target = behaviour.constrain()(
@@ -141,15 +143,32 @@ function ZoomableMap({
     }
   }
 
+  function zoomTo(id: string, animate: boolean) {
+    const suburb = projected.suburbs.find((s) => s.id === id)
+    if (suburb) {
+      zoomToBounds(suburb.bounds, animate)
+    }
+  }
+
   useImperativeHandle(ref, () => ({
-    zoomTo: (ids) => {
-      zoomTo(ids, true)
+    zoomTo: (id) => {
+      setOutlinedLga(null)
+      zoomTo(id, true)
+    },
+    zoomToCouncil: (lga) => {
+      const council = projected.councils.find((c) => c.lga === lga)
+      if (!council) {
+        return
+      }
+      // A whole council can be too big for the 2x minimum meant for suburbs.
+      zoomToBounds(council.bounds, true, 1)
+      setOutlinedLga(lga)
     },
   }))
 
   const onDrawn = useEffectEvent(() => {
     if (selectedId) {
-      zoomTo([selectedId], false)
+      zoomTo(selectedId, false)
     }
   })
   useEffect(() => {
@@ -203,7 +222,7 @@ function ZoomableMap({
       onClick={(event) => {
         if (event.target instanceof Element) {
           const suburb = event.target.closest<SVGElement>("[data-suburb-id]")
-          onSelect(suburb?.dataset.suburbId ?? null)
+          pick(suburb?.dataset.suburbId ?? null)
         }
       }}
       ref={svgRef}
@@ -216,10 +235,11 @@ function ZoomableMap({
         <LandusePaths landuse={projected.landuse} />
         <VisitedPaths suburbs={projected.suburbs} visitedIds={visitedIds} />
         <SuburbPaths
-          onSelect={onSelect}
+          onSelect={pick}
           selectedId={selectedId}
           suburbs={projected.suburbs}
         />
+        <CouncilOutline councils={projected.councils} lga={outlinedLga} />
         <SelectedOutline selectedId={selectedId} suburbs={projected.suburbs} />
       </g>
       <SuburbLabels
@@ -309,6 +329,28 @@ function SuburbPaths({ suburbs, selectedId, onSelect }: SuburbPathsProps) {
         />
       ))}
     </g>
+  )
+}
+
+interface CouncilOutlineProps {
+  councils: ProjectedCouncil[]
+  lga: string | null
+}
+
+function CouncilOutline({ councils, lga }: CouncilOutlineProps) {
+  const council = councils.find((c) => c.lga === lga)
+  if (!council) {
+    return null
+  }
+  return (
+    <path
+      className="pointer-events-none stroke-foreground"
+      d={council.d}
+      fill="none"
+      strokeLinejoin="round"
+      strokeWidth={3}
+      vectorEffect="non-scaling-stroke"
+    />
   )
 }
 

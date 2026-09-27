@@ -82,8 +82,8 @@ function MapPage() {
           <Account signedIn={!!session}>
             {rows && data ? (
               <CouncilProgressButton
-                onZoom={(ids) => {
-                  map.current?.zoomTo(ids)
+                onZoom={(lga) => {
+                  map.current?.zoomToCouncil(lga)
                 }}
                 suburbs={suburbs}
                 visitedIds={visitedIds}
@@ -162,7 +162,7 @@ function MapView({
         <SuburbSearch
           onPick={(id) => {
             select(id)
-            map.current?.zoomTo([id])
+            map.current?.zoomTo(id)
           }}
           suburbs={suburbs}
           visitedIds={visitedIds}

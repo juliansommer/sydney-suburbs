@@ -1,9 +1,10 @@
 import { queryOptions } from "@tanstack/react-query"
-import { feature } from "topojson-client"
-import type { Topology } from "topojson-specification"
+import { feature, merge } from "topojson-client"
+import type { MultiPolygon, Polygon, Topology } from "topojson-specification"
 import { z } from "zod/mini"
 
 import type {
+  Council,
   Landuse,
   SuburbFeature,
   SuburbMapData,
@@ -36,6 +37,29 @@ function layer(topology: Topology, name: string) {
     throw new Error(`TopoJSON has no ${name} layer`)
   }
   return feature(topology, object).features
+}
+
+// Merges each council's suburbs, so shared borders drop out of its outline.
+function councilOutlines(topology: Topology): Council[] {
+  const object = topology.objects.suburbs
+  if (object?.type !== "GeometryCollection") {
+    return []
+  }
+  const byLga = new Map<string, (Polygon | MultiPolygon)[]>()
+  for (const geometry of object.geometries) {
+    if (geometry.type === "Polygon" || geometry.type === "MultiPolygon") {
+      const { lga } = suburbProperties.parse(geometry.properties)
+      byLga.set(lga, [
+        ...(byLga.get(lga) ?? []),
+        { ...geometry, properties: {} },
+      ])
+    }
+  }
+  return [...byLga].map(([lga, geometries]) => ({
+    type: "Feature",
+    geometry: merge(topology, geometries),
+    properties: { lga },
+  }))
 }
 
 export function toSuburbMap(topology: Topology): SuburbMapData {
@@ -73,7 +97,7 @@ export function toSuburbMap(topology: Topology): SuburbMapData {
       })
     }
   }
-  return { suburbs, surrounds, landuse }
+  return { suburbs, councils: councilOutlines(topology), surrounds, landuse }
 }
 
 // The file only changes on deploy, so it never goes stale in a session.

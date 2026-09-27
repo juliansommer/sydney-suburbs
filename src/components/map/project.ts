@@ -13,6 +13,12 @@ export interface ProjectedSuburb {
   label: [number, number] | null
 }
 
+export interface ProjectedCouncil {
+  lga: string
+  d: string
+  bounds: Bounds
+}
+
 export interface ProjectedLanduse {
   kind: LanduseKind
   d: string
@@ -20,6 +26,7 @@ export interface ProjectedLanduse {
 
 export interface ProjectedMap {
   suburbs: ProjectedSuburb[]
+  councils: ProjectedCouncil[]
   surrounds: string
   landuse: ProjectedLanduse[]
 }
@@ -27,7 +34,7 @@ export interface ProjectedMap {
 // Fits the suburbs to the viewport and projects everything to SVG path
 // strings, bounding box sizes and label positions, all in unzoomed pixels.
 export function projectMap(
-  { suburbs, surrounds, landuse }: SuburbMapData,
+  { suburbs, councils, surrounds, landuse }: SuburbMapData,
   width: number,
   height: number,
 ): ProjectedMap {
@@ -50,6 +57,11 @@ export function projectMap(
         label: projection([s.properties.lx, s.properties.ly]),
       }
     }),
+    councils: councils.map((c) => ({
+      lga: c.properties.lga,
+      d: path(c) ?? "",
+      bounds: path.bounds(c),
+    })),
     surrounds: path(surrounds) ?? "",
     landuse: landuse.map((l) => ({
       kind: l.properties.kind,

@@ -12,7 +12,7 @@ import { councilProgress } from "@/lib/progress"
 interface CouncilProgressProps {
   suburbs: readonly { id: string; lga: string }[]
   visitedIds: ReadonlySet<string>
-  onZoom: (ids: readonly string[]) => void
+  onZoom: (lga: string) => void
 }
 
 // The "N / 648 suburbs" counter, opening a per-council breakdown. Picking a
@@ -50,7 +50,7 @@ export function CouncilProgressButton({
                 className="flex w-full justify-between gap-2 text-left outline-none after:absolute after:inset-0"
                 onClick={() => {
                   setOpen(false)
-                  onZoom(c.ids)
+                  onZoom(c.lga)
                 }}
                 type="button"
               >
