@@ -66,15 +66,14 @@ describe("map page", () => {
     ).resolves.toHaveAttribute("href", "/login")
   })
 
-  it("shows the signed-in user and signs out", async () => {
+  it("signs out", async () => {
     signIn()
 
     await renderRoute("/")
 
-    await expect(
-      screen.findByText("someone@example.com"),
-    ).resolves.toBeInTheDocument()
-    await userEvent.click(screen.getByRole("button", { name: "Sign out" }))
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Sign out" }),
+    )
 
     expect(authClient.signOut).toHaveBeenCalledWith()
   })
@@ -86,7 +85,7 @@ describe("map page", () => {
     await renderRoute("/")
 
     await expect(
-      screen.findByText("2 / 3 suburbs"),
+      screen.findByRole("button", { name: "2 of 3 suburbs visited" }),
     ).resolves.toBeInTheDocument()
   })
 

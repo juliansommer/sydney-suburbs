@@ -18,7 +18,7 @@ import {
 } from "react"
 
 import { useElementSize } from "@/hooks/use-element-size"
-import { fitBounds } from "@/lib/zoom"
+import { fitBounds, mergeBounds } from "@/lib/zoom"
 import type { LanduseKind, SuburbMapData } from "@/types/suburb"
 
 import {
@@ -48,8 +48,8 @@ interface SuburbMapProps {
 }
 
 export interface SuburbMapHandle {
-  // Animates to fit the suburb on screen. Does nothing before the first draw.
-  zoomTo: (id: string) => void
+  // Animates to fit the suburbs on screen. Does nothing before the first draw.
+  zoomTo: (ids: readonly string[]) => void
 }
 
 interface Zoomer {
@@ -103,13 +103,22 @@ function ZoomableMap({
   )
   const zoomer = useRef<Zoomer | null>(null)
 
-  function zoomTo(id: string, animate: boolean) {
-    const suburb = projected.suburbs.find((s) => s.id === id)
-    if (!suburb || !zoomer.current) {
+  function zoomTo(ids: readonly string[], animate: boolean) {
+    const wanted = new Set(ids)
+    const bounds = projected.suburbs
+      .filter((s) => wanted.has(s.id))
+      .map((s) => s.bounds)
+    if (bounds.length === 0 || !zoomer.current) {
       return
     }
     const { selection, behaviour } = zoomer.current
-    const { x, y, k } = fitBounds(suburb.bounds, width, height)
+    // A whole council can be too big for the 2x minimum meant for suburbs.
+    const { x, y, k } = fitBounds(
+      mergeBounds(bounds),
+      width,
+      height,
+      bounds.length > 1 ? 1 : undefined,
+    )
     const extent = viewExtent(width, height)
     // Unlike gestures, a programmatic transform skips the pan limits.
     const target = behaviour.constrain()(
@@ -133,14 +142,14 @@ function ZoomableMap({
   }
 
   useImperativeHandle(ref, () => ({
-    zoomTo: (id) => {
-      zoomTo(id, true)
+    zoomTo: (ids) => {
+      zoomTo(ids, true)
     },
   }))
 
   const onDrawn = useEffectEvent(() => {
     if (selectedId) {
-      zoomTo(selectedId, false)
+      zoomTo([selectedId], false)
     }
   })
   useEffect(() => {

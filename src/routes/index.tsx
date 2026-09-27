@@ -1,8 +1,16 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
-import { useEffect, useEffectEvent, useMemo, useRef } from "react"
+import {
+  type ReactNode,
+  type RefObject,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useRef,
+} from "react"
 import { z } from "zod/mini"
 
+import { CouncilProgressButton } from "@/components/council-progress"
 import { SuburbMap, type SuburbMapHandle } from "@/components/map/suburb-map"
 import { SuburbSearch } from "@/components/map/suburb-search"
 import { SuburbPanel } from "@/components/suburb-panel"
@@ -10,7 +18,7 @@ import { Button, buttonVariants } from "@/components/ui/button"
 import { authClient } from "@/lib/auth-client"
 import { mySuburbsKey, mySuburbsQuery } from "@/queries/my-suburbs"
 import { suburbsTopoQuery } from "@/queries/suburbs-topo"
-import type { SuburbMapData } from "@/types/suburb"
+import type { SuburbMapData, SuburbProperties } from "@/types/suburb"
 import type { UserSuburb } from "@/types/user-suburb"
 
 // Suburb ids are ABS SAL codes, all 5-digit numbers, so the URL carries a
@@ -34,44 +42,11 @@ function MapPage() {
   const { data, isError } = useQuery(suburbsTopoQuery)
   const { data: session, isPending } = authClient.useSession()
   const { data: rows } = useQuery({ ...mySuburbsQuery, enabled: !!session })
-
-  return (
-    <main className="relative h-dvh overflow-hidden bg-map-water">
-      {isError ? (
-        <p className="grid h-full place-items-center text-muted-foreground">
-          The map couldn&rsquo;t load. Try refreshing.
-        </p>
-      ) : null}
-      {data ? <MapView data={data} rows={rows} signedIn={!!session} /> : null}
-      <h1 className="pointer-events-none absolute top-4 left-4 text-lg font-semibold">
-        Sydney Suburbs
-      </h1>
-      <header className="absolute top-4 right-4">
-        {isPending ? null : (
-          <Account
-            email={session?.user.email}
-            rows={rows}
-            total={data?.suburbs.length}
-          />
-        )}
-      </header>
-    </main>
-  )
-}
-
-interface MapViewProps {
-  data: SuburbMapData
-  signedIn: boolean
-  rows: Rows | undefined
-}
-
-function MapView({ data, signedIn, rows }: MapViewProps) {
-  const { suburb: selectedId } = Route.useSearch()
-  const navigate = Route.useNavigate()
   const map = useRef<SuburbMapHandle>(null)
-
-  const suburbs = useMemo(() => data.suburbs.map((s) => s.properties), [data])
-  const byId = useMemo(() => new Map(suburbs.map((s) => [s.id, s])), [suburbs])
+  const suburbs = useMemo(
+    () => data?.suburbs.map((s) => s.properties) ?? [],
+    [data],
+  )
   const visitedIds = useMemo(
     () =>
       new Set(
@@ -81,6 +56,67 @@ function MapView({ data, signedIn, rows }: MapViewProps) {
       ),
     [rows],
   )
+
+  return (
+    <main className="relative h-dvh overflow-hidden bg-map-water">
+      {isError ? (
+        <p className="grid h-full place-items-center text-muted-foreground">
+          The map couldn&rsquo;t load. Try refreshing.
+        </p>
+      ) : null}
+      {data ? (
+        <MapView
+          data={data}
+          map={map}
+          rows={rows}
+          signedIn={!!session}
+          suburbs={suburbs}
+          visitedIds={visitedIds}
+        />
+      ) : null}
+      <h1 className="pointer-events-none absolute top-4 left-4 text-lg font-semibold">
+        Sydney Suburbs
+      </h1>
+      <header className="absolute top-4 right-4">
+        {isPending ? null : (
+          <Account signedIn={!!session}>
+            {rows && data ? (
+              <CouncilProgressButton
+                onZoom={(ids) => {
+                  map.current?.zoomTo(ids)
+                }}
+                suburbs={suburbs}
+                visitedIds={visitedIds}
+              />
+            ) : null}
+          </Account>
+        )}
+      </header>
+    </main>
+  )
+}
+
+interface MapViewProps {
+  data: SuburbMapData
+  map: RefObject<SuburbMapHandle | null>
+  suburbs: SuburbProperties[]
+  visitedIds: ReadonlySet<string>
+  signedIn: boolean
+  rows: Rows | undefined
+}
+
+function MapView({
+  data,
+  map,
+  suburbs,
+  visitedIds,
+  signedIn,
+  rows,
+}: MapViewProps) {
+  const { suburb: selectedId } = Route.useSearch()
+  const navigate = Route.useNavigate()
+
+  const byId = useMemo(() => new Map(suburbs.map((s) => [s.id, s])), [suburbs])
   // An id the map doesn't draw is no selection at all.
   const selected =
     selectedId === undefined ? undefined : byId.get(String(selectedId))
@@ -126,7 +162,7 @@ function MapView({ data, signedIn, rows }: MapViewProps) {
         <SuburbSearch
           onPick={(id) => {
             select(id)
-            map.current?.zoomTo(id)
+            map.current?.zoomTo([id])
           }}
           suburbs={suburbs}
           visitedIds={visitedIds}
@@ -147,15 +183,15 @@ function MapView({ data, signedIn, rows }: MapViewProps) {
 }
 
 interface AccountProps {
-  email: string | undefined
-  rows: Rows | undefined
-  total: number | undefined
+  signedIn: boolean
+  // Shown beside Sign out, e.g. the progress counter.
+  children?: ReactNode
 }
 
-function Account({ email, rows, total }: AccountProps) {
+function Account({ signedIn, children }: AccountProps) {
   const queryClient = useQueryClient()
 
-  if (email === undefined) {
+  if (!signedIn) {
     return (
       <Link className={buttonVariants()} to="/login">
         Sign in
@@ -163,16 +199,9 @@ function Account({ email, rows, total }: AccountProps) {
     )
   }
 
-  const visited = [...(rows?.values() ?? [])].filter((r) => r.visited).length
-
   return (
     <div className="flex items-center gap-2 text-sm">
-      {rows && total !== undefined ? (
-        <span className="hidden font-medium md:inline">
-          {visited} / {total} suburbs
-        </span>
-      ) : null}
-      <span className="hidden text-muted-foreground md:inline">{email}</span>
+      {children}
       <Button
         onClick={async () => {
           await authClient.signOut()
