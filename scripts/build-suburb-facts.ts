@@ -8,8 +8,11 @@
 // Source: Wikipedia, CC BY-SA 4.0, for summaries.
 // Source: Wikimedia Commons, for photos, each credited in the app.
 //
-// Pass --refresh to ignore cached Wikimedia responses.
+// Photos are resized and uploaded to Vercel Blob, which needs
+// BLOB_READ_WRITE_TOKEN. Pass --refresh to ignore cached Wikimedia
+// responses, and --prune to delete photos no longer used.
 
+import { existsSync } from "node:fs"
 import { readFile, writeFile } from "node:fs/promises"
 
 import { z } from "zod/mini"
@@ -22,6 +25,7 @@ import {
   type PhotoSource,
   readPhotoSources,
 } from "./facts/commons.ts"
+import { uploadPhotos } from "./facts/photos.ts"
 import {
   applyOverride,
   findByTitle,
@@ -153,7 +157,15 @@ function listMissing(label: string, suburbs: MapSuburb[]) {
   }
 }
 
+if (existsSync(`${root}.env`)) {
+  process.loadEnvFile(`${root}.env`)
+}
+if (!process.env.BLOB_READ_WRITE_TOKEN) {
+  throw new Error("BLOB_READ_WRITE_TOKEN is not set; see .env.example")
+}
+
 const options: CacheOptions = { refresh: process.argv.includes("--refresh") }
+const prune = process.argv.includes("--prune")
 const suburbs = await readMapSuburbs()
 const population = await readPopulation()
 const postcodes = await readPostcodes(suburbs.map((s) => s.id))
@@ -161,7 +173,11 @@ const matches = await matchSuburbs(suburbs, options)
 
 const titles = [...matches.values()].flatMap((m) => (m.title ? [m.title] : []))
 const summaries = await readSummaries(titles, options)
-const photos = await choosePhotos(matches, options)
+const choices = await choosePhotos(matches, options)
+const upload = await uploadPhotos(
+  new Map([...choices].map(([id, c]) => [id, c.source])),
+  { ...options, prune },
+)
 
 const facts: SuburbFactsFile = {}
 for (const s of suburbs) {
@@ -172,16 +188,16 @@ for (const s of suburbs) {
     postcode: postcodes.get(s.id) ?? null,
     summary: summary?.text ?? null,
     wikipediaUrl: summary?.url ?? null,
-    photo: null,
+    photo: upload.photos.get(s.id) ?? null,
   }
 }
-await writeFile(
-  factsPath,
-  `${JSON.stringify(facts, null, 2)}
-`,
-)
+await writeFile(factsPath, `${JSON.stringify(facts, null, 2)}\n`)
 
 console.log(`Suburbs: ${suburbs.length}`)
+console.log(`Photos uploaded: ${upload.uploaded}`)
+if (prune) {
+  console.log(`Photos pruned: ${upload.pruned}`)
+}
 listMissing(
   "population",
   suburbs.filter((s) => facts[s.id]?.population === null),
@@ -200,13 +216,14 @@ listMissing(
 )
 listMissing(
   "photo",
-  suburbs.filter((s) => !photos.has(s.id)),
+  suburbs.filter((s) => facts[s.id]?.photo === null),
 )
 
 // Page images are sometimes location maps, so these are worth a look.
-const fromPageImages = suburbs.filter((s) => photos.get(s.id)?.fromPageImage)
-console.log(`
-Photos from page images (${fromPageImages.length}):`)
+const fromPageImages = suburbs.filter(
+  (s) => choices.get(s.id)?.fromPageImage && upload.photos.has(s.id),
+)
+console.log(`\nPhotos from page images (${fromPageImages.length}):`)
 for (const s of fromPageImages) {
-  console.log(`  ${s.id} ${s.name}: ${photos.get(s.id)?.source.sourceUrl}`)
+  console.log(`  ${s.id} ${s.name}: ${choices.get(s.id)?.source.sourceUrl}`)
 }
