@@ -1,20 +1,34 @@
 import { vi } from "vitest"
 
 import { applyPatch } from "@/mutations/use-update-suburb"
+import type { SuburbFactsFile } from "@/types/suburb-facts"
 import type { UserSuburb, UserSuburbPatch } from "@/types/user-suburb"
 
-import { suburbsTopology } from "./fixtures"
+import { suburbFacts, suburbsTopology } from "./fixtures"
 
 interface MockFetchOptions {
   // The signed-in user's rows. PATCHes update them, as the Worker would.
   suburbs?: UserSuburb[]
   // Overrides the PATCH response, e.g. to hold it open or fail it.
   onPatch?: (id: string, patch: UserSuburbPatch) => Promise<Response> | Response
+  // The suburb facts file, or a response to send instead, e.g. to fail it or
+  // hold it open.
+  facts?: SuburbFactsFile | Response | Promise<Response>
 }
 
-// Stubs `fetch` with the map file and a stateful /api/me/suburbs. Returns the
-// PATCHes it has seen as [path, body] pairs.
-export function mockFetch({ suburbs = [], onPatch }: MockFetchOptions = {}) {
+// Vite serves the facts file under a hashed name in production and its
+// source path in tests, so match on the filename.
+export function isFactsRequest(input: string) {
+  return input.endsWith("suburb-facts.json")
+}
+
+// Stubs `fetch` with the map file, the facts file and a stateful
+// /api/me/suburbs. Returns the PATCHes it has seen as [path, body] pairs.
+export function mockFetch({
+  suburbs = [],
+  onPatch,
+  facts = suburbFacts,
+}: MockFetchOptions = {}) {
   let rows = suburbs
   const patches: [string, UserSuburbPatch][] = []
 
@@ -24,6 +38,11 @@ export function mockFetch({ suburbs = [], onPatch }: MockFetchOptions = {}) {
 
     if (pathname === "/sydney-suburbs.topo.json") {
       return Response.json(suburbsTopology)
+    }
+    if (isFactsRequest(pathname)) {
+      return facts instanceof Response || facts instanceof Promise
+        ? await facts
+        : Response.json(facts)
     }
     if (pathname === "/api/me/suburbs" && request.method === "GET") {
       return Response.json(rows)

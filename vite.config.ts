@@ -62,6 +62,13 @@ export default defineConfig(({ mode }) => ({
           include: ["server/**/*.test.ts"],
         },
       },
+      {
+        test: {
+          name: "scripts",
+          environment: "node",
+          include: ["scripts/**/*.test.ts"],
+        },
+      },
     ],
   },
 }))

@@ -1,11 +1,17 @@
 import { setTimeout as sleep } from "node:timers/promises"
 
-import { fireEvent, screen, waitFor, within } from "@testing-library/react"
+import {
+  cleanup,
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { authClient } from "@/lib/auth-client"
-import { mockFetch } from "@/test/mock-fetch"
+import { isFactsRequest, mockFetch } from "@/test/mock-fetch"
 import { renderRoute } from "@/test/utils"
 import type { UserSuburb } from "@/types/user-suburb"
 
@@ -192,5 +198,62 @@ describe("map page", () => {
     await userEvent.click(await screen.findByRole("button", { name: "Close" }))
 
     expect(screen.queryByRole("region")).not.toBeInTheDocument()
+  })
+})
+
+function factsRequests() {
+  return vi
+    .mocked(fetch)
+    .mock.calls.filter(([input]) =>
+      isFactsRequest(input instanceof Request ? input.url : input.toString()),
+    )
+}
+
+describe("map page suburb facts", () => {
+  // Idle callbacks are held here, so each test decides when the browser is idle.
+  let idleCallbacks: (() => void)[] = []
+
+  beforeEach(() => {
+    mockFetch()
+    useSession.mockReturnValue({
+      data: null,
+      isPending: false,
+    } as ReturnType<typeof authClient.useSession>)
+    idleCallbacks = []
+    vi.stubGlobal("requestIdleCallback", (callback: () => void) => {
+      idleCallbacks.push(callback)
+      return idleCallbacks.length
+    })
+    vi.stubGlobal("cancelIdleCallback", () => {})
+  })
+
+  // Unmount first, so the page's cleanup still finds the stubs.
+  afterEach(() => {
+    cleanup()
+    vi.unstubAllGlobals()
+  })
+
+  it("waits for the map, then fetches facts when the browser is idle", async () => {
+    await renderRoute("/")
+
+    await screen.findByRole("button", { name: "Alpha" })
+    expect(factsRequests()).toHaveLength(0)
+
+    for (const callback of idleCallbacks) {
+      callback()
+    }
+
+    await waitFor(() => {
+      expect(factsRequests()).toHaveLength(1)
+    })
+  })
+
+  it("fetches facts straight away for a suburb link", async () => {
+    await renderRoute("/?suburb=1")
+
+    await expect(
+      screen.findByRole("img", { name: "Alpha" }),
+    ).resolves.toBeInTheDocument()
+    expect(factsRequests()).toHaveLength(1)
   })
 })
