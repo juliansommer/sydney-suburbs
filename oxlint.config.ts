@@ -135,5 +135,9 @@ export default defineConfig({
       },
     },
   ],
-  ignorePatterns: [...(core.ignorePatterns ?? []), "drizzle/**"],
+  ignorePatterns: [
+    ...(core.ignorePatterns ?? []),
+    "drizzle/**",
+    "src/lib/cn-tables.ts",
+  ],
 })

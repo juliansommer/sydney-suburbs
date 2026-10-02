@@ -1,6 +1,5 @@
 import { Collapsible } from "@base-ui/react/collapsible"
 import { useQuery } from "@tanstack/react-query"
-import { cn } from "cn"
 import { ChevronRightIcon, InfoIcon } from "lucide-react"
 
 import {
@@ -8,6 +7,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
 import { suburbFactsQuery } from "@/queries/suburb-facts"
 import type {
   SuburbFacts,

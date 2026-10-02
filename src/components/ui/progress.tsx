@@ -1,6 +1,7 @@
 import { Progress as ProgressPrimitive } from "@base-ui/react/progress"
 import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "cn"
+
+import { cn } from "@/lib/utils"
 
 function Progress({
   className,

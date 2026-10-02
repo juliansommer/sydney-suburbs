@@ -6,6 +6,7 @@ import devServer from "@hono/vite-dev-server"
 import tailwindcss from "@tailwindcss/vite"
 import { tanstackRouter } from "@tanstack/router-plugin/vite"
 import react from "@vitejs/plugin-react"
+import { cn as cnTables } from "cn/vite"
 import { defineConfig } from "vite"
 
 // The dev API reads process.env like the deployed function does.
@@ -25,6 +26,8 @@ export default defineConfig(({ mode }) => ({
     }),
     react({ compiler: mode !== "test" }),
     tailwindcss(),
+    // Compiles merge tables for only the classes we use, into src/lib.
+    cnTables({ content: ["src/**/*.{ts,tsx}"], out: "src/lib/cn-tables.ts" }),
     // Serves the Hono app for /api in dev; everything else falls through to
     // Vite, as Vercel's rewrites do in production.
     mode !== "test" &&
