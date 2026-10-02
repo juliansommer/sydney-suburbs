@@ -6,6 +6,7 @@ import { useEffect, useEffectEvent, useRef, useState } from "react"
 import {
   FactsRow,
   SuburbMedia,
+  Summary,
   useSuburbFacts,
 } from "@/components/suburb-facts"
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -73,6 +74,7 @@ function SuburbCard({
             </p>
             <FactsRow state={facts} />
           </header>
+          <Summary state={facts} />
           <PanelBody
             key={suburb.id}
             rows={rows}
@@ -142,7 +144,7 @@ interface SheetPopupProps extends SuburbPanelProps {
   suburb: Suburb
 }
 
-// The peek shows the name and visit controls; the photo and facts
+// The peek shows the name and visit controls; the photo, facts and summary
 // sit below and come into view as the sheet expands.
 function SheetPopup({
   suburb,
@@ -186,6 +188,7 @@ function SheetPopup({
                 state={facts}
               />
               <FactsRow state={facts} />
+              <Summary state={facts} />
             </div>
           </Drawer.Content>
         </Drawer.Popup>

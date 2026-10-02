@@ -159,3 +159,15 @@ export function FactsRow({ state }: FactsRowProps) {
   }
   return <p className="text-sm text-muted-foreground">{parts.join(" · ")}</p>
 }
+
+interface SummaryProps {
+  state: FactsState
+}
+
+export function Summary({ state }: SummaryProps) {
+  const facts = state.status === "success" ? state.facts : undefined
+  if (!facts?.summary) {
+    return null
+  }
+  return <p className="text-sm">{facts.summary}</p>
+}

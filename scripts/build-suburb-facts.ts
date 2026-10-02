@@ -6,6 +6,7 @@
 // Source: ABS ASGS Edition 3 Postal Areas, licensed CC BY 4.0, for postcodes.
 // Source: Wikidata, CC0, and Wikipedia, to match suburbs to photos.
 // Source: Wikimedia Commons, for photos, each credited in the app.
+// Summaries are written for the app and kept in scripts/suburb-summaries.json.
 //
 // Photos are resized and uploaded to Vercel Blob, which needs
 // BLOB_READ_WRITE_TOKEN. Pass --refresh to ignore cached Wikimedia
@@ -36,6 +37,7 @@ import {
 
 const topoPath = `${root}public/sydney-suburbs.topo.json`
 const factsPath = `${root}src/data/suburb-facts.json`
+const summariesPath = `${root}scripts/suburb-summaries.json`
 
 const topoSuburbs = z.object({
   objects: z.object({
@@ -91,6 +93,12 @@ async function matchSuburbs(
     })
   }
   return matches
+}
+
+async function readSummaries(): Promise<Record<string, string>> {
+  return z
+    .record(z.string(), z.string())
+    .parse(JSON.parse(await readFile(summariesPath, "utf-8")))
 }
 
 interface PhotoChoice {
@@ -158,6 +166,7 @@ const suburbs = await readMapSuburbs()
 const population = await readPopulation()
 const postcodes = await readPostcodes(suburbs.map((s) => s.id))
 const matches = await matchSuburbs(suburbs, options)
+const summaries = await readSummaries()
 
 const choices = await choosePhotos(matches, options)
 const upload = await uploadPhotos(
@@ -170,6 +179,7 @@ for (const s of suburbs) {
   facts[s.id] = {
     population: population.get(s.id) ?? null,
     postcode: postcodes.get(s.id) ?? null,
+    summary: summaries[s.id] ?? null,
     photo: upload.photos.get(s.id) ?? null,
   }
 }
@@ -191,6 +201,10 @@ listMissing(
 listMissing(
   "Wikipedia article",
   suburbs.filter((s) => !matches.get(s.id)?.title),
+)
+listMissing(
+  "summary",
+  suburbs.filter((s) => facts[s.id]?.summary === null),
 )
 listMissing(
   "photo",

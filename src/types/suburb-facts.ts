@@ -17,6 +17,8 @@ export interface SuburbPhoto {
 export interface SuburbFacts {
   population: number | null
   postcode: string | null
+  // One sentence on the region and what the suburb is known for.
+  summary: string | null
   photo: SuburbPhoto | null
 }
 

@@ -75,11 +75,12 @@ export const suburbsTopology: Topology = {
   },
 }
 
-// Alpha has everything, Beta has no photo, and Gamma is missing.
+// Alpha has everything, Beta has no photo or summary, and Gamma is missing.
 export const suburbFacts: SuburbFactsFile = {
   "1": {
     population: 15_301,
     postcode: "2042",
+    summary: "A harbourside suburb of the Inner West, known for its parks.",
     photo: {
       url: "https://example.public.blob.vercel-storage.com/suburbs/1-abcd1234.webp",
       width: 800,
@@ -94,6 +95,7 @@ export const suburbFacts: SuburbFactsFile = {
   "2": {
     population: 0,
     postcode: "2000",
+    summary: null,
     photo: null,
   },
 }
