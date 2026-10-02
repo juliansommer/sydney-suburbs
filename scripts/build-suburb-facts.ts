@@ -5,6 +5,8 @@
 //   licensed CC BY 4.0, for population.
 // Source: ABS ASGS Edition 3 Postal Areas, licensed CC BY 4.0, for postcodes.
 // Source: Wikidata, CC0, to match suburbs to Wikipedia articles and photos.
+// Source: Wikipedia, CC BY-SA 4.0, for summaries.
+// Source: Wikimedia Commons, for photos, each credited in the app.
 //
 // Pass --refresh to ignore cached Wikimedia responses.
 
@@ -16,11 +18,18 @@ import type { SuburbFactsFile } from "../src/types/suburb-facts.ts"
 import { type CacheOptions, root } from "./download.ts"
 import { readPopulation, readPostcodes } from "./facts/abs.ts"
 import {
+  isSuitableFile,
+  type PhotoSource,
+  readPhotoSources,
+} from "./facts/commons.ts"
+import {
   applyOverride,
-  articleUrl,
   findByTitle,
   queryWikidata,
   readOverrides,
+  readPageImages,
+  readSummary,
+  type Summary,
   type WikiMatch,
 } from "./facts/wikipedia.ts"
 
@@ -52,17 +61,22 @@ async function readMapSuburbs(): Promise<MapSuburb[]> {
     .toSorted((a, b) => a.id.localeCompare(b.id))
 }
 
+interface SuburbMatch extends WikiMatch {
+  // Set when an override picked the image, so no fallback is tried.
+  fixedImage: boolean
+}
+
 // Wikidata first, then a title search for suburbs it doesn't know, with
 // overrides applied last. One suburb at a time to keep requests polite.
 async function matchSuburbs(
   suburbs: MapSuburb[],
   options: CacheOptions,
-): Promise<Map<string, WikiMatch>> {
+): Promise<Map<string, SuburbMatch>> {
   const [wikidata, overrides] = await Promise.all([
     queryWikidata(options),
     readOverrides(),
   ])
-  const matches = new Map<string, WikiMatch>()
+  const matches = new Map<string, SuburbMatch>()
   for (const s of suburbs) {
     const override = overrides[s.id]
     let match = wikidata.get(s.id) ?? { title: null, image: null }
@@ -70,9 +84,63 @@ async function matchSuburbs(
       // oxlint-disable-next-line eslint/no-await-in-loop
       match = { ...match, title: await findByTitle(s.name, options) }
     }
-    matches.set(s.id, applyOverride(match, override))
+    matches.set(s.id, {
+      ...applyOverride(match, override),
+      fixedImage: override?.image !== undefined,
+    })
   }
   return matches
+}
+
+async function readSummaries(titles: string[], options: CacheOptions) {
+  const summaries = new Map<string, Summary>()
+  for (const title of titles) {
+    // oxlint-disable-next-line eslint/no-await-in-loop
+    summaries.set(title, await readSummary(title, options))
+  }
+  return summaries
+}
+
+interface PhotoChoice {
+  source: PhotoSource
+  fromPageImage: boolean
+}
+
+// The Wikidata image if it makes a good header, else the article's page image.
+async function choosePhotos(
+  matches: Map<string, SuburbMatch>,
+  options: CacheOptions,
+): Promise<Map<string, PhotoChoice>> {
+  const titles = [...matches.values()].flatMap((m) =>
+    m.title && !m.fixedImage ? [m.title] : [],
+  )
+  const pageImages = await readPageImages(titles, options)
+  const candidates = new Map<string, string[]>()
+  for (const [id, m] of matches) {
+    const pageImage = m.title ? pageImages.get(m.title) : undefined
+    const choices = m.fixedImage ? [m.image] : [m.image, pageImage]
+    candidates.set(
+      id,
+      choices.filter((f): f is string => f !== null && f !== undefined),
+    )
+  }
+  const allFiles = [...new Set([...candidates.values()].flat())]
+  const sources = await readPhotoSources(
+    allFiles.filter(isSuitableFile),
+    options,
+  )
+  const photos = new Map<string, PhotoChoice>()
+  for (const [id, files] of candidates) {
+    const file = files.find((f) => sources.has(f))
+    const source = file ? sources.get(file) : undefined
+    if (file && source) {
+      photos.set(id, {
+        source,
+        fromPageImage: file !== matches.get(id)?.image,
+      })
+    }
+  }
+  return photos
 }
 
 function listMissing(label: string, suburbs: MapSuburb[]) {
@@ -91,18 +159,27 @@ const population = await readPopulation()
 const postcodes = await readPostcodes(suburbs.map((s) => s.id))
 const matches = await matchSuburbs(suburbs, options)
 
+const titles = [...matches.values()].flatMap((m) => (m.title ? [m.title] : []))
+const summaries = await readSummaries(titles, options)
+const photos = await choosePhotos(matches, options)
+
 const facts: SuburbFactsFile = {}
 for (const s of suburbs) {
   const title = matches.get(s.id)?.title
+  const summary = title ? summaries.get(title) : undefined
   facts[s.id] = {
     population: population.get(s.id) ?? null,
     postcode: postcodes.get(s.id) ?? null,
-    summary: null,
-    wikipediaUrl: title ? articleUrl(title) : null,
+    summary: summary?.text ?? null,
+    wikipediaUrl: summary?.url ?? null,
     photo: null,
   }
 }
-await writeFile(factsPath, `${JSON.stringify(facts, null, 2)}\n`)
+await writeFile(
+  factsPath,
+  `${JSON.stringify(facts, null, 2)}
+`,
+)
 
 console.log(`Suburbs: ${suburbs.length}`)
 listMissing(
@@ -117,3 +194,19 @@ listMissing(
   "Wikipedia article",
   suburbs.filter((s) => facts[s.id]?.wikipediaUrl === null),
 )
+listMissing(
+  "summary",
+  suburbs.filter((s) => facts[s.id]?.summary === null),
+)
+listMissing(
+  "photo",
+  suburbs.filter((s) => !photos.has(s.id)),
+)
+
+// Page images are sometimes location maps, so these are worth a look.
+const fromPageImages = suburbs.filter((s) => photos.get(s.id)?.fromPageImage)
+console.log(`
+Photos from page images (${fromPageImages.length}):`)
+for (const s of fromPageImages) {
+  console.log(`  ${s.id} ${s.name}: ${photos.get(s.id)?.source.sourceUrl}`)
+}

@@ -5,6 +5,7 @@ import { readFile } from "node:fs/promises"
 import { z } from "zod/mini"
 
 import { type CacheOptions, fetchJson, root } from "../download.ts"
+import { chunk, resolveTitles, titleMappings } from "./titles.ts"
 
 const SPARQL_URL = "https://query.wikidata.org/sparql"
 const WIKIPEDIA_API = "https://en.wikipedia.org/w/api.php"
@@ -83,10 +84,6 @@ export function titleFromUrl(url: string): string {
 
 export function fileFromUrl(url: string): string {
   return decodeURIComponent(url.slice(FILE_PATH_PREFIX.length))
-}
-
-export function articleUrl(title: string): string {
-  return ARTICLE_PREFIX + encodeURIComponent(title.replaceAll(" ", "_"))
 }
 
 // Titles to try, in order, for a suburb Wikidata doesn't know by SAL code.
@@ -178,4 +175,91 @@ export async function findByTitle(
     }
   }
   return null
+}
+
+const SUMMARY_API = "https://en.wikipedia.org/api/rest_v1/page/summary/"
+// The API takes at most 50 titles per request.
+const TITLES_PER_REQUEST = 50
+
+const summaryResponse = z.object({
+  type: z.string(),
+  extract: z.string(),
+  content_urls: z.object({ desktop: z.object({ page: z.string() }) }),
+})
+
+export interface Summary {
+  text: string | null
+  url: string
+}
+
+// A newline only ends a paragraph after a full sentence; articles sometimes
+// have stray line breaks mid-sentence.
+const PARAGRAPH_BREAK = /(?<=[.!?)"'”])\s*\n\s*/
+
+export function firstParagraph(extract: string): string | null {
+  const [paragraph] = extract.split(PARAGRAPH_BREAK)
+  return paragraph?.replaceAll(/\s+/g, " ").trim() || null
+}
+
+// The article's plain-text intro and canonical URL.
+export async function readSummary(
+  title: string,
+  options: CacheOptions,
+): Promise<Summary> {
+  const page = await fetchJson(
+    SUMMARY_API + encodeURIComponent(title.replaceAll(" ", "_")),
+    summaryResponse,
+    options,
+  )
+  return {
+    text: page.type === "standard" ? firstParagraph(page.extract) : null,
+    url: page.content_urls.desktop.page,
+  }
+}
+
+const pageImages = z.object({
+  query: z.optional(
+    z.object({
+      ...titleMappings.shape,
+      pages: z.array(
+        z.object({ title: z.string(), pageimage: z.optional(z.string()) }),
+      ),
+    }),
+  ),
+})
+
+// Each article's freely licensed lead image, keyed by the title asked for.
+export async function readPageImages(
+  titles: string[],
+  options: CacheOptions,
+): Promise<Map<string, string>> {
+  const images = new Map<string, string>()
+  for (const batch of chunk(titles.toSorted(), TITLES_PER_REQUEST)) {
+    const params = new URLSearchParams({
+      action: "query",
+      format: "json",
+      formatversion: "2",
+      redirects: "1",
+      prop: "pageimages",
+      piprop: "name",
+      pilicense: "free",
+      pilimit: String(TITLES_PER_REQUEST),
+      titles: batch.join("|"),
+    })
+    // Batches run one at a time to keep requests polite.
+    // oxlint-disable-next-line eslint/no-await-in-loop
+    const { query } = await fetchJson(
+      `${WIKIPEDIA_API}?${params}`,
+      pageImages,
+      options,
+    )
+    const pages = new Map(query?.pages.map((p) => [p.title, p]))
+    for (const title of batch) {
+      const image = pages.get(resolveTitles(title, query))?.pageimage
+      if (image) {
+        images.set(title, image.replaceAll("_", " "))
+      }
+    }
+  }
+  return images
 }
