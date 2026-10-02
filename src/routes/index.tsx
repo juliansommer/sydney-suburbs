@@ -1,8 +1,10 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
 import {
+  lazy,
   type ReactNode,
   type RefObject,
+  Suspense,
   useEffect,
   useEffectEvent,
   useRef,
@@ -11,7 +13,6 @@ import {
 import { CouncilProgressButton } from "@/components/council-progress"
 import { SuburbMap, type SuburbMapHandle } from "@/components/map/suburb-map"
 import { SuburbSearch } from "@/components/map/suburb-search"
-import { SuburbPanel } from "@/components/suburb-panel"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { authClient } from "@/lib/auth-client"
 import { whenIdle } from "@/lib/idle"
@@ -20,6 +21,13 @@ import { suburbFactsQuery } from "@/queries/suburb-facts"
 import { suburbsTopoQuery } from "@/queries/suburbs-topo"
 import type { SuburbMapData, SuburbProperties } from "@/types/suburb"
 import type { UserSuburb } from "@/types/user-suburb"
+
+// The panel stays hidden until a suburb is picked, so it loads in its own
+// chunk once the map renders.
+const SuburbPanel = lazy(async () => {
+  const { SuburbPanel: component } = await import("@/components/suburb-panel")
+  return { default: component }
+})
 
 interface MapSearch {
   suburb?: number
@@ -174,17 +182,19 @@ function MapView({
           visitedIds={visitedIds}
         />
       </div>
-      <SuburbPanel
-        onClose={() => {
-          select(null)
-        }}
-        onZoomToCouncil={(lga) => {
-          map.current?.zoomToCouncil(lga)
-        }}
-        rows={rows}
-        signedIn={signedIn}
-        suburb={selected}
-      />
+      <Suspense>
+        <SuburbPanel
+          onClose={() => {
+            select(null)
+          }}
+          onZoomToCouncil={(lga) => {
+            map.current?.zoomToCouncil(lga)
+          }}
+          rows={rows}
+          signedIn={signedIn}
+          suburb={selected}
+        />
+      </Suspense>
     </>
   )
 }
