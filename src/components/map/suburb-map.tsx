@@ -104,11 +104,13 @@ function ZoomableMap({
 
   const [outlinedLga, setOutlinedLga] = useState<string | null>(null)
 
+  // Picking the selected suburb again closes it, like the close button.
   function pick(id: string | null) {
-    if (id) {
+    const next = id === selectedId ? null : id
+    if (next) {
       setOutlinedLga(null)
     }
-    onSelect(id)
+    onSelect(next)
   }
 
   function zoomToBounds(bounds: Bounds, animate: boolean, minZoom?: number) {

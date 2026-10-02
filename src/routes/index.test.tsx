@@ -199,6 +199,18 @@ describe("map page", () => {
 
     expect(screen.queryByRole("region")).not.toBeInTheDocument()
   })
+
+  it("closes the panel when its suburb is clicked again", async () => {
+    const { router } = await renderRoute("/?suburb=1")
+    await screen.findByRole("region", { name: "Alpha" })
+
+    fireEvent.click(screen.getByRole("button", { name: "Alpha" }))
+
+    await waitFor(() => {
+      expect(screen.queryByRole("region")).not.toBeInTheDocument()
+    })
+    expect(router.state.location.search).not.toHaveProperty("suburb")
+  })
 })
 
 function factsRequests() {
