@@ -15,7 +15,9 @@ import { SuburbSearch } from "@/components/map/suburb-search"
 import { SuburbPanel } from "@/components/suburb-panel"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { authClient } from "@/lib/auth-client"
+import { whenIdle } from "@/lib/idle"
 import { mySuburbsKey, mySuburbsQuery } from "@/queries/my-suburbs"
+import { suburbFactsQuery } from "@/queries/suburb-facts"
 import { suburbsTopoQuery } from "@/queries/suburbs-topo"
 import type { SuburbMapData, SuburbProperties } from "@/types/suburb"
 import type { UserSuburb } from "@/types/user-suburb"
@@ -140,6 +142,21 @@ function MapView({
       document.removeEventListener("keydown", onKeyDown)
     }
   }, [])
+
+  // The map has rendered by now, so fetch facts when the browser is idle and
+  // they never compete with it. A deep link's panel fetches them right away.
+  const queryClient = useQueryClient()
+  useEffect(
+    () =>
+      whenIdle(async () => {
+        try {
+          await queryClient.query(suburbFactsQuery)
+        } catch {
+          // The query keeps the error, and the panel handles it.
+        }
+      }),
+    [queryClient],
+  )
 
   return (
     <>
