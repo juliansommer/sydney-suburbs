@@ -22,3 +22,20 @@ Track which Sydney suburbs you've visited.
 ## Data
 
 Suburb boundaries come from the ABS Australian Statistical Geography Standard (ASGS) Edition 3, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0). The area is the ABS Greater Sydney region minus the Blue Mountains, Central Coast, Oberon and Wollondilly councils, national parks, and the rural fringe. Parks come from ABS Mesh Blocks, and rivers and lakes from NSW Spatial Services Hydro Area. Label priority follows the strategic centres in the NSW Greater Sydney Region Plan.
+
+Suburb facts come from these sources:
+
+- Population: ABS 2021 Census General Community Profile DataPack, table G01, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0)
+- Postcodes: ABS ASGS Edition 3 Postal Areas, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0), using the postal area that covers most of each suburb
+- Matching suburbs to articles and photos: [Wikidata](https://www.wikidata.org), licensed under [CC0](https://creativecommons.org/publicdomain/zero/1.0/)
+- Summaries: [Wikipedia](https://en.wikipedia.org), licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
+- Photos: [Wikimedia Commons](https://commons.wikimedia.org), each under its own free licence, with the photographer and licence credited in the app
+
+## Rebuilding the data
+
+The map, the suburbs seed migration and the suburb facts are built ahead of time and committed, so the app makes no requests to the ABS or Wikimedia at runtime.
+
+- `pnpm build:suburbs` rebuilds the map and the seed migration from ABS boundaries
+- `pnpm build:facts` rebuilds the population, postcode, summary and photo for each suburb, and uploads the photos to Vercel Blob (needs `BLOB_READ_WRITE_TOKEN`)
+
+Downloads are cached in `.cache/`, so reruns are quick. `pnpm build:facts --refresh` ignores cached Wikimedia responses, and `--prune` deletes photos no longer used. The script lists any suburb with no article, summary or photo; fix those in `scripts/wikipedia-overrides.json` and rerun.
