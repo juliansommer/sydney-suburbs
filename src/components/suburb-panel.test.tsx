@@ -197,7 +197,7 @@ describe("SuburbPanel facts", () => {
       expect(screen.queryByTestId("photo-skeleton")).not.toBeInTheDocument()
     })
     expect(screen.queryByRole("img")).not.toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "Mark visited" })).toBeVisible()
+    expect(screen.getByRole("button", { name: "Mark Visited" })).toBeVisible()
   })
 
   it("shows facts to signed-out users too", async () => {

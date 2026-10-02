@@ -67,14 +67,16 @@ function SuburbCard({
       <div className="overflow-y-auto">
         <SuburbMedia name={suburb.name} state={facts} />
         <div className="flex flex-col gap-4 p-4">
-          <header className="pr-8">
-            <h2 className="text-lg font-semibold">{suburb.name}</h2>
-            <p className="text-sm text-muted-foreground">
-              <CouncilButton lga={suburb.lga} onZoom={onZoomToCouncil} />
-            </p>
-            <FactsRow state={facts} />
-          </header>
-          <Summary state={facts} />
+          <div className="flex flex-col gap-2">
+            <header className="pr-8">
+              <h2 className="text-lg font-semibold">{suburb.name}</h2>
+              <p className="text-sm text-muted-foreground">
+                <CouncilButton lga={suburb.lga} onZoom={onZoomToCouncil} />
+              </p>
+              <FactsRow state={facts} />
+            </header>
+            <Summary state={facts} />
+          </div>
           <PanelBody
             key={suburb.id}
             rows={rows}
@@ -187,8 +189,10 @@ function SheetPopup({
                 name={suburb.name}
                 state={facts}
               />
-              <FactsRow state={facts} />
-              <Summary state={facts} />
+              <div className="flex flex-col gap-2">
+                <FactsRow state={facts} />
+                <Summary state={facts} />
+              </div>
             </div>
           </Drawer.Content>
         </Drawer.Popup>
@@ -273,7 +277,7 @@ function VisitForm({ suburbId, row }: VisitFormProps) {
         size="lg"
         variant={visited ? "default" : "outline"}
       >
-        {visited ? "Visited ✓" : "Mark visited"}
+        {visited ? "Visited ✓" : "Mark Visited"}
       </Button>
       {visited ? (
         <label className="flex flex-col gap-1 text-sm">

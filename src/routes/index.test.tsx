@@ -134,7 +134,7 @@ describe("map page", () => {
     await renderRoute("/?suburb=1")
 
     await userEvent.click(
-      await screen.findByRole("button", { name: "Mark visited" }),
+      await screen.findByRole("button", { name: "Mark Visited" }),
     )
 
     await expect(
@@ -155,13 +155,13 @@ describe("map page", () => {
     await renderRoute("/?suburb=1")
 
     await userEvent.click(
-      await screen.findByRole("button", { name: "Mark visited" }),
+      await screen.findByRole("button", { name: "Mark Visited" }),
     )
 
     await expect(screen.findByRole("alert")).resolves.toHaveTextContent(
       "Couldn’t save that",
     )
-    expect(screen.getByRole("button", { name: "Mark visited" })).toBeVisible()
+    expect(screen.getByRole("button", { name: "Mark Visited" })).toBeVisible()
     expect(visitedFill()).toBeNull()
   })
 
