@@ -3,6 +3,12 @@ import { Link } from "@tanstack/react-router"
 import { XIcon } from "lucide-react"
 import { useEffect, useEffectEvent, useRef, useState } from "react"
 
+import {
+  FactsRow,
+  SuburbMedia,
+  Summary,
+  useSuburbFacts,
+} from "@/components/suburb-facts"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { sydneyToday } from "@/lib/dates"
@@ -35,28 +41,37 @@ export function SuburbPanel(props: SuburbPanelProps) {
   return desktop ? <SuburbCard {...props} /> : <SuburbSheet {...props} />
 }
 
+// The photo runs edge to edge across the top, with the close button over it.
 function SuburbCard({ suburb, signedIn, rows, onClose }: SuburbPanelProps) {
+  const facts = useSuburbFacts(suburb?.id)
   if (!suburb) {
     return null
   }
   return (
     <section
       aria-label={suburb.name}
-      className="absolute top-16 right-4 flex w-80 flex-col gap-4 rounded-xl border bg-card p-4 text-card-foreground shadow-lg"
+      className="absolute top-16 right-4 flex max-h-[calc(100dvh-5rem)] w-80 flex-col overflow-hidden rounded-xl border bg-card text-card-foreground shadow-lg"
     >
-      <header className="flex items-start justify-between gap-2">
-        <div>
-          <h2 className="text-lg font-semibold">{suburb.name}</h2>
-          <p className="text-sm text-muted-foreground">{suburb.lga}</p>
-        </div>
+      <div className="absolute top-2 right-2 z-10 rounded-full bg-background/80 backdrop-blur-sm">
         <CloseButton onClose={onClose} />
-      </header>
-      <PanelBody
-        key={suburb.id}
-        rows={rows}
-        signedIn={signedIn}
-        suburbId={suburb.id}
-      />
+      </div>
+      <div className="overflow-y-auto">
+        <SuburbMedia lga={suburb.lga} name={suburb.name} state={facts} />
+        <div className="flex flex-col gap-4 p-4">
+          <header className="pr-8">
+            <h2 className="text-lg font-semibold">{suburb.name}</h2>
+            <p className="text-sm text-muted-foreground">{suburb.lga}</p>
+            <FactsRow state={facts} />
+          </header>
+          <Summary state={facts} />
+          <PanelBody
+            key={suburb.id}
+            rows={rows}
+            signedIn={signedIn}
+            suburbId={suburb.id}
+          />
+        </div>
+      </div>
     </section>
   )
 }
@@ -107,7 +122,10 @@ interface SheetPopupProps extends SuburbPanelProps {
   suburb: Suburb
 }
 
+// The peek shows the name and visit controls; the photo, facts and summary
+// sit below and come into view as the sheet expands.
 function SheetPopup({ suburb, signedIn, rows, onClose }: SheetPopupProps) {
+  const facts = useSuburbFacts(suburb.id)
   return (
     <Drawer.Portal>
       <Drawer.Viewport className="pointer-events-none fixed inset-0 flex items-end">
@@ -129,13 +147,21 @@ function SheetPopup({ suburb, signedIn, rows, onClose }: SheetPopupProps) {
             <CloseButton onClose={onClose} />
           </header>
           <Drawer.Content className="min-h-0 flex-1 touch-auto overflow-y-auto overscroll-contain px-4 pb-safe-bottom">
-            <div className="pb-4">
+            <div className="flex flex-col gap-4 pb-4">
               <PanelBody
                 key={suburb.id}
                 rows={rows}
                 signedIn={signedIn}
                 suburbId={suburb.id}
               />
+              <SuburbMedia
+                className="-mx-4"
+                lga={suburb.lga}
+                name={suburb.name}
+                state={facts}
+              />
+              <FactsRow state={facts} />
+              <Summary state={facts} />
             </div>
           </Drawer.Content>
         </Drawer.Popup>
