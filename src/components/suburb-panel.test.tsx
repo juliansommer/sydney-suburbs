@@ -97,7 +97,7 @@ describe("SuburbPanel notes", () => {
 })
 
 describe("SuburbPanel facts", () => {
-  it("shows the photo, facts and summary", async () => {
+  it("shows the photo and facts", async () => {
     mockFetch()
     await renderPanel()
 
@@ -109,10 +109,6 @@ describe("SuburbPanel facts", () => {
     expect(photo).toHaveAttribute("width", "800")
     expect(photo).toHaveAttribute("height", "533")
     expect(screen.getByText("Postcode 2042 · 15,301 people")).toBeVisible()
-    expect(screen.getByText("Alpha is a suburb of Sydney.")).toBeVisible()
-    expect(
-      screen.getByRole("link", { name: "Read more on Wikipedia" }),
-    ).toHaveAttribute("href", "https://en.wikipedia.org/wiki/Alpha")
     expect(screen.getByText("Sydney Council")).toBeVisible()
   })
 
@@ -138,7 +134,7 @@ describe("SuburbPanel facts", () => {
     )
   })
 
-  it("leaves out the photo and summary when there are none", async () => {
+  it("leaves out the photo when there is none", async () => {
     mockFetch()
     await renderPanel({ suburb: beta })
 

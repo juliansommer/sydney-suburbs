@@ -177,45 +177,8 @@ export async function findByTitle(
   return null
 }
 
-const SUMMARY_API = "https://en.wikipedia.org/api/rest_v1/page/summary/"
 // The API takes at most 50 titles per request.
 const TITLES_PER_REQUEST = 50
-
-const summaryResponse = z.object({
-  type: z.string(),
-  extract: z.string(),
-  content_urls: z.object({ desktop: z.object({ page: z.string() }) }),
-})
-
-export interface Summary {
-  text: string | null
-  url: string
-}
-
-// A newline only ends a paragraph after a full sentence; articles sometimes
-// have stray line breaks mid-sentence.
-const PARAGRAPH_BREAK = /(?<=[.!?)"'”])\s*\n\s*/
-
-export function firstParagraph(extract: string): string | null {
-  const [paragraph] = extract.split(PARAGRAPH_BREAK)
-  return paragraph?.replaceAll(/\s+/g, " ").trim() || null
-}
-
-// The article's plain-text intro and canonical URL.
-export async function readSummary(
-  title: string,
-  options: CacheOptions,
-): Promise<Summary> {
-  const page = await fetchJson(
-    SUMMARY_API + encodeURIComponent(title.replaceAll(" ", "_")),
-    summaryResponse,
-    options,
-  )
-  return {
-    text: page.type === "standard" ? firstParagraph(page.extract) : null,
-    url: page.content_urls.desktop.page,
-  }
-}
 
 const pageImages = z.object({
   query: z.optional(

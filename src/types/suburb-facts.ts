@@ -17,8 +17,6 @@ export interface SuburbPhoto {
 export interface SuburbFacts {
   population: number | null
   postcode: string | null
-  summary: string | null
-  wikipediaUrl: string | null
   photo: SuburbPhoto | null
 }
 

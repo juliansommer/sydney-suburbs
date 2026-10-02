@@ -28,7 +28,6 @@ Suburb facts come from these sources:
 - Population: ABS 2021 Census General Community Profile DataPack, table G01, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0)
 - Postcodes: ABS ASGS Edition 3 Postal Areas, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0), using the postal area that covers most of each suburb
 - Matching suburbs to articles and photos: [Wikidata](https://www.wikidata.org), licensed under [CC0](https://creativecommons.org/publicdomain/zero/1.0/)
-- Summaries: [Wikipedia](https://en.wikipedia.org), licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 - Photos: [Wikimedia Commons](https://commons.wikimedia.org), each under its own free licence; every photo's photographer, licence and source page are listed in `src/data/suburb-facts.json`
 
 ## Rebuilding the data
@@ -36,6 +35,6 @@ Suburb facts come from these sources:
 The map, the suburbs seed migration and the suburb facts are built ahead of time and committed, so the app makes no requests to the ABS or Wikimedia at runtime.
 
 - `pnpm build:suburbs` rebuilds the map and the seed migration from ABS boundaries
-- `pnpm build:facts` rebuilds the population, postcode, summary and photo for each suburb, and uploads the photos to Vercel Blob (needs `BLOB_READ_WRITE_TOKEN`)
+- `pnpm build:facts` rebuilds the population, postcode and photo for each suburb, and uploads the photos to Vercel Blob (needs `BLOB_READ_WRITE_TOKEN`)
 
-Downloads are cached in `.cache/`, so reruns are quick. `pnpm build:facts --refresh` ignores cached Wikimedia responses, and `--prune` deletes photos no longer used. The script lists any suburb with no article, summary or photo; fix those in `scripts/wikipedia-overrides.json` and rerun.
+Downloads are cached in `.cache/`, so reruns are quick. `pnpm build:facts --refresh` ignores cached Wikimedia responses, and `--prune` deletes photos no longer used. The script lists any suburb with no article or photo; fix those in `scripts/wikipedia-overrides.json` and rerun.

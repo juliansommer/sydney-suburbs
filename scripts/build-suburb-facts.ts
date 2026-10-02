@@ -4,8 +4,7 @@
 // Source: ABS 2021 Census General Community Profile DataPack, table G01,
 //   licensed CC BY 4.0, for population.
 // Source: ABS ASGS Edition 3 Postal Areas, licensed CC BY 4.0, for postcodes.
-// Source: Wikidata, CC0, to match suburbs to Wikipedia articles and photos.
-// Source: Wikipedia, CC BY-SA 4.0, for summaries.
+// Source: Wikidata, CC0, and Wikipedia, to match suburbs to photos.
 // Source: Wikimedia Commons, for photos, each credited in the app.
 //
 // Photos are resized and uploaded to Vercel Blob, which needs
@@ -32,8 +31,6 @@ import {
   queryWikidata,
   readOverrides,
   readPageImages,
-  readSummary,
-  type Summary,
   type WikiMatch,
 } from "./facts/wikipedia.ts"
 
@@ -94,15 +91,6 @@ async function matchSuburbs(
     })
   }
   return matches
-}
-
-async function readSummaries(titles: string[], options: CacheOptions) {
-  const summaries = new Map<string, Summary>()
-  for (const title of titles) {
-    // oxlint-disable-next-line eslint/no-await-in-loop
-    summaries.set(title, await readSummary(title, options))
-  }
-  return summaries
 }
 
 interface PhotoChoice {
@@ -171,8 +159,6 @@ const population = await readPopulation()
 const postcodes = await readPostcodes(suburbs.map((s) => s.id))
 const matches = await matchSuburbs(suburbs, options)
 
-const titles = [...matches.values()].flatMap((m) => (m.title ? [m.title] : []))
-const summaries = await readSummaries(titles, options)
 const choices = await choosePhotos(matches, options)
 const upload = await uploadPhotos(
   new Map([...choices].map(([id, c]) => [id, c.source])),
@@ -181,13 +167,9 @@ const upload = await uploadPhotos(
 
 const facts: SuburbFactsFile = {}
 for (const s of suburbs) {
-  const title = matches.get(s.id)?.title
-  const summary = title ? summaries.get(title) : undefined
   facts[s.id] = {
     population: population.get(s.id) ?? null,
     postcode: postcodes.get(s.id) ?? null,
-    summary: summary?.text ?? null,
-    wikipediaUrl: summary?.url ?? null,
     photo: upload.photos.get(s.id) ?? null,
   }
 }
@@ -208,11 +190,7 @@ listMissing(
 )
 listMissing(
   "Wikipedia article",
-  suburbs.filter((s) => facts[s.id]?.wikipediaUrl === null),
-)
-listMissing(
-  "summary",
-  suburbs.filter((s) => facts[s.id]?.summary === null),
+  suburbs.filter((s) => !matches.get(s.id)?.title),
 )
 listMissing(
   "photo",

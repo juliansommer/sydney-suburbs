@@ -5,7 +5,6 @@ import {
   applyOverride,
   fallbackTitles,
   fileFromUrl,
-  firstParagraph,
   titleFromUrl,
 } from "./wikipedia.ts"
 
@@ -55,24 +54,6 @@ describe("Wikidata URLs", () => {
         "http://commons.wikimedia.org/wiki/Special:FilePath/King%20Street%20Newtown.jpg",
       ),
     ).toBe("King Street Newtown.jpg")
-  })
-})
-
-describe("firstParagraph", () => {
-  it("keeps only the first paragraph", () => {
-    expect(firstParagraph("Alpha is a suburb.\nIt has a park.")).toBe(
-      "Alpha is a suburb.",
-    )
-  })
-
-  it("joins a line broken mid-sentence", () => {
-    expect(
-      firstParagraph("Frenchs Forest is \n20 kilometres north.\nMore."),
-    ).toBe("Frenchs Forest is 20 kilometres north.")
-  })
-
-  it("returns null for an empty extract", () => {
-    expect(firstParagraph("  ")).toBeNull()
   })
 })
 

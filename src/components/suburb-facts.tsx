@@ -159,31 +159,3 @@ export function FactsRow({ state }: FactsRowProps) {
   }
   return <p className="text-sm text-muted-foreground">{parts.join(" · ")}</p>
 }
-
-interface SummaryProps {
-  state: FactsState
-}
-
-export function Summary({ state }: SummaryProps) {
-  const facts = state.status === "success" ? state.facts : undefined
-  if (!facts?.summary) {
-    return null
-  }
-  return (
-    <div className="flex flex-col gap-1 text-sm">
-      <p className="line-clamp-4">{facts.summary}</p>
-      {facts.wikipediaUrl ? (
-        <p className="text-xs text-muted-foreground">
-          <a
-            className="font-medium text-foreground hover:underline"
-            href={facts.wikipediaUrl}
-            rel="noreferrer"
-            target="_blank"
-          >
-            Read more on Wikipedia
-          </a>
-        </p>
-      ) : null}
-    </div>
-  )
-}

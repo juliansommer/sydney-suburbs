@@ -22,8 +22,6 @@ export const suburbFactsSchema: z.ZodMiniType<SuburbFactsFile> = z.record(
   z.object({
     population: z.nullable(z.number()),
     postcode: z.nullable(z.string()),
-    summary: z.nullable(z.string()),
-    wikipediaUrl: z.nullable(z.string()),
     photo: z.nullable(photoSchema),
   }),
 )
