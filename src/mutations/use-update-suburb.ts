@@ -1,13 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { z } from "zod/mini"
 
 import { apiFetch } from "@/lib/api"
 import { mySuburbsKey } from "@/queries/my-suburbs"
-import {
-  type UserSuburb,
-  type UserSuburbPatch,
-  userSuburbSchema,
-} from "@/types/user-suburb"
+import type { UserSuburb, UserSuburbPatch } from "@/types/user-suburb"
 
 // Mirrors the Worker: unvisiting drops the date, and a row left with nothing in
 // it goes away.
@@ -40,9 +35,8 @@ export function useUpdateSuburb(suburbId: string) {
     mutationKey: [...mySuburbsKey, suburbId],
     scope: { id: `me/suburbs/${suburbId}` },
     mutationFn: async (patch: UserSuburbPatch) =>
-      await apiFetch(
+      await apiFetch<UserSuburb | null>(
         `/api/me/suburbs/${encodeURIComponent(suburbId)}`,
-        z.nullable(userSuburbSchema),
         {
           method: "PATCH",
           body: JSON.stringify(patch),

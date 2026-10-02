@@ -1,6 +1,4 @@
-import { z } from "zod/mini"
-
-const errorBody = z.object({ error: z.string() })
+import { readJson } from "@/lib/json"
 
 export class ApiError extends Error {
   readonly status: number
@@ -12,14 +10,13 @@ export class ApiError extends Error {
   }
 }
 
-// Fetches JSON from the Worker and parses it with `schema`. A 204 parses as
-// null, so pass a nullable schema for routes that can return one. A 401 means
-// the session is gone, so it sends the user to sign in and back here after.
-export async function apiFetch<S extends z.ZodMiniType>(
+// Fetches JSON from our API. A 204 comes back as null, so include null in `T`
+// for routes that can return one. A 401 means the session is gone, so it
+// sends the user to sign in and back here after.
+export async function apiFetch<T>(
   path: string,
-  schema: S,
   init?: RequestInit,
-): Promise<z.infer<S>> {
+): Promise<T> {
   const headers = new Headers(init?.headers)
   headers.set("Accept", "application/json")
   if (init?.body !== undefined) {
@@ -34,14 +31,27 @@ export async function apiFetch<S extends z.ZodMiniType>(
   if (!res.ok) {
     throw new ApiError(res.status, await errorMessage(res))
   }
-  const body: unknown = res.status === 204 ? null : await res.json()
-  return schema.parse(body)
+  if (res.status === 204) {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+    return null as T
+  }
+  return await readJson<T>(res)
+}
+
+function hasError(body: unknown): body is { error: string } {
+  return (
+    typeof body === "object" &&
+    body !== null &&
+    "error" in body &&
+    typeof body.error === "string"
+  )
 }
 
 async function errorMessage(res: Response) {
   const fallback = `${res.status} ${res.statusText}`
   try {
-    return errorBody.safeParse(await res.json()).data?.error ?? fallback
+    const body = await readJson<unknown>(res)
+    return hasError(body) ? body.error : fallback
   } catch {
     // Not JSON.
     return fallback

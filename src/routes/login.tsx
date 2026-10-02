@@ -1,5 +1,4 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router"
-import { z } from "zod/mini"
 
 import { GoogleLogo } from "@/components/google-logo"
 import { Button } from "@/components/ui/button"
@@ -7,18 +6,19 @@ import { authClient } from "@/lib/auth-client"
 
 // Only same-origin paths, so the login page can't bounce someone off-site.
 // `//host` and `/\host` are protocol-relative to browsers.
-const redirectPath = z
-  .string()
-  .check(z.refine((path) => /^\/(?![/\\])/.test(path)))
+const SAME_ORIGIN_PATH = /^\/(?![/\\])/
 
 interface LoginSearch {
   redirect?: string
 }
 
 export const Route = createFileRoute("/login")({
-  validateSearch: (search): LoginSearch => ({
-    redirect: redirectPath.safeParse(search.redirect).data,
-  }),
+  validateSearch: ({ redirect }): LoginSearch => {
+    // Anything that isn't a path, like a number or a missing value, stringifies
+    // to something the pattern rejects.
+    const path = String(redirect)
+    return { redirect: SAME_ORIGIN_PATH.test(path) ? path : undefined }
+  },
   component: LoginPage,
 })
 

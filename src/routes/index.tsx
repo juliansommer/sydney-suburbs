@@ -7,7 +7,6 @@ import {
   useEffectEvent,
   useRef,
 } from "react"
-import { z } from "zod/mini"
 
 import { CouncilProgressButton } from "@/components/council-progress"
 import { SuburbMap, type SuburbMapHandle } from "@/components/map/suburb-map"
@@ -22,17 +21,15 @@ import { suburbsTopoQuery } from "@/queries/suburbs-topo"
 import type { SuburbMapData, SuburbProperties } from "@/types/suburb"
 import type { UserSuburb } from "@/types/user-suburb"
 
-// Suburb ids are ABS SAL codes, all 5-digit numbers, so the URL carries a
-// number. A malformed one is just no selection.
-const suburbParam = z.int()
-
 interface MapSearch {
   suburb?: number
 }
 
 export const Route = createFileRoute("/")({
-  validateSearch: (search): MapSearch => ({
-    suburb: suburbParam.safeParse(search.suburb).data,
+  // Suburb ids are ABS SAL codes, all 5-digit numbers, so the URL carries a
+  // number. A malformed one is just no selection.
+  validateSearch: ({ suburb }): MapSearch => ({
+    suburb: Number.isInteger(suburb) ? Number(suburb) : undefined,
   }),
   component: MapPage,
 })

@@ -1,5 +1,4 @@
-import type { Topology } from "topojson-specification"
-
+import type { MapTopology } from "@/queries/suburbs-topo"
 import type { SuburbFactsFile } from "@/types/suburb-facts"
 
 function square(x: number, y: number): [number, number][] {
@@ -14,7 +13,7 @@ function square(x: number, y: number): [number, number][] {
 
 // Three unquantised square suburbs side by side near the CBD, a square of
 // surrounding land, and a park inside the first suburb.
-export const suburbsTopology: Topology = {
+export const suburbsTopology: MapTopology = {
   type: "Topology",
   arcs: [
     square(151.2, -33.8),

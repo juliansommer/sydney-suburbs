@@ -1,8 +1,7 @@
 import { queryOptions } from "@tanstack/react-query"
-import { z } from "zod/mini"
 
 import { apiFetch } from "@/lib/api"
-import { type UserSuburb, userSuburbSchema } from "@/types/user-suburb"
+import type { UserSuburb } from "@/types/user-suburb"
 
 export const mySuburbsKey = ["me", "suburbs"] as const
 
@@ -13,7 +12,6 @@ function bySuburbId(rows: UserSuburb[]) {
 // Signed-in only: pass `enabled: !!session` where it's used.
 export const mySuburbsQuery = queryOptions({
   queryKey: mySuburbsKey,
-  queryFn: async () =>
-    await apiFetch("/api/me/suburbs", z.array(userSuburbSchema)),
+  queryFn: async () => await apiFetch<UserSuburb[]>("/api/me/suburbs"),
   select: bySuburbId,
 })

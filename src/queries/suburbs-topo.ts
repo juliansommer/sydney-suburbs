@@ -1,54 +1,38 @@
 import { queryOptions } from "@tanstack/react-query"
 import { feature, merge } from "topojson-client"
-import type { MultiPolygon, Polygon, Topology } from "topojson-specification"
-import { z } from "zod/mini"
+import type {
+  GeometryCollection,
+  MultiPolygon,
+  Polygon,
+  Topology,
+} from "topojson-specification"
 
+import { readJson } from "@/lib/json"
 import type {
   Council,
   Landuse,
+  LanduseKind,
   SuburbFeature,
   SuburbMapData,
+  SuburbProperties,
   Surrounds,
 } from "@/types/suburb"
 
-const topologyHeader = z.object({
-  type: z.literal("Topology"),
-  objects: z.record(z.string(), z.unknown()),
-})
-const topologySchema = z.custom<Topology>(
-  (value) => topologyHeader.safeParse(value).success,
-)
-
-const suburbProperties = z.object({
-  id: z.string(),
-  name: z.string(),
-  lga: z.string(),
-  lx: z.number(),
-  ly: z.number(),
-})
-
-const landuseProperties = z.object({
-  kind: z.enum(["parkland", "water"]),
-})
-
-function layer(topology: Topology, name: string) {
-  const object = topology.objects[name]
-  if (object?.type !== "GeometryCollection") {
-    throw new Error(`TopoJSON has no ${name} layer`)
-  }
-  return feature(topology, object).features
-}
+// The layers scripts/build-suburbs.ts writes.
+export type MapTopology = Topology<{
+  suburbs: GeometryCollection<SuburbProperties>
+  surrounds: GeometryCollection
+  landuse: GeometryCollection<{ kind: LanduseKind }>
+}>
 
 // Merges each council's suburbs, so shared borders drop out of its outline.
-function councilOutlines(topology: Topology): Council[] {
-  const object = topology.objects.suburbs
-  if (object?.type !== "GeometryCollection") {
-    return []
-  }
+function councilOutlines(topology: MapTopology): Council[] {
   const byLga = new Map<string, (Polygon | MultiPolygon)[]>()
-  for (const geometry of object.geometries) {
-    if (geometry.type === "Polygon" || geometry.type === "MultiPolygon") {
-      const { lga } = suburbProperties.parse(geometry.properties)
+  for (const geometry of topology.objects.suburbs.geometries) {
+    const isArea =
+      geometry.type === "Polygon" || geometry.type === "MultiPolygon"
+    const lga = isArea ? geometry.properties?.lga : undefined
+    if (isArea && lga !== undefined) {
       byLga.set(lga, [
         ...(byLga.get(lga) ?? []),
         { ...geometry, properties: {} },
@@ -62,20 +46,20 @@ function councilOutlines(topology: Topology): Council[] {
   }))
 }
 
-export function toSuburbMap(topology: Topology): SuburbMapData {
+export function toSuburbMap(topology: MapTopology): SuburbMapData {
+  const { objects } = topology
   const suburbs: SuburbFeature[] = []
-  for (const f of layer(topology, "suburbs")) {
+  for (const f of feature(topology, objects.suburbs).features) {
     if (f.geometry.type === "Polygon" || f.geometry.type === "MultiPolygon") {
-      const properties = suburbProperties.parse(f.properties)
       suburbs.push({
         type: "Feature",
-        id: properties.id,
+        id: f.properties.id,
         geometry: f.geometry,
-        properties,
+        properties: f.properties,
       })
     }
   }
-  const [land] = layer(topology, "surrounds")
+  const [land] = feature(topology, objects.surrounds).features
   if (
     land?.geometry.type !== "Polygon" &&
     land?.geometry.type !== "MultiPolygon"
@@ -88,12 +72,12 @@ export function toSuburbMap(topology: Topology): SuburbMapData {
     properties: {},
   }
   const landuse: Landuse[] = []
-  for (const f of layer(topology, "landuse")) {
+  for (const f of feature(topology, objects.landuse).features) {
     if (f.geometry.type === "Polygon" || f.geometry.type === "MultiPolygon") {
       landuse.push({
         type: "Feature",
         geometry: f.geometry,
-        properties: landuseProperties.parse(f.properties),
+        properties: f.properties,
       })
     }
   }
@@ -108,8 +92,7 @@ export const suburbsTopoQuery = queryOptions({
     if (!res.ok) {
       throw new Error(`Map data failed to load (${res.status})`)
     }
-    const json: unknown = await res.json()
-    return toSuburbMap(topologySchema.parse(json))
+    return toSuburbMap(await readJson<MapTopology>(res))
   },
   staleTime: Infinity,
 })
