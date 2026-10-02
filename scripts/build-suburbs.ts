@@ -9,14 +9,14 @@
 //   lakes and reservoirs.
 
 import { execSync } from "node:child_process"
-import { existsSync } from "node:fs"
-import { mkdir, readdir, readFile, writeFile } from "node:fs/promises"
-import { fileURLToPath } from "node:url"
+import { readdir, readFile, writeFile } from "node:fs/promises"
 import { gzipSync } from "node:zlib"
 
 import geo from "mapshaper"
 import polylabel from "polylabel"
 import { z } from "zod/mini"
+
+import { absCacheDir as cacheDir, download, root } from "./download.ts"
 
 // Everything tied to the ASGS edition lives here, so moving to Edition 4
 // (2026) is a matter of updating this block.
@@ -165,8 +165,6 @@ const MAX_GZIP_BYTES = 400 * 1024
 // The seed inserts in chunks to keep each statement a manageable size.
 const SEED_CHUNK = 200
 
-const root = fileURLToPath(new URL("..", import.meta.url))
-const cacheDir = `${root}.cache/abs/`
 const topoPath = `${root}public/sydney-suburbs.topo.json`
 const migrationsDir = `${root}drizzle/migrations/`
 
@@ -198,17 +196,8 @@ type Ring = z.infer<typeof ring>
 type Geometry = z.infer<typeof suburbCollection>["features"][number]["geometry"]
 type Suburb = z.infer<typeof suburbCollection>["features"][number]["properties"]
 
-async function download(file: string, url = `${SOURCE.baseUrl}/${file}`) {
-  const path = cacheDir + file
-  if (existsSync(path)) {
-    return
-  }
-  console.log(`Downloading ${file}`)
-  const res = await fetch(url)
-  if (!res.ok) {
-    throw new Error(`Download failed: ${file} (${res.status})`)
-  }
-  await writeFile(path, new Uint8Array(await res.arrayBuffer()))
+function absUrl(file: string) {
+  return `${SOURCE.baseUrl}/${file}`
 }
 
 async function buildGeoJson() {
@@ -445,12 +434,11 @@ function check(suburbs: Suburb[], gzipBytes: number) {
   }
 }
 
-await mkdir(cacheDir, { recursive: true })
 await Promise.all([
-  download(SOURCE.sal),
-  download(SOURCE.gccsa),
-  download(SOURCE.lga),
-  download(SOURCE.mb),
+  download(SOURCE.sal, absUrl(SOURCE.sal)),
+  download(SOURCE.gccsa, absUrl(SOURCE.gccsa)),
+  download(SOURCE.lga, absUrl(SOURCE.lga)),
+  download(SOURCE.mb, absUrl(SOURCE.mb)),
   download(HYDRO.file, HYDRO.url),
 ])
 
