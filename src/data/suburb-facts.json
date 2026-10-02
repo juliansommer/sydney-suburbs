@@ -1,0 +1,4538 @@
+{
+  "10002": {
+    "population": 4200,
+    "postcode": "2176",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10003": {
+    "population": 5431,
+    "postcode": "2046",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10014": {
+    "population": 3668,
+    "postcode": "2763",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10021": {
+    "population": 996,
+    "postcode": "2753",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10022": {
+    "population": 3265,
+    "postcode": "2560",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10030": {
+    "population": 9649,
+    "postcode": "2015",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10031": {
+    "population": 3131,
+    "postcode": "2234",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10036": {
+    "population": 7317,
+    "postcode": "2100",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10038": {
+    "population": 5351,
+    "postcode": "2218",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10049": {
+    "population": 7254,
+    "postcode": "2560",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10060": {
+    "population": 384,
+    "postcode": "2765",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10062": {
+    "population": 9487,
+    "postcode": "2038",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10063": {
+    "population": 1472,
+    "postcode": "2156",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10073": {
+    "population": 1475,
+    "postcode": "2159",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10087": {
+    "population": 12023,
+    "postcode": "2205",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10088": {
+    "population": 6,
+    "postcode": "2148",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10091": {
+    "population": 9417,
+    "postcode": "2064",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10094": {
+    "population": 3353,
+    "postcode": "2193",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10098": {
+    "population": 3634,
+    "postcode": "2168",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10099": {
+    "population": 23012,
+    "postcode": "2131",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10104": {
+    "population": 6160,
+    "postcode": "2077",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10107": {
+    "population": 39333,
+    "postcode": "2144",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10110": {
+    "population": 6847,
+    "postcode": "2179",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10112": {
+    "population": 10379,
+    "postcode": "2107",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10133": {
+    "population": 168,
+    "postcode": "2555",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10154": {
+    "population": 8068,
+    "postcode": "2093",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10155": {
+    "population": 3546,
+    "postcode": "2093",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10165": {
+    "population": 10454,
+    "postcode": "2041",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10166": {
+    "population": 1900,
+    "postcode": "2041",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10178": {
+    "population": 5536,
+    "postcode": "2234",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10179": {
+    "population": 3277,
+    "postcode": "2216",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10180": {
+    "population": 508,
+    "postcode": "2019",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10181": {
+    "population": 34933,
+    "postcode": "2200",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10182": {
+    "population": 5,
+    "postcode": "2200",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10192": {
+    "population": 220,
+    "postcode": "2000",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10194": {
+    "population": 4129,
+    "postcode": "2234",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10195": {
+    "population": 5747,
+    "postcode": "2565",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10196": {
+    "population": 2320,
+    "postcode": "2207",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10197": {
+    "population": 2344,
+    "postcode": "2207",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10224": {
+    "population": 10230,
+    "postcode": "2197",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10233": {
+    "population": 37415,
+    "postcode": "2153",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10237": {
+    "population": 3807,
+    "postcode": "2104",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10238": {
+    "population": 7814,
+    "postcode": "2100",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10239": {
+    "population": 1172,
+    "postcode": "2015",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10243": {
+    "population": 9041,
+    "postcode": "2155",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10249": {
+    "population": 10291,
+    "postcode": "2119",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10257": {
+    "population": 6555,
+    "postcode": "2191",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10263": {
+    "population": 8384,
+    "postcode": "2153",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10271": {
+    "population": 10590,
+    "postcode": "2023",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10279": {
+    "population": 13781,
+    "postcode": "2192",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10283": {
+    "population": 8726,
+    "postcode": "2085",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10299": {
+    "population": 8757,
+    "postcode": "2141",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10305": {
+    "population": 2149,
+    "postcode": "2765",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10308": {
+    "population": 4762,
+    "postcode": "2081",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10309": {
+    "population": 5286,
+    "postcode": "2082",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10310": {
+    "population": 169,
+    "postcode": "2082",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10318": {
+    "population": 212,
+    "postcode": "2159",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10329": {
+    "population": 2646,
+    "postcode": "2217",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10330": {
+    "population": 10483,
+    "postcode": "2209",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10333": {
+    "population": 19646,
+    "postcode": "2207",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10334": {
+    "population": 4281,
+    "postcode": "2207",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10339": {
+    "population": 4202,
+    "postcode": "2770",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10349": {
+    "population": 251,
+    "postcode": "2107",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10350": {
+    "population": 3650,
+    "postcode": "2107",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10373": {
+    "population": 3228,
+    "postcode": "2041",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10378": {
+    "population": 3331,
+    "postcode": "2143",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10391": {
+    "population": 3586,
+    "postcode": "2770",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10396": {
+    "population": 50961,
+    "postcode": "2148",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10399": {
+    "population": 2725,
+    "postcode": "2560",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10400": {
+    "population": 409,
+    "postcode": "2559",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10402": {
+    "population": 6652,
+    "postcode": "2221",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10410": {
+    "population": 6220,
+    "postcode": "2756",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10462": {
+    "population": 10411,
+    "postcode": "2026",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10463": {
+    "population": 11513,
+    "postcode": "2026",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10465": {
+    "population": 10361,
+    "postcode": "2022",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10467": {
+    "population": 2238,
+    "postcode": "2226",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10469": {
+    "population": 9785,
+    "postcode": "2177",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10470": {
+    "population": 7369,
+    "postcode": "2177",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10513": {
+    "population": 15492,
+    "postcode": "2176",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10515": {
+    "population": 12960,
+    "postcode": "2019",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10524": {
+    "population": 1606,
+    "postcode": "2566",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10537": {
+    "population": 6450,
+    "postcode": "2765",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10540": {
+    "population": 9433,
+    "postcode": "2560",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10554": {
+    "population": 4678,
+    "postcode": "2137",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10566": {
+    "population": 8336,
+    "postcode": "2216",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10572": {
+    "population": 2433,
+    "postcode": "2556",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10591": {
+    "population": 7166,
+    "postcode": "2024",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10598": {
+    "population": 3389,
+    "postcode": "2100",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10669": {
+    "population": 2103,
+    "postcode": "2230",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10679": {
+    "population": 3177,
+    "postcode": "2767",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10702": {
+    "population": 3719,
+    "postcode": "2230",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10716": {
+    "population": 18224,
+    "postcode": "2134",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10717": {
+    "population": 1134,
+    "postcode": "2136",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10718": {
+    "population": 4446,
+    "postcode": "2168",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10734": {
+    "population": 1933,
+    "postcode": "2137",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10738": {
+    "population": 21142,
+    "postcode": "2166",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10739": {
+    "population": 7822,
+    "postcode": "2166",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10741": {
+    "population": 3487,
+    "postcode": "2747",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10766": {
+    "population": 2030,
+    "postcode": "2747",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10767": {
+    "population": 7054,
+    "postcode": "2747",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10769": {
+    "population": 3378,
+    "postcode": "2570",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10772": {
+    "population": 4595,
+    "postcode": "2570",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10773": {
+    "population": 0,
+    "postcode": "2142",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10777": {
+    "population": 7088,
+    "postcode": "2062",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10779": {
+    "population": 16577,
+    "postcode": "2560",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10780": {
+    "population": 9381,
+    "postcode": "2050",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10781": {
+    "population": 26132,
+    "postcode": "2194",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10784": {
+    "population": 1308,
+    "postcode": "2046",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10790": {
+    "population": 12320,
+    "postcode": "2166",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10791": {
+    "population": 10300,
+    "postcode": "2166",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10796": {
+    "population": 9430,
+    "postcode": "2193",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10814": {
+    "population": 12575,
+    "postcode": "2229",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10815": {
+    "population": 13168,
+    "postcode": "2229",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10817": {
+    "population": 28044,
+    "postcode": "2118",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10818": {
+    "population": 10631,
+    "postcode": "2218",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10819": {
+    "population": 3332,
+    "postcode": "2171",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10825": {
+    "population": 3475,
+    "postcode": "2163",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10836": {
+    "population": 1265,
+    "postcode": "2221",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10837": {
+    "population": 2616,
+    "postcode": "2168",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10844": {
+    "population": 2643,
+    "postcode": "2069",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10846": {
+    "population": 40874,
+    "postcode": "2154",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10848": {
+    "population": 2965,
+    "postcode": "2068",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10849": {
+    "population": 1248,
+    "postcode": "2749",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10851": {
+    "population": 16584,
+    "postcode": "2170",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10855": {
+    "population": 2609,
+    "postcode": "2557",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10864": {
+    "population": 6906,
+    "postcode": "2171",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10865": {
+    "population": 815,
+    "postcode": "2178",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10872": {
+    "population": 2225,
+    "postcode": "2021",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10891": {
+    "population": 25553,
+    "postcode": "2067",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10892": {
+    "population": 1521,
+    "postcode": "2067",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10895": {
+    "population": 2166,
+    "postcode": "2119",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10897": {
+    "population": 19082,
+    "postcode": "2126",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10898": {
+    "population": 14007,
+    "postcode": "2162",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10900": {
+    "population": 3490,
+    "postcode": "2036",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10906": {
+    "population": 7803,
+    "postcode": "2008",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10907": {
+    "population": 9412,
+    "postcode": "2170",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10909": {
+    "population": 2909,
+    "postcode": "2046",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10913": {
+    "population": 14,
+    "postcode": "2190",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10914": {
+    "population": 1066,
+    "postcode": "2105",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10917": {
+    "population": 5177,
+    "postcode": "2747",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10920": {
+    "population": 147,
+    "postcode": "2756",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10922": {
+    "population": 822,
+    "postcode": "2107",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10923": {
+    "population": 2579,
+    "postcode": "2559",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10927": {
+    "population": 1676,
+    "postcode": "2206",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10934": {
+    "population": 1746,
+    "postcode": "2093",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10937": {
+    "population": 4887,
+    "postcode": "2031",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10940": {
+    "population": 9,
+    "postcode": "2142",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10945": {
+    "population": 30,
+    "postcode": "2108",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10953": {
+    "population": 4206,
+    "postcode": "2570",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10965": {
+    "population": 4914,
+    "postcode": "2761",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10970": {
+    "population": 7944,
+    "postcode": "2097",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10971": {
+    "population": 4805,
+    "postcode": "2097",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10987": {
+    "population": 8770,
+    "postcode": "2760",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10996": {
+    "population": 4053,
+    "postcode": "2226",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "10999": {
+    "population": 14551,
+    "postcode": "2137",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11000": {
+    "population": 6178,
+    "postcode": "2138",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11001": {
+    "population": 13066,
+    "postcode": "2200",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11013": {
+    "population": 2884,
+    "postcode": "2221",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11014": {
+    "population": 4030,
+    "postcode": "2145",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11015": {
+    "population": 14634,
+    "postcode": "2034",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11086": {
+    "population": 96,
+    "postcode": "2084",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11105": {
+    "population": 15779,
+    "postcode": "2749",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11113": {
+    "population": 11263,
+    "postcode": "2090",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11114": {
+    "population": 2270,
+    "postcode": "2090",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11119": {
+    "population": 8030,
+    "postcode": "2099",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11120": {
+    "population": 17899,
+    "postcode": "2230",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11132": {
+    "population": 4974,
+    "postcode": "2065",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11135": {
+    "population": 10755,
+    "postcode": "2132",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11136": {
+    "population": 10929,
+    "postcode": "2133",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11168": {
+    "population": 2364,
+    "postcode": "2096",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11176": {
+    "population": 5541,
+    "postcode": "2567",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11186": {
+    "population": 1146,
+    "postcode": "2032",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11212": {
+    "population": 3977,
+    "postcode": "2027",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11213": {
+    "population": 10615,
+    "postcode": "2010",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11215": {
+    "population": 2597,
+    "postcode": "2008",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11221": {
+    "population": 2725,
+    "postcode": "2085",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11224": {
+    "population": 385,
+    "postcode": "2000",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11226": {
+    "population": 3180,
+    "postcode": "2761",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11229": {
+    "population": 23354,
+    "postcode": "2099",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11237": {
+    "population": 9129,
+    "postcode": "2565",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11240": {
+    "population": 3726,
+    "postcode": "2114",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11241": {
+    "population": 2292,
+    "postcode": "2112",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11242": {
+    "population": 947,
+    "postcode": "2114",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11250": {
+    "population": 2806,
+    "postcode": "2770",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11268": {
+    "population": 699,
+    "postcode": "2229",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11269": {
+    "population": 1633,
+    "postcode": "2219",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11277": {
+    "population": 13614,
+    "postcode": "2767",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11283": {
+    "population": 4709,
+    "postcode": "2028",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11286": {
+    "population": 4044,
+    "postcode": "2030",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11296": {
+    "population": 12011,
+    "postcode": "2047",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11304": {
+    "population": 509,
+    "postcode": "2084",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11306": {
+    "population": 14046,
+    "postcode": "2203",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11315": {
+    "population": 4959,
+    "postcode": "2117",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11316": {
+    "population": 5875,
+    "postcode": "2117",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11331": {
+    "population": 7900,
+    "postcode": "2158",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11344": {
+    "population": 5789,
+    "postcode": "2558",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11346": {
+    "population": 18053,
+    "postcode": "2206",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11354": {
+    "population": 3370,
+    "postcode": "2213",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11358": {
+    "population": 2895,
+    "postcode": "2071",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11360": {
+    "population": 3710,
+    "postcode": "2070",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11364": {
+    "population": 2522,
+    "postcode": "2113",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11369": {
+    "population": 874,
+    "postcode": "2766",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11370": {
+    "population": 4086,
+    "postcode": "2036",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11371": {
+    "population": 6347,
+    "postcode": "2018",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11372": {
+    "population": 18695,
+    "postcode": "2122",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11380": {
+    "population": 10279,
+    "postcode": "2176",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11382": {
+    "population": 2499,
+    "postcode": "2027",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11386": {
+    "population": 12080,
+    "postcode": "2174",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11392": {
+    "population": 4581,
+    "postcode": "2101",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11394": {
+    "population": 7878,
+    "postcode": "2570",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11398": {
+    "population": 4878,
+    "postcode": "2011",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11400": {
+    "population": 3208,
+    "postcode": "2171",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11408": {
+    "population": 852,
+    "postcode": "2570",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11413": {
+    "population": 80,
+    "postcode": "2105",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11416": {
+    "population": 2295,
+    "postcode": "2770",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11420": {
+    "population": 3205,
+    "postcode": "2750",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11421": {
+    "population": 8126,
+    "postcode": "2750",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11424": {
+    "population": 2992,
+    "postcode": "2136",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11425": {
+    "population": 17736,
+    "postcode": "2233",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11426": {
+    "population": 361,
+    "postcode": "2560",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11428": {
+    "population": 3871,
+    "postcode": "2042",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11431": {
+    "population": 29551,
+    "postcode": "2121",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11438": {
+    "population": 12686,
+    "postcode": "2115",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11441": {
+    "population": 6486,
+    "postcode": "2759",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11442": {
+    "population": 9657,
+    "postcode": "2043",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11444": {
+    "population": 2607,
+    "postcode": "2558",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11474": {
+    "population": 606,
+    "postcode": "2015",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11480": {
+    "population": 18596,
+    "postcode": "2165",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11481": {
+    "population": 5198,
+    "postcode": "2165",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11482": {
+    "population": 8269,
+    "postcode": "2165",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11483": {
+    "population": 12981,
+    "postcode": "2165",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11485": {
+    "population": 6141,
+    "postcode": "2094",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11533": {
+    "population": 9823,
+    "postcode": "2046",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11549": {
+    "population": 4965,
+    "postcode": "2037",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11551": {
+    "population": 8659,
+    "postcode": "2087",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11571": {
+    "population": 14267,
+    "postcode": "2086",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11572": {
+    "population": 9186,
+    "postcode": "2096",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11580": {
+    "population": 3339,
+    "postcode": "2765",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11586": {
+    "population": 3195,
+    "postcode": "2159",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11605": {
+    "population": 9739,
+    "postcode": "2198",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11621": {
+    "population": 882,
+    "postcode": "2560",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11640": {
+    "population": 6256,
+    "postcode": "2145",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11642": {
+    "population": 12867,
+    "postcode": "2111",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11645": {
+    "population": 11680,
+    "postcode": "2037",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11646": {
+    "population": 6112,
+    "postcode": "2557",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11649": {
+    "population": 4429,
+    "postcode": "2563",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11663": {
+    "population": 5196,
+    "postcode": "2761",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11668": {
+    "population": 10536,
+    "postcode": "2167",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11671": {
+    "population": 6619,
+    "postcode": "2156",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11674": {
+    "population": 25021,
+    "postcode": "2745",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11677": {
+    "population": 3792,
+    "postcode": "2157",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11686": {
+    "population": 15829,
+    "postcode": "2768",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11724": {
+    "population": 8795,
+    "postcode": "2072",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11743": {
+    "population": 3669,
+    "postcode": "2765",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11745": {
+    "population": 16716,
+    "postcode": "2142",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11746": {
+    "population": 2105,
+    "postcode": "2570",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11750": {
+    "population": 3034,
+    "postcode": "2232",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11751": {
+    "population": 50,
+    "postcode": "2108",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11762": {
+    "population": 12919,
+    "postcode": "2168",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11763": {
+    "population": 26314,
+    "postcode": "2190",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11765": {
+    "population": 314,
+    "postcode": "2745",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11767": {
+    "population": 5394,
+    "postcode": "2176",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11770": {
+    "population": 1375,
+    "postcode": "2230",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11776": {
+    "population": 5469,
+    "postcode": "2065",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11780": {
+    "population": 9142,
+    "postcode": "2557",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11787": {
+    "population": 23511,
+    "postcode": "2145",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11796": {
+    "population": 24091,
+    "postcode": "2161",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11797": {
+    "population": 5762,
+    "postcode": "2161",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11833": {
+    "population": 8219,
+    "postcode": "2227",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11834": {
+    "population": 6983,
+    "postcode": "2227",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11835": {
+    "population": 6480,
+    "postcode": "2045",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11851": {
+    "population": 3691,
+    "postcode": "2170",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11866": {
+    "population": 13332,
+    "postcode": "2567",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11867": {
+    "population": 5043,
+    "postcode": "2150",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11873": {
+    "population": 4401,
+    "postcode": "2761",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11884": {
+    "population": 8305,
+    "postcode": "2000",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11890": {
+    "population": 6148,
+    "postcode": "2233",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11893": {
+    "population": 5643,
+    "postcode": "2770",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11894": {
+    "population": 3263,
+    "postcode": "2168",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11898": {
+    "population": 455,
+    "postcode": "2111",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11918": {
+    "population": 5647,
+    "postcode": "2036",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11922": {
+    "population": 11521,
+    "postcode": "2168",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11924": {
+    "population": 2712,
+    "postcode": "2753",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11932": {
+    "population": 1248,
+    "postcode": "2142",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11933": {
+    "population": 5657,
+    "postcode": "2173",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11936": {
+    "population": 11660,
+    "postcode": "2140",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11937": {
+    "population": 9108,
+    "postcode": "2140",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11942": {
+    "population": 3673,
+    "postcode": "2171",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11943": {
+    "population": 22462,
+    "postcode": "2077",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11944": {
+    "population": 6354,
+    "postcode": "2077",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11950": {
+    "population": 1790,
+    "postcode": "2175",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11958": {
+    "population": 4572,
+    "postcode": "2171",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11961": {
+    "population": 9014,
+    "postcode": "2110",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11964": {
+    "population": 3,
+    "postcode": "2148",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11967": {
+    "population": 740,
+    "postcode": "2111",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11968": {
+    "population": 142,
+    "postcode": "2111",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11970": {
+    "population": 5001,
+    "postcode": "2193",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11971": {
+    "population": 31162,
+    "postcode": "2220",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11972": {
+    "population": 2606,
+    "postcode": "2220",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11982": {
+    "population": 7427,
+    "postcode": "2234",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11987": {
+    "population": 15264,
+    "postcode": "2565",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "11988": {
+    "population": 1030,
+    "postcode": "2101",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12009": {
+    "population": 5321,
+    "postcode": "2750",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12010": {
+    "population": 6632,
+    "postcode": "2226",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12050": {
+    "population": 11772,
+    "postcode": "2747",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12068": {
+    "population": 602,
+    "postcode": "2224",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12081": {
+    "population": 3572,
+    "postcode": "2232",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12087": {
+    "population": 2693,
+    "postcode": "2558",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12096": {
+    "population": 27011,
+    "postcode": "2155",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12097": {
+    "population": 10890,
+    "postcode": "2155",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12102": {
+    "population": 2121,
+    "postcode": "2178",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12107": {
+    "population": 11927,
+    "postcode": "2033",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12108": {
+    "population": 5313,
+    "postcode": "2156",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12109": {
+    "population": 726,
+    "postcode": "2560",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12137": {
+    "population": 10620,
+    "postcode": "2071",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12138": {
+    "population": 4502,
+    "postcode": "2087",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12157": {
+    "population": 9354,
+    "postcode": "2147",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12158": {
+    "population": 3476,
+    "postcode": "2148",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12164": {
+    "population": 13492,
+    "postcode": "2032",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12166": {
+    "population": 12881,
+    "postcode": "2208",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12171": {
+    "population": 10633,
+    "postcode": "2747",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12180": {
+    "population": 690,
+    "postcode": "2570",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12181": {
+    "population": 11007,
+    "postcode": "2232",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12182": {
+    "population": 3629,
+    "postcode": "2061",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12190": {
+    "population": 16416,
+    "postcode": "2217",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12191": {
+    "population": 2102,
+    "postcode": "2217",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12224": {
+    "population": 2528,
+    "postcode": "2231",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12225": {
+    "population": 1401,
+    "postcode": "2089",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12234": {
+    "population": 935,
+    "postcode": "2216",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12235": {
+    "population": 1039,
+    "postcode": "2221",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12238": {
+    "population": 366,
+    "postcode": "2036",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12266": {
+    "population": 17092,
+    "postcode": "2195",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12270": {
+    "population": 7834,
+    "postcode": "2147",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12275": {
+    "population": 12363,
+    "postcode": "2066",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12276": {
+    "population": 11773,
+    "postcode": "2066",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12277": {
+    "population": 3146,
+    "postcode": "2066",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12281": {
+    "population": 16,
+    "postcode": "2163",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12284": {
+    "population": 2595,
+    "postcode": "2166",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12294": {
+    "population": 870,
+    "postcode": "2060",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12306": {
+    "population": 15158,
+    "postcode": "2040",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12310": {
+    "population": 0,
+    "postcode": "2171",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12313": {
+    "population": 2582,
+    "postcode": "2750",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12314": {
+    "population": 9423,
+    "postcode": "2179",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12316": {
+    "population": 4730,
+    "postcode": "2770",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12317": {
+    "population": 9992,
+    "postcode": "2560",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12322": {
+    "population": 4060,
+    "postcode": "2049",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12324": {
+    "population": 2055,
+    "postcode": "2138",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12325": {
+    "population": 23663,
+    "postcode": "2141",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12331": {
+    "population": 1405,
+    "postcode": "2229",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12334": {
+    "population": 7641,
+    "postcode": "2040",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12348": {
+    "population": 10943,
+    "postcode": "2070",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12350": {
+    "population": 382,
+    "postcode": "2066",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12358": {
+    "population": 4817,
+    "postcode": "2036",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12370": {
+    "population": 31078,
+    "postcode": "2170",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12372": {
+    "population": 1618,
+    "postcode": "2747",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12380": {
+    "population": 4190,
+    "postcode": "2232",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12384": {
+    "population": 4024,
+    "postcode": "2753",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12390": {
+    "population": 173,
+    "postcode": "2564",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12394": {
+    "population": 2116,
+    "postcode": "2066",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12406": {
+    "population": 117,
+    "postcode": "2105",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12426": {
+    "population": 4,
+    "postcode": "2234",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12428": {
+    "population": 1927,
+    "postcode": "2745",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12430": {
+    "population": 5869,
+    "postcode": "2210",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12431": {
+    "population": 10057,
+    "postcode": "2170",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12442": {
+    "population": 14023,
+    "postcode": "2564",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12444": {
+    "population": 1455,
+    "postcode": "2565",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12446": {
+    "population": 11071,
+    "postcode": "2113",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12452": {
+    "population": 539,
+    "postcode": "2230",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12462": {
+    "population": 4714,
+    "postcode": "2036",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12485": {
+    "population": 16296,
+    "postcode": "2095",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12486": {
+    "population": 6389,
+    "postcode": "2093",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12494": {
+    "population": 1281,
+    "postcode": "2765",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12495": {
+    "population": 7834,
+    "postcode": "2148",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12511": {
+    "population": 30722,
+    "postcode": "2035",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12514": {
+    "population": 26570,
+    "postcode": "2204",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12515": {
+    "population": 14610,
+    "postcode": "2765",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12516": {
+    "population": 12492,
+    "postcode": "2122",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12529": {
+    "population": 21591,
+    "postcode": "2020",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12534": {
+    "population": 9925,
+    "postcode": "2036",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12548": {
+    "population": 1902,
+    "postcode": "2145",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12552": {
+    "population": 2537,
+    "postcode": "2756",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12557": {
+    "population": 2315,
+    "postcode": "2060",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12560": {
+    "population": 5089,
+    "postcode": "2114",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12573": {
+    "population": 1439,
+    "postcode": "2765",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12574": {
+    "population": 2059,
+    "postcode": "2114",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12578": {
+    "population": 10419,
+    "postcode": "2234",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12580": {
+    "population": 224,
+    "postcode": "2563",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12599": {
+    "population": 32472,
+    "postcode": "2160",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12600": {
+    "population": 7054,
+    "postcode": "2160",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12613": {
+    "population": 1327,
+    "postcode": "2068",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12614": {
+    "population": 1040,
+    "postcode": "2158",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12618": {
+    "population": 7043,
+    "postcode": "2171",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12628": {
+    "population": 3374,
+    "postcode": "2168",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12630": {
+    "population": 1735,
+    "postcode": "2000",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12636": {
+    "population": 4074,
+    "postcode": "2214",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12640": {
+    "population": 2529,
+    "postcode": "2061",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12644": {
+    "population": 5778,
+    "postcode": "2770",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12653": {
+    "population": 13940,
+    "postcode": "2566",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12654": {
+    "population": 384,
+    "postcode": "2566",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12656": {
+    "population": 17942,
+    "postcode": "2228",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12683": {
+    "population": 10877,
+    "postcode": "2103",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12697": {
+    "population": 4619,
+    "postcode": "2217",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12722": {
+    "population": 18,
+    "postcode": "2021",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12723": {
+    "population": 11408,
+    "postcode": "2170",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12736": {
+    "population": 31,
+    "postcode": "2105",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12739": {
+    "population": 10745,
+    "postcode": "2223",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12740": {
+    "population": 1954,
+    "postcode": "2137",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12749": {
+    "population": 28329,
+    "postcode": "2088",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12756": {
+    "population": 11784,
+    "postcode": "2567",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12761": {
+    "population": 7816,
+    "postcode": "2079",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12767": {
+    "population": 16986,
+    "postcode": "2770",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12783": {
+    "population": 1766,
+    "postcode": "2080",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12785": {
+    "population": 1234,
+    "postcode": "2190",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12796": {
+    "population": 10426,
+    "postcode": "2170",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12807": {
+    "population": 1235,
+    "postcode": "2178",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12825": {
+    "population": 2044,
+    "postcode": "2745",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12826": {
+    "population": 78,
+    "postcode": "2756",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12906": {
+    "population": 3358,
+    "postcode": "2567",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12907": {
+    "population": 6931,
+    "postcode": "2567",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12908": {
+    "population": 5924,
+    "postcode": "2065",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12911": {
+    "population": 8255,
+    "postcode": "2101",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12919": {
+    "population": 6971,
+    "postcode": "2099",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12921": {
+    "population": 5411,
+    "postcode": "2209",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12931": {
+    "population": 460,
+    "postcode": "2765",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12943": {
+    "population": 10090,
+    "postcode": "2089",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12962": {
+    "population": 5648,
+    "postcode": "2127",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12965": {
+    "population": 9659,
+    "postcode": "2106",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12969": {
+    "population": 14690,
+    "postcode": "2042",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12977": {
+    "population": 1632,
+    "postcode": "2763",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12986": {
+    "population": 5387,
+    "postcode": "2076",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12991": {
+    "population": 3816,
+    "postcode": "2093",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12994": {
+    "population": 9290,
+    "postcode": "2026",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "12998": {
+    "population": 4288,
+    "postcode": "2099",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13000": {
+    "population": 4657,
+    "postcode": "2121",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13003": {
+    "population": 17401,
+    "postcode": "2155",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13007": {
+    "population": 3396,
+    "postcode": "2100",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13009": {
+    "population": 6016,
+    "postcode": "2101",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13011": {
+    "population": 12064,
+    "postcode": "2151",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13013": {
+    "population": 9136,
+    "postcode": "2151",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13015": {
+    "population": 14043,
+    "postcode": "2113",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13017": {
+    "population": 4123,
+    "postcode": "2760",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13019": {
+    "population": 4618,
+    "postcode": "2137",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13020": {
+    "population": 8964,
+    "postcode": "2060",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13023": {
+    "population": 4194,
+    "postcode": "2074",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13025": {
+    "population": 2100,
+    "postcode": "2076",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13026": {
+    "population": 4161,
+    "postcode": "2068",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13032": {
+    "population": 6493,
+    "postcode": "2063",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13033": {
+    "population": 11261,
+    "postcode": "2152",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13034": {
+    "population": 916,
+    "postcode": "2066",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13036": {
+    "population": 4688,
+    "postcode": "2153",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13069": {
+    "population": 6947,
+    "postcode": "2761",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13071": {
+    "population": 2027,
+    "postcode": "2765",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13074": {
+    "population": 5833,
+    "postcode": "2117",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13075": {
+    "population": 10664,
+    "postcode": "2223",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13088": {
+    "population": 2857,
+    "postcode": "2161",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13092": {
+    "population": 3276,
+    "postcode": "2146",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13102": {
+    "population": 17624,
+    "postcode": "2570",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13106": {
+    "population": 1798,
+    "postcode": "2748",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13117": {
+    "population": 265,
+    "postcode": "2099",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13121": {
+    "population": 4197,
+    "postcode": "2760",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13123": {
+    "population": 5689,
+    "postcode": "2225",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13126": {
+    "population": 12701,
+    "postcode": "2021",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13131": {
+    "population": 14017,
+    "postcode": "2211",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13132": {
+    "population": 3594,
+    "postcode": "2211",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13136": {
+    "population": 3885,
+    "postcode": "2035",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13143": {
+    "population": 1652,
+    "postcode": "2108",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13155": {
+    "population": 13507,
+    "postcode": "2213",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13164": {
+    "population": 3684,
+    "postcode": "2768",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13167": {
+    "population": 30211,
+    "postcode": "2150",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13179": {
+    "population": 12079,
+    "postcode": "2210",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13180": {
+    "population": 2524,
+    "postcode": "2210",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13192": {
+    "population": 5532,
+    "postcode": "2148",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13193": {
+    "population": 7743,
+    "postcode": "2145",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13194": {
+    "population": 7588,
+    "postcode": "2120",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13195": {
+    "population": 17966,
+    "postcode": "2750",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13197": {
+    "population": 12592,
+    "postcode": "2222",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13202": {
+    "population": 8200,
+    "postcode": "2049",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13205": {
+    "population": 721,
+    "postcode": "2036",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13211": {
+    "population": 6413,
+    "postcode": "2213",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13238": {
+    "population": 3871,
+    "postcode": "2756",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13241": {
+    "population": 606,
+    "postcode": "2172",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13242": {
+    "population": 10070,
+    "postcode": "2761",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13245": {
+    "population": 1334,
+    "postcode": "2027",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13255": {
+    "population": 0,
+    "postcode": "2036",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13256": {
+    "population": 1210,
+    "postcode": "2229",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13267": {
+    "population": 1454,
+    "postcode": "2143",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13268": {
+    "population": 7183,
+    "postcode": "2011",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13270": {
+    "population": 3457,
+    "postcode": "2176",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13272": {
+    "population": 15694,
+    "postcode": "2170",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13278": {
+    "population": 5187,
+    "postcode": "2148",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13286": {
+    "population": 21384,
+    "postcode": "2196",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13290": {
+    "population": 4097,
+    "postcode": "2112",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13294": {
+    "population": 11775,
+    "postcode": "2073",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13297": {
+    "population": 12658,
+    "postcode": "2009",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13299": {
+    "population": 27893,
+    "postcode": "2763",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13307": {
+    "population": 3143,
+    "postcode": "2022",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13309": {
+    "population": 3407,
+    "postcode": "2096",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13316": {
+    "population": 5943,
+    "postcode": "2566",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13322": {
+    "population": 1151,
+    "postcode": "2217",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13323": {
+    "population": 1734,
+    "postcode": "2217",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13325": {
+    "population": 28943,
+    "postcode": "2031",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13352": {
+    "population": 13072,
+    "postcode": "2016",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13358": {
+    "population": 4990,
+    "postcode": "2143",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13359": {
+    "population": 829,
+    "postcode": "2745",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13369": {
+    "population": 15268,
+    "postcode": "2212",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13370": {
+    "population": 1916,
+    "postcode": "2212",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13372": {
+    "population": 11453,
+    "postcode": "2138",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13373": {
+    "population": 37,
+    "postcode": "2765",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13375": {
+    "population": 5418,
+    "postcode": "2753",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13383": {
+    "population": 8627,
+    "postcode": "2765",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13385": {
+    "population": 3148,
+    "postcode": "2066",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13386": {
+    "population": 12793,
+    "postcode": "2210",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13394": {
+    "population": 15475,
+    "postcode": "2216",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13406": {
+    "population": 1380,
+    "postcode": "2046",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13409": {
+    "population": 3,
+    "postcode": "2141",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13410": {
+    "population": 16176,
+    "postcode": "2766",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13411": {
+    "population": 7280,
+    "postcode": "2747",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13412": {
+    "population": 9911,
+    "postcode": "2029",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13419": {
+    "population": 13533,
+    "postcode": "2018",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13422": {
+    "population": 4047,
+    "postcode": "2142",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13423": {
+    "population": 12356,
+    "postcode": "2196",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13424": {
+    "population": 8007,
+    "postcode": "2560",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13426": {
+    "population": 10340,
+    "postcode": "2069",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13427": {
+    "population": 1618,
+    "postcode": "2069",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13434": {
+    "population": 2241,
+    "postcode": "2557",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13444": {
+    "population": 11349,
+    "postcode": "2155",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13450": {
+    "population": 8553,
+    "postcode": "2039",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13458": {
+    "population": 5632,
+    "postcode": "2560",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13459": {
+    "population": 2335,
+    "postcode": "2011",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13462": {
+    "population": 4920,
+    "postcode": "2046",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13468": {
+    "population": 7274,
+    "postcode": "2116",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13469": {
+    "population": 31907,
+    "postcode": "2112",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13476": {
+    "population": 3243,
+    "postcode": "2168",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13493": {
+    "population": 1275,
+    "postcode": "2219",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13502": {
+    "population": 597,
+    "postcode": "2172",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13504": {
+    "population": 10864,
+    "postcode": "2219",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13517": {
+    "population": 15213,
+    "postcode": "2762",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13520": {
+    "population": 711,
+    "postcode": "2105",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13524": {
+    "population": 7384,
+    "postcode": "2092",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13531": {
+    "population": 6300,
+    "postcode": "2162",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13533": {
+    "population": 20095,
+    "postcode": "2147",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13538": {
+    "population": 3455,
+    "postcode": "2770",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13539": {
+    "population": 384,
+    "postcode": "2747",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13562": {
+    "population": 3600,
+    "postcode": "2128",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13573": {
+    "population": 16,
+    "postcode": "2567",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13575": {
+    "population": 13160,
+    "postcode": "2164",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13595": {
+    "population": 5611,
+    "postcode": "2034",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13599": {
+    "population": 5829,
+    "postcode": "2142",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13603": {
+    "population": 5221,
+    "postcode": "2221",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13612": {
+    "population": 12005,
+    "postcode": "2750",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13614": {
+    "population": 3208,
+    "postcode": "2074",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13615": {
+    "population": 6913,
+    "postcode": "2145",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13617": {
+    "population": 5948,
+    "postcode": "2756",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13628": {
+    "population": 9868,
+    "postcode": "2570",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13646": {
+    "population": 5785,
+    "postcode": "2566",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13647": {
+    "population": 19942,
+    "postcode": "2759",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13652": {
+    "population": 6647,
+    "postcode": "2560",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13654": {
+    "population": 18384,
+    "postcode": "2075",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13655": {
+    "population": 3283,
+    "postcode": "2075",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13656": {
+    "population": 6302,
+    "postcode": "2176",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13657": {
+    "population": 7212,
+    "postcode": "2065",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13658": {
+    "population": 13256,
+    "postcode": "2760",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13659": {
+    "population": 3629,
+    "postcode": "2044",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13664": {
+    "population": 9349,
+    "postcode": "2768",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13665": {
+    "population": 7619,
+    "postcode": "2048",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13690": {
+    "population": 25915,
+    "postcode": "2135",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13691": {
+    "population": 3636,
+    "postcode": "2136",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13702": {
+    "population": 7288,
+    "postcode": "2130",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13714": {
+    "population": 15828,
+    "postcode": "2010",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13716": {
+    "population": 11570,
+    "postcode": "2232",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13729": {
+    "population": 1100,
+    "postcode": "2044",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13730": {
+    "population": 16667,
+    "postcode": "2000",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13731": {
+    "population": 4848,
+    "postcode": "2127",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13732": {
+    "population": 10749,
+    "postcode": "2224",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13733": {
+    "population": 3200,
+    "postcode": "2224",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13747": {
+    "population": 6570,
+    "postcode": "2762",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13757": {
+    "population": 1478,
+    "postcode": "2026",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13781": {
+    "population": 1879,
+    "postcode": "2229",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13797": {
+    "population": 5356,
+    "postcode": "2117",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13800": {
+    "population": 3550,
+    "postcode": "2044",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13805": {
+    "population": 1247,
+    "postcode": "2111",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13819": {
+    "population": 3142,
+    "postcode": "2084",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13851": {
+    "population": 16315,
+    "postcode": "2769",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13856": {
+    "population": 629,
+    "postcode": "2000",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13866": {
+    "population": 8898,
+    "postcode": "2120",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13925": {
+    "population": 16177,
+    "postcode": "2146",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13952": {
+    "population": 3700,
+    "postcode": "2770",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "13998": {
+    "population": 12850,
+    "postcode": "2074",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14000": {
+    "population": 2673,
+    "postcode": "2205",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14024": {
+    "population": 7410,
+    "postcode": "2007",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14088": {
+    "population": 134,
+    "postcode": "2566",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14089": {
+    "population": 9510,
+    "postcode": "2030",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14092": {
+    "population": 7051,
+    "postcode": "2163",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14094": {
+    "population": 1143,
+    "postcode": "2765",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14097": {
+    "population": 1678,
+    "postcode": "2172",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14103": {
+    "population": 17853,
+    "postcode": "2076",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14104": {
+    "population": 7837,
+    "postcode": "2077",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14107": {
+    "population": 4893,
+    "postcode": "2176",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14119": {
+    "population": 1711,
+    "postcode": "2745",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14166": {
+    "population": 1519,
+    "postcode": "2046",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14183": {
+    "population": 3170,
+    "postcode": "2074",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14191": {
+    "population": 8379,
+    "postcode": "2102",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14195": {
+    "population": 6135,
+    "postcode": "2170",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14200": {
+    "population": 522,
+    "postcode": "2233",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14201": {
+    "population": 16379,
+    "postcode": "2017",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14205": {
+    "population": 883,
+    "postcode": "2030",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14210": {
+    "population": 8886,
+    "postcode": "2173",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14217": {
+    "population": 4216,
+    "postcode": "2024",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14219": {
+    "population": 2981,
+    "postcode": "2060",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14226": {
+    "population": 665,
+    "postcode": "2560",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14244": {
+    "population": 12703,
+    "postcode": "2127",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14245": {
+    "population": 15098,
+    "postcode": "2145",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14252": {
+    "population": 5328,
+    "postcode": "2747",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14253": {
+    "population": 3698,
+    "postcode": "2747",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14254": {
+    "population": 3221,
+    "postcode": "2747",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14263": {
+    "population": 10152,
+    "postcode": "2171",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14266": {
+    "population": 16620,
+    "postcode": "2125",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14267": {
+    "population": 5441,
+    "postcode": "2073",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14268": {
+    "population": 13171,
+    "postcode": "2114",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14277": {
+    "population": 4501,
+    "postcode": "2120",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14278": {
+    "population": 16555,
+    "postcode": "2145",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14281": {
+    "population": 6412,
+    "postcode": "2164",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14283": {
+    "population": 5929,
+    "postcode": "2770",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14284": {
+    "population": 315,
+    "postcode": "2107",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14285": {
+    "population": 3232,
+    "postcode": "2097",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14310": {
+    "population": 10016,
+    "postcode": "2195",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14319": {
+    "population": 2382,
+    "postcode": "2770",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14320": {
+    "population": 7124,
+    "postcode": "2068",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14321": {
+    "population": 1864,
+    "postcode": "2068",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14343": {
+    "population": 1915,
+    "postcode": "2756",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14344": {
+    "population": 1183,
+    "postcode": "2756",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14353": {
+    "population": 12123,
+    "postcode": "2153",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14371": {
+    "population": 10654,
+    "postcode": "2205",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14377": {
+    "population": 8115,
+    "postcode": "2065",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14396": {
+    "population": 2780,
+    "postcode": "2560",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14399": {
+    "population": 6597,
+    "postcode": "2767",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14408": {
+    "population": 1706,
+    "postcode": "2164",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14422": {
+    "population": 7189,
+    "postcode": "2025",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14424": {
+    "population": 3792,
+    "postcode": "2011",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14428": {
+    "population": 5060,
+    "postcode": "2230",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14430": {
+    "population": 833,
+    "postcode": "2110",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14438": {
+    "population": 2043,
+    "postcode": "2232",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14440": {
+    "population": 2781,
+    "postcode": "2233",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14471": {
+    "population": 19651,
+    "postcode": "2199",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14503": {
+    "population": 2775,
+    "postcode": "2233",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14524": {
+    "population": 1675,
+    "postcode": "2161",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14537": {
+    "population": 3053,
+    "postcode": "2228",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  },
+  "14542": {
+    "population": 12622,
+    "postcode": "2017",
+    "summary": null,
+    "wikipediaUrl": null,
+    "photo": null
+  }
+}

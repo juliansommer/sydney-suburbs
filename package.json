@@ -13,7 +13,8 @@
     "preflight": "pnpm lint && pnpm typecheck && pnpm test",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "build:suburbs": "node --max-old-space-size=8192 scripts/build-suburbs.ts"
+    "build:suburbs": "node --max-old-space-size=8192 scripts/build-suburbs.ts",
+    "build:facts": "node --max-old-space-size=8192 scripts/build-suburb-facts.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
@@ -63,6 +64,7 @@
     "@vitejs/plugin-react": "^6.1.1",
     "drizzle-kit": "^0.31.11",
     "eslint-plugin-react-you-might-not-need-an-effect": "^1.0.2",
+    "fflate": "^0.8.2",
     "happy-dom": "^20.14.5",
     "mapshaper": "^0.7.67",
     "oxc-transform-react": "^0.151.0",

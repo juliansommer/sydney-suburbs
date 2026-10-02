@@ -302,6 +302,9 @@ importers:
       eslint-plugin-react-you-might-not-need-an-effect:
         specifier: ^1.0.2
         version: 1.0.2(eslint@10.11.0(jiti@2.7.0)(supports-color@10.2.2))
+      fflate:
+        specifier: ^0.8.2
+        version: 0.8.2
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5

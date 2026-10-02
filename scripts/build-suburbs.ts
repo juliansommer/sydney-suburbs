@@ -17,27 +17,7 @@ import polylabel from "polylabel"
 import { z } from "zod/mini"
 
 import { absCacheDir as cacheDir, download, root } from "./download.ts"
-
-// Everything tied to the ASGS edition lives here, so moving to Edition 4
-// (2026) is a matter of updating this block.
-const SOURCE = {
-  baseUrl:
-    "https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs-edition-3/jul2021-jun2026/access-and-downloads/digital-boundary-files",
-  sal: "SAL_2021_AUST_GDA2020_SHP.zip",
-  gccsa: "GCCSA_2021_AUST_SHP_GDA2020.zip",
-  lga: "LGA_2021_AUST_GDA2020_SHP.zip",
-  mb: "MB_2021_AUST_SHP_GDA2020.zip",
-  fields: {
-    state: "STE_CODE21",
-    gccsa: "GCC_CODE21",
-    salCode: "SAL_CODE21",
-    salName: "SAL_NAME21",
-    lgaName: "LGA_NAME21",
-    mbCategory: "MB_CAT21",
-  },
-  nsw: "1",
-  greaterSydney: "1GSYD",
-} as const
+import { boundaryUrl, SOURCE } from "./source.ts"
 
 // Rivers (watercourse areas) and any other water body over 2 ha, fetched
 // once for a box around the map.
@@ -195,10 +175,6 @@ const suburbCollection = z.object({
 type Ring = z.infer<typeof ring>
 type Geometry = z.infer<typeof suburbCollection>["features"][number]["geometry"]
 type Suburb = z.infer<typeof suburbCollection>["features"][number]["properties"]
-
-function absUrl(file: string) {
-  return `${SOURCE.baseUrl}/${file}`
-}
 
 async function buildGeoJson() {
   const f = SOURCE.fields
@@ -435,10 +411,10 @@ function check(suburbs: Suburb[], gzipBytes: number) {
 }
 
 await Promise.all([
-  download(SOURCE.sal, absUrl(SOURCE.sal)),
-  download(SOURCE.gccsa, absUrl(SOURCE.gccsa)),
-  download(SOURCE.lga, absUrl(SOURCE.lga)),
-  download(SOURCE.mb, absUrl(SOURCE.mb)),
+  download(SOURCE.sal, boundaryUrl(SOURCE.sal)),
+  download(SOURCE.gccsa, boundaryUrl(SOURCE.gccsa)),
+  download(SOURCE.lga, boundaryUrl(SOURCE.lga)),
+  download(SOURCE.mb, boundaryUrl(SOURCE.mb)),
   download(HYDRO.file, HYDRO.url),
 ])
 
