@@ -199,7 +199,9 @@ function ZoomableMap({
           }
         })
       const selection = select(svg)
-      selection.call(behaviour)
+      // A click toggles a suburb, so a quick select-then-close would otherwise
+      // read as a double-click and zoom in.
+      selection.call(behaviour).on("dblclick.zoom", null)
       zoomer.current = { selection, behaviour }
       return () => {
         zoomer.current = null
