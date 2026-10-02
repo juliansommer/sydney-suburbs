@@ -118,14 +118,3 @@ export const me = new Hono<MeEnv>()
       return c.body(null, 204)
     },
   )
-  .delete("/suburbs/:id", async (c) => {
-    await getDb()
-      .delete(userSuburbs)
-      .where(
-        and(
-          eq(userSuburbs.userId, c.var.user.id),
-          eq(userSuburbs.suburbId, c.req.param("id")),
-        ),
-      )
-    return c.body(null, 204)
-  })

@@ -3,7 +3,8 @@ import userEvent from "@testing-library/user-event"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { authClient } from "@/lib/auth-client"
-import { suburbsTopology } from "@/test/fixtures"
+import { signIn, signOut } from "@/test/auth"
+import { mockFetch } from "@/test/mock-fetch"
 import { renderRoute } from "@/test/utils"
 
 vi.mock("@/lib/auth-client", () => ({
@@ -14,18 +15,10 @@ vi.mock("@/lib/auth-client", () => ({
   },
 }))
 
-const useSession = vi.mocked(authClient.useSession)
-
 describe("login page", () => {
   beforeEach(() => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => Response.json(suburbsTopology)),
-    )
-    useSession.mockReturnValue({
-      data: null,
-      isPending: false,
-    } as ReturnType<typeof authClient.useSession>)
+    mockFetch()
+    signOut()
   })
 
   it("offers Google sign-in", async () => {
@@ -42,10 +35,7 @@ describe("login page", () => {
   })
 
   it("sends signed-in users to the map", async () => {
-    useSession.mockReturnValue({
-      data: { user: { email: "someone@example.com" } },
-      isPending: false,
-    } as ReturnType<typeof authClient.useSession>)
+    signIn()
 
     const { router } = await renderRoute("/login")
 
@@ -68,10 +58,7 @@ describe("login page", () => {
   })
 
   it("sends signed-in users back to the redirect", async () => {
-    useSession.mockReturnValue({
-      data: { user: { email: "someone@example.com" } },
-      isPending: false,
-    } as ReturnType<typeof authClient.useSession>)
+    signIn()
 
     const { router } = await renderRoute(
       `/login?redirect=${encodeURIComponent("/?suburb=2")}`,

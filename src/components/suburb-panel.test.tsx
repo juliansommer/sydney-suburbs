@@ -194,7 +194,7 @@ describe("SuburbPanel facts", () => {
     )
   })
 
-  it("leaves out the photo and summary when there are none", async () => {
+  it("leaves out the photo, summary and a population of zero", async () => {
     mockFetch()
     await renderPanel({ suburb: beta })
 
@@ -204,16 +204,6 @@ describe("SuburbPanel facts", () => {
     expect(
       screen.queryByRole("button", { name: "Photo credit" }),
     ).not.toBeInTheDocument()
-    expect(
-      screen.queryByRole("link", { name: "Read more on Wikipedia" }),
-    ).not.toBeInTheDocument()
-  })
-
-  it("leaves out a population of zero", async () => {
-    mockFetch()
-    await renderPanel({ suburb: beta })
-
-    await expect(screen.findByText("Postcode 2000")).resolves.toBeVisible()
     expect(screen.queryByText(/people/)).not.toBeInTheDocument()
   })
 

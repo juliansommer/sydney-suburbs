@@ -11,6 +11,7 @@ import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { authClient } from "@/lib/auth-client"
+import { signIn, signOut } from "@/test/auth"
 import { isFactsRequest, mockFetch } from "@/test/mock-fetch"
 import { renderRoute } from "@/test/utils"
 import type { UserSuburb } from "@/types/user-suburb"
@@ -22,15 +23,6 @@ vi.mock("@/lib/auth-client", () => ({
     signOut: vi.fn(),
   },
 }))
-
-const useSession = vi.mocked(authClient.useSession)
-
-function signIn() {
-  useSession.mockReturnValue({
-    data: { user: { email: "someone@example.com" } },
-    isPending: false,
-  } as ReturnType<typeof authClient.useSession>)
-}
 
 function visitedRow(suburbId: string): UserSuburb {
   return {
@@ -49,10 +41,7 @@ function visitedFill() {
 describe("map page", () => {
   beforeEach(() => {
     mockFetch()
-    useSession.mockReturnValue({
-      data: null,
-      isPending: false,
-    } as ReturnType<typeof authClient.useSession>)
+    signOut()
   })
 
   it("shows the map to everyone", async () => {
@@ -227,10 +216,7 @@ describe("map page suburb facts", () => {
 
   beforeEach(() => {
     mockFetch()
-    useSession.mockReturnValue({
-      data: null,
-      isPending: false,
-    } as ReturnType<typeof authClient.useSession>)
+    signOut()
     idleCallbacks = []
     vi.stubGlobal("requestIdleCallback", (callback: () => void) => {
       idleCallbacks.push(callback)

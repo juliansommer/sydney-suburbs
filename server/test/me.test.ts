@@ -72,7 +72,6 @@ describe("/api/me/suburbs", () => {
   it.each([
     ["GET", "/suburbs", undefined],
     ["PATCH", `/suburbs/${SUBURB}`, { visited: true }],
-    ["DELETE", `/suburbs/${SUBURB}`, undefined],
   ])("401s %s %s without a user", async (method, path, body) => {
     const res = await call(method, path, { user: "", body })
 
@@ -191,24 +190,5 @@ describe("/api/me/suburbs", () => {
 
     expect(res.status).toBe(404)
     await expect(res.json()).resolves.toStrictEqual({ error: "unknown suburb" })
-  })
-
-  it("deletes a row, and is idempotent", async () => {
-    await patch({ visited: true })
-
-    const first = await call("DELETE", `/suburbs/${SUBURB}`)
-    const second = await call("DELETE", `/suburbs/${SUBURB}`)
-
-    expect(first.status).toBe(204)
-    expect(second.status).toBe(204)
-    await expect(list()).resolves.toStrictEqual([])
-  })
-
-  it("only deletes the caller's row", async () => {
-    await patch({ visited: true }, SUBURB, "bob")
-
-    await call("DELETE", `/suburbs/${SUBURB}`, { user: "alice" })
-
-    await expect(list("bob")).resolves.toHaveLength(1)
   })
 })
