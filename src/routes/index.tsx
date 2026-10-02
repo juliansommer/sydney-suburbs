@@ -181,6 +181,9 @@ function MapView({
         onClose={() => {
           select(null)
         }}
+        onZoomToCouncil={(lga) => {
+          map.current?.zoomToCouncil(lga)
+        }}
         rows={rows}
         signedIn={signedIn}
         suburb={selected}

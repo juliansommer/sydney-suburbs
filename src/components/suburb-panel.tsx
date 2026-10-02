@@ -28,6 +28,8 @@ interface SuburbPanelProps {
   // The user's rows, or undefined while they load.
   rows: ReadonlyMap<string, UserSuburb> | undefined
   onClose: () => void
+  // Outlines the council on the map, like the progress list does.
+  onZoomToCouncil: (lga: string) => void
 }
 
 // Tailwind's `md`: a card beside the map from here up, a bottom sheet below.
@@ -42,7 +44,13 @@ export function SuburbPanel(props: SuburbPanelProps) {
 }
 
 // The photo runs edge to edge across the top, with the close button over it.
-function SuburbCard({ suburb, signedIn, rows, onClose }: SuburbPanelProps) {
+function SuburbCard({
+  suburb,
+  signedIn,
+  rows,
+  onClose,
+  onZoomToCouncil,
+}: SuburbPanelProps) {
   const facts = useSuburbFacts(suburb?.id)
   if (!suburb) {
     return null
@@ -61,7 +69,7 @@ function SuburbCard({ suburb, signedIn, rows, onClose }: SuburbPanelProps) {
           <header className="pr-8">
             <h2 className="text-lg font-semibold">{suburb.name}</h2>
             <p className="text-sm text-muted-foreground">
-              {councilName(suburb.lga)}
+              <CouncilButton lga={suburb.lga} onZoom={onZoomToCouncil} />
             </p>
             <FactsRow state={facts} />
           </header>
@@ -80,7 +88,13 @@ function SuburbCard({ suburb, signedIn, rows, onClose }: SuburbPanelProps) {
 // Non-modal, so the map stays usable above it and tapping another suburb
 // swaps the content in place. Swiping down from the peek closes it. Stays
 // mounted so it can slide in and out, keeping the last suburb while it leaves.
-function SuburbSheet({ suburb, signedIn, rows, onClose }: SuburbPanelProps) {
+function SuburbSheet({
+  suburb,
+  signedIn,
+  rows,
+  onClose,
+  onZoomToCouncil,
+}: SuburbPanelProps) {
   const [snapPoint, setSnapPoint] = useState<Drawer.Root.SnapPoint | null>(PEEK)
   const [shown, setShown] = useState(suburb)
   if (suburb && suburb !== shown) {
@@ -109,6 +123,11 @@ function SuburbSheet({ suburb, signedIn, rows, onClose }: SuburbPanelProps) {
         {shown ? (
           <SheetPopup
             onClose={onClose}
+            // Drops to the peek so the outlined council is in view.
+            onZoomToCouncil={(lga) => {
+              setSnapPoint(PEEK)
+              onZoomToCouncil(lga)
+            }}
             rows={rows}
             signedIn={signedIn}
             suburb={shown}
@@ -125,7 +144,13 @@ interface SheetPopupProps extends SuburbPanelProps {
 
 // The peek shows the name and visit controls; the photo and facts
 // sit below and come into view as the sheet expands.
-function SheetPopup({ suburb, signedIn, rows, onClose }: SheetPopupProps) {
+function SheetPopup({
+  suburb,
+  signedIn,
+  rows,
+  onClose,
+  onZoomToCouncil,
+}: SheetPopupProps) {
   const facts = useSuburbFacts(suburb.id)
   return (
     <Drawer.Portal>
@@ -142,7 +167,7 @@ function SheetPopup({ suburb, signedIn, rows, onClose }: SheetPopupProps) {
                 {suburb.name}
               </Drawer.Title>
               <Drawer.Description className="text-sm text-muted-foreground">
-                {councilName(suburb.lga)}
+                <CouncilButton lga={suburb.lga} onZoom={onZoomToCouncil} />
               </Drawer.Description>
             </div>
             <CloseButton onClose={onClose} />
@@ -166,6 +191,25 @@ function SheetPopup({ suburb, signedIn, rows, onClose }: SheetPopupProps) {
         </Drawer.Popup>
       </Drawer.Viewport>
     </Drawer.Portal>
+  )
+}
+
+interface CouncilButtonProps {
+  lga: string
+  onZoom: (lga: string) => void
+}
+
+function CouncilButton({ lga, onZoom }: CouncilButtonProps) {
+  return (
+    <button
+      className="hover:text-foreground hover:underline"
+      onClick={() => {
+        onZoom(lga)
+      }}
+      type="button"
+    >
+      {councilName(lga)}
+    </button>
   )
 }
 

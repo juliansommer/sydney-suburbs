@@ -19,12 +19,14 @@ const beta = { id: "2", name: "Beta", lga: "Inner West" }
 interface RenderPanelOptions {
   suburb?: typeof alpha
   signedIn?: boolean
+  onZoomToCouncil?: (lga: string) => void
 }
 
 // The panel links to /login, so it needs a router around it.
 async function renderPanel({
   suburb = alpha,
   signedIn = true,
+  onZoomToCouncil = () => {},
 }: RenderPanelOptions = {}) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -35,6 +37,7 @@ async function renderPanel({
       component: () => (
         <SuburbPanel
           onClose={() => {}}
+          onZoomToCouncil={onZoomToCouncil}
           rows={new Map()}
           signedIn={signedIn}
           suburb={suburb}
@@ -93,6 +96,19 @@ describe("SuburbPanel notes", () => {
     await waitFor(() => {
       expect(patches).toStrictEqual([["/api/me/suburbs/1", { notes: "Ferry" }]])
     })
+  })
+})
+
+describe("SuburbPanel council", () => {
+  it("zooms to the council when its name is clicked", async () => {
+    mockFetch()
+    const onZoomToCouncil = vi.fn<(lga: string) => void>()
+    const user = userEvent.setup()
+    await renderPanel({ onZoomToCouncil })
+
+    await user.click(screen.getByRole("button", { name: "Sydney Council" }))
+
+    expect(onZoomToCouncil).toHaveBeenCalledWith("Sydney")
   })
 })
 
