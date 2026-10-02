@@ -116,14 +116,38 @@ describe("SuburbPanel facts", () => {
     expect(screen.getByText("Sydney Council")).toBeVisible()
   })
 
-  it("shows a placeholder when there's no photo, and no summary", async () => {
+  it("credits the photo from its info button", async () => {
+    mockFetch()
+    const user = userEvent.setup()
+    await renderPanel()
+
+    await user.click(
+      await screen.findByRole("button", { name: "Photo credit" }),
+    )
+
+    await expect(screen.findByText("Jane Smith")).resolves.toBeVisible()
+    expect(screen.getByRole("link", { name: "CC BY-SA 4.0" })).toHaveAttribute(
+      "href",
+      "https://creativecommons.org/licenses/by-sa/4.0",
+    )
+    expect(
+      screen.getByRole("link", { name: "Wikimedia Commons" }),
+    ).toHaveAttribute(
+      "href",
+      "https://commons.wikimedia.org/wiki/File:Alpha.jpg",
+    )
+  })
+
+  it("leaves out the photo and summary when there are none", async () => {
     mockFetch()
     await renderPanel({ suburb: beta })
 
     await expect(screen.findByText("Postcode 2000")).resolves.toBeVisible()
-    // The council shows in the header and again in the placeholder.
-    expect(screen.getAllByText("Inner West Council")).toHaveLength(2)
+    expect(screen.getByText("Inner West Council")).toBeVisible()
     expect(screen.queryByRole("img")).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: "Photo credit" }),
+    ).not.toBeInTheDocument()
     expect(
       screen.queryByRole("link", { name: "Read more on Wikipedia" }),
     ).not.toBeInTheDocument()

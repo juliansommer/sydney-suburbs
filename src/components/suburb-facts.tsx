@@ -1,8 +1,13 @@
 import { useQuery } from "@tanstack/react-query"
 import { cn } from "cn"
+import { InfoIcon } from "lucide-react"
 import type { CSSProperties } from "react"
 
-import { councilName } from "@/lib/council"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { suburbFactsQuery } from "@/queries/suburb-facts"
 import type { SuburbFacts, SuburbPhoto } from "@/types/suburb-facts"
 
@@ -29,13 +34,12 @@ export function useSuburbFacts(suburbId: string | undefined): FactsState {
 interface SuburbMediaProps {
   state: FactsState
   name: string
-  lga: string
   className?: string
 }
 
-// The photo at the top of the panel, a placeholder when there isn't one, or a
-// skeleton of the same size while the facts load.
-export function SuburbMedia({ state, name, lga, className }: SuburbMediaProps) {
+// The photo at the top of the panel, or a skeleton of the same size while the
+// facts load. Suburbs without a photo skip it entirely.
+export function SuburbMedia({ state, name, className }: SuburbMediaProps) {
   if (state.status === "error") {
     return null
   }
@@ -50,16 +54,7 @@ export function SuburbMedia({ state, name, lga, className }: SuburbMediaProps) {
   }
   const photo = state.facts?.photo
   if (!photo) {
-    return (
-      <div
-        className={cn(
-          "grid aspect-3/1 place-items-center bg-map-hover text-sm font-medium text-map-label",
-          className,
-        )}
-      >
-        {councilName(lga)}
-      </div>
-    )
+    return null
   }
   return <Photo className={className} name={name} photo={photo} />
 }
@@ -75,19 +70,64 @@ type PlaceholderStyle = CSSProperties & Record<"--photo-color", string>
 function Photo({ photo, name, className }: PhotoProps) {
   const placeholder: PlaceholderStyle = { "--photo-color": photo.color }
   return (
-    <img
-      alt={name}
-      className={cn(
-        "aspect-3/2 w-full bg-(--photo-color) object-cover",
-        className,
-      )}
-      decoding="async"
-      height={photo.height}
-      src={photo.url}
-      // The photo's average colour shows until it loads.
-      style={placeholder}
-      width={photo.width}
-    />
+    <div className={cn("relative", className)}>
+      <img
+        alt={name}
+        className="aspect-3/2 w-full bg-(--photo-color) object-cover"
+        decoding="async"
+        height={photo.height}
+        src={photo.url}
+        // The photo's average colour shows until it loads.
+        style={placeholder}
+        width={photo.width}
+      />
+      <PhotoCredit photo={photo} />
+    </div>
+  )
+}
+
+interface PhotoCreditProps {
+  photo: SuburbPhoto
+}
+
+// Opens on hover with a mouse and on tap with touch.
+function PhotoCredit({ photo }: PhotoCreditProps) {
+  return (
+    <Popover>
+      <PopoverTrigger
+        aria-label="Photo credit"
+        className="absolute right-2 bottom-2 grid size-7 place-items-center"
+        openOnHover
+      >
+        <InfoIcon className="size-4 text-black" />
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-64" side="left">
+        <div className="flex flex-col gap-1 text-xs">
+          <p>
+            Photo by <span className="font-medium">{photo.artist}</span>
+          </p>
+          <p className="text-muted-foreground">
+            <a
+              className="hover:underline"
+              href={photo.licenceUrl}
+              rel="noreferrer"
+              target="_blank"
+            >
+              {photo.licence}
+            </a>
+            {" · "}
+            <a
+              className="hover:underline"
+              href={photo.sourceUrl}
+              rel="noreferrer"
+              target="_blank"
+            >
+              Wikimedia Commons
+            </a>
+          </p>
+        </div>
+      </PopoverContent>
+    </Popover>
   )
 }
 

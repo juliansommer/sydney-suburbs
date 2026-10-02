@@ -57,7 +57,7 @@ function SuburbCard({ suburb, signedIn, rows, onClose }: SuburbPanelProps) {
         <CloseButton onClose={onClose} />
       </div>
       <div className="overflow-y-auto">
-        <SuburbMedia lga={suburb.lga} name={suburb.name} state={facts} />
+        <SuburbMedia name={suburb.name} state={facts} />
         <div className="flex flex-col gap-4 p-4">
           <header className="pr-8">
             <h2 className="text-lg font-semibold">{suburb.name}</h2>
@@ -159,7 +159,6 @@ function SheetPopup({ suburb, signedIn, rows, onClose }: SheetPopupProps) {
               />
               <SuburbMedia
                 className="mx-auto w-full overflow-hidden rounded-lg border"
-                lga={suburb.lga}
                 name={suburb.name}
                 state={facts}
               />
