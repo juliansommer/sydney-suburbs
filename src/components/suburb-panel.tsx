@@ -11,6 +11,7 @@ import {
 } from "@/components/suburb-facts"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { useMediaQuery } from "@/hooks/use-media-query"
+import { councilName } from "@/lib/council"
 import { sydneyToday } from "@/lib/dates"
 import { useUpdateSuburb } from "@/mutations/use-update-suburb"
 import type { SuburbProperties } from "@/types/suburb"
@@ -60,7 +61,9 @@ function SuburbCard({ suburb, signedIn, rows, onClose }: SuburbPanelProps) {
         <div className="flex flex-col gap-4 p-4">
           <header className="pr-8">
             <h2 className="text-lg font-semibold">{suburb.name}</h2>
-            <p className="text-sm text-muted-foreground">{suburb.lga}</p>
+            <p className="text-sm text-muted-foreground">
+              {councilName(suburb.lga)}
+            </p>
             <FactsRow state={facts} />
           </header>
           <Summary state={facts} />
@@ -141,7 +144,7 @@ function SheetPopup({ suburb, signedIn, rows, onClose }: SheetPopupProps) {
                 {suburb.name}
               </Drawer.Title>
               <Drawer.Description className="text-sm text-muted-foreground">
-                {suburb.lga}
+                {councilName(suburb.lga)}
               </Drawer.Description>
             </div>
             <CloseButton onClose={onClose} />
@@ -155,7 +158,7 @@ function SheetPopup({ suburb, signedIn, rows, onClose }: SheetPopupProps) {
                 suburbId={suburb.id}
               />
               <SuburbMedia
-                className="-mx-4"
+                className="mx-auto w-full overflow-hidden rounded-lg border"
                 lga={suburb.lga}
                 name={suburb.name}
                 state={facts}

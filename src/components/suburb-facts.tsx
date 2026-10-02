@@ -2,10 +2,10 @@ import { useQuery } from "@tanstack/react-query"
 import { cn } from "cn"
 import type { CSSProperties } from "react"
 
+import { councilName } from "@/lib/council"
 import { suburbFactsQuery } from "@/queries/suburb-facts"
 import type { SuburbFacts, SuburbPhoto } from "@/types/suburb-facts"
 
-const SUMMARY_LICENCE_URL = "https://creativecommons.org/licenses/by-sa/4.0/"
 const populationFormat = new Intl.NumberFormat("en-AU")
 
 type FactsState =
@@ -57,7 +57,7 @@ export function SuburbMedia({ state, name, lga, className }: SuburbMediaProps) {
           className,
         )}
       >
-        {lga}
+        {councilName(lga)}
       </div>
     )
   }
@@ -75,38 +75,19 @@ type PlaceholderStyle = CSSProperties & Record<"--photo-color", string>
 function Photo({ photo, name, className }: PhotoProps) {
   const placeholder: PlaceholderStyle = { "--photo-color": photo.color }
   return (
-    <figure className={className}>
-      <img
-        alt={name}
-        className="aspect-3/2 w-full bg-(--photo-color) object-cover"
-        decoding="async"
-        height={photo.height}
-        src={photo.url}
-        // The photo's average colour shows until it loads.
-        style={placeholder}
-        width={photo.width}
-      />
-      <figcaption className="line-clamp-2 px-4 pt-1 text-xs text-muted-foreground">
-        Photo:{" "}
-        <a
-          className="hover:underline"
-          href={photo.sourceUrl}
-          rel="noreferrer"
-          target="_blank"
-        >
-          {photo.artist}
-        </a>
-        ,{" "}
-        <a
-          className="hover:underline"
-          href={photo.licenceUrl}
-          rel="noreferrer"
-          target="_blank"
-        >
-          {photo.licence}
-        </a>
-      </figcaption>
-    </figure>
+    <img
+      alt={name}
+      className={cn(
+        "aspect-3/2 w-full bg-(--photo-color) object-cover",
+        className,
+      )}
+      decoding="async"
+      height={photo.height}
+      src={photo.url}
+      // The photo's average colour shows until it loads.
+      style={placeholder}
+      width={photo.width}
+    />
   )
 }
 
@@ -160,15 +141,6 @@ export function Summary({ state }: SummaryProps) {
             target="_blank"
           >
             Read more on Wikipedia
-          </a>{" "}
-          · Summary from Wikipedia,{" "}
-          <a
-            className="hover:underline"
-            href={SUMMARY_LICENCE_URL}
-            rel="noreferrer"
-            target="_blank"
-          >
-            CC BY-SA 4.0
           </a>
         </p>
       ) : null}

@@ -5,7 +5,7 @@ import {
   createRouter,
   RouterProvider,
 } from "@tanstack/react-router"
-import { act, render, screen, waitFor, within } from "@testing-library/react"
+import { act, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -97,7 +97,7 @@ describe("SuburbPanel notes", () => {
 })
 
 describe("SuburbPanel facts", () => {
-  it("shows the photo, facts, summary and credits", async () => {
+  it("shows the photo, facts and summary", async () => {
     mockFetch()
     await renderPanel()
 
@@ -113,17 +113,7 @@ describe("SuburbPanel facts", () => {
     expect(
       screen.getByRole("link", { name: "Read more on Wikipedia" }),
     ).toHaveAttribute("href", "https://en.wikipedia.org/wiki/Alpha")
-    expect(screen.getByText(/Summary from Wikipedia/)).toBeVisible()
-
-    const credit = within(screen.getByRole("figure"))
-    expect(credit.getByRole("link", { name: "Jane Smith" })).toHaveAttribute(
-      "href",
-      "https://commons.wikimedia.org/wiki/File:Alpha.jpg",
-    )
-    expect(credit.getByRole("link", { name: "CC BY-SA 4.0" })).toHaveAttribute(
-      "href",
-      "https://creativecommons.org/licenses/by-sa/4.0",
-    )
+    expect(screen.getByText("Sydney Council")).toBeVisible()
   })
 
   it("shows a placeholder when there's no photo, and no summary", async () => {
@@ -132,12 +122,11 @@ describe("SuburbPanel facts", () => {
 
     await expect(screen.findByText("Postcode 2000")).resolves.toBeVisible()
     // The council shows in the header and again in the placeholder.
-    expect(screen.getAllByText("Inner West")).toHaveLength(2)
+    expect(screen.getAllByText("Inner West Council")).toHaveLength(2)
     expect(screen.queryByRole("img")).not.toBeInTheDocument()
     expect(
       screen.queryByRole("link", { name: "Read more on Wikipedia" }),
     ).not.toBeInTheDocument()
-    expect(screen.queryByText(/Summary from Wikipedia/)).not.toBeInTheDocument()
   })
 
   it("leaves out a population of zero", async () => {

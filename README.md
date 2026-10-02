@@ -29,7 +29,7 @@ Suburb facts come from these sources:
 - Postcodes: ABS ASGS Edition 3 Postal Areas, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0), using the postal area that covers most of each suburb
 - Matching suburbs to articles and photos: [Wikidata](https://www.wikidata.org), licensed under [CC0](https://creativecommons.org/publicdomain/zero/1.0/)
 - Summaries: [Wikipedia](https://en.wikipedia.org), licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
-- Photos: [Wikimedia Commons](https://commons.wikimedia.org), each under its own free licence, with the photographer and licence credited in the app
+- Photos: [Wikimedia Commons](https://commons.wikimedia.org), each under its own free licence; every photo's photographer, licence and source page are listed in `src/data/suburb-facts.json`
 
 ## Rebuilding the data
 

@@ -103,7 +103,7 @@ describe("map page", () => {
 
     const panel = await screen.findByRole("region", { name: "Alpha" })
     expect(router.state.location.search).toHaveProperty("suburb", 1)
-    expect(within(panel).getByText("Sydney")).toBeInTheDocument()
+    expect(within(panel).getByText("Sydney Council")).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Alpha" })).toHaveAttribute(
       "aria-pressed",
       "true",
