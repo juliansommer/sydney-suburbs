@@ -20,12 +20,7 @@ import { useElementSize } from "@/hooks/use-element-size"
 import { type Bounds, fitBounds } from "@/lib/zoom"
 import type { LanduseKind, SuburbMapData } from "@/types/suburb"
 
-import {
-  projectMap,
-  type ProjectedCouncil,
-  type ProjectedLanduse,
-  type ProjectedSuburb,
-} from "./project"
+import { projectMap, type ProjectedSuburb } from "./project"
 import { SuburbLabels } from "./suburb-labels"
 
 const MAX_ZOOM = 40
@@ -57,14 +52,6 @@ export interface SuburbMapHandle {
 interface Zoomer {
   selection: Selection<SVGSVGElement, unknown, null, undefined>
   behaviour: ZoomBehavior<SVGSVGElement, unknown>
-}
-
-function viewExtent(width: number, height: number) {
-  const extent: [[number, number], [number, number]] = [
-    [0, 0],
-    [width, height],
-  ]
-  return extent
 }
 
 // Fills its container. The map is drawn once the container has a size, and
@@ -100,6 +87,10 @@ function ZoomableMap({
   // ends makes it redraw sharp straight away.
   const [gesture, setGesture] = useState(0)
   const projected = projectMap(data, width, height)
+  const visitedD = projected.suburbs
+    .filter((s) => visitedIds.has(s.id))
+    .map((s) => s.d)
+    .join("")
   const zoomer = useRef<Zoomer | null>(null)
 
   const [outlinedLga, setOutlinedLga] = useState<string | null>(null)
@@ -119,7 +110,8 @@ function ZoomableMap({
     }
     const { selection, behaviour } = zoomer.current
     const { x, y, k } = fitBounds(bounds, width, height, minZoom)
-    const extent = viewExtent(width, height)
+    // The pan limits are the viewport itself.
+    const extent = behaviour.translateExtent()
     // Unlike gestures, a programmatic transform skips the pan limits.
     const target = behaviour.constrain()(
       zoomIdentity.translate(x, y).scale(k),
@@ -178,7 +170,10 @@ function ZoomableMap({
       if (!svg) {
         return undefined
       }
-      const extent = viewExtent(width, height)
+      const extent: [[number, number], [number, number]] = [
+        [0, 0],
+        [width, height],
+      ]
       let startTransform = zoomIdentity
       const behaviour = zoom<SVGSVGElement, unknown>()
         .extent(extent)
@@ -231,16 +226,31 @@ function ZoomableMap({
       <rect className="fill-map-water" height={height} width={width} />
       <g key={gesture} transform={transform.toString()}>
         <path className="fill-map-surrounds" d={projected.surrounds} />
-        <LandPaths suburbs={projected.suburbs} />
-        <LandusePaths landuse={projected.landuse} />
-        <VisitedPaths suburbs={projected.suburbs} visitedIds={visitedIds} />
+        {/* Plain land under the parks and water, joined into one path so it's cheap. */}
+        <path
+          className="fill-map-land"
+          d={projected.suburbs.map((s) => s.d).join("")}
+        />
+        {projected.landuse.map((l) => (
+          <path className={LANDUSE_FILL[l.kind]} d={l.d} key={l.kind} />
+        ))}
+        {/* Over the parks and water, so a visited suburb is filled edge to edge. */}
+        {visitedD ? <path className="fill-map-visited" d={visitedD} /> : null}
         <SuburbPaths
           onSelect={pick}
           selectedId={selectedId}
           suburbs={projected.suburbs}
         />
-        <CouncilOutline councils={projected.councils} lga={outlinedLga} />
-        <SelectedOutline selectedId={selectedId} suburbs={projected.suburbs} />
+        <Outline
+          d={projected.councils.find((c) => c.lga === outlinedLga)?.d}
+          strokeWidth={3}
+        />
+        {/* SVG has no z-index, so the selected suburb is drawn again last to
+            keep its outline above the neighbouring borders. */}
+        <Outline
+          d={projected.suburbs.find((s) => s.id === selectedId)?.d}
+          strokeWidth={2.5}
+        />
       </g>
       <SuburbLabels
         height={height}
@@ -250,41 +260,6 @@ function ZoomableMap({
       />
     </svg>
   )
-}
-
-interface LandPathsProps {
-  suburbs: ProjectedSuburb[]
-}
-
-// Plain land under the parks and water, joined into one path so it's cheap.
-function LandPaths({ suburbs }: LandPathsProps) {
-  const d = suburbs.map((s) => s.d).join("")
-  return <path className="fill-map-land" d={d} />
-}
-
-interface VisitedPathsProps {
-  suburbs: ProjectedSuburb[]
-  visitedIds: ReadonlySet<string>
-}
-
-// Over the parks and water, so a visited suburb is filled edge to edge. One
-// joined path keeps it cheap.
-function VisitedPaths({ suburbs, visitedIds }: VisitedPathsProps) {
-  const d = suburbs
-    .filter((s) => visitedIds.has(s.id))
-    .map((s) => s.d)
-    .join("")
-  return d ? <path className="fill-map-visited" d={d} /> : null
-}
-
-interface LandusePathsProps {
-  landuse: ProjectedLanduse[]
-}
-
-function LandusePaths({ landuse }: LandusePathsProps) {
-  return landuse.map((l) => (
-    <path className={LANDUSE_FILL[l.kind]} d={l.d} key={l.kind} />
-  ))
 }
 
 interface SuburbPathsProps {
@@ -328,47 +303,22 @@ function SuburbPaths({ suburbs, selectedId, onSelect }: SuburbPathsProps) {
   )
 }
 
-interface CouncilOutlineProps {
-  councils: ProjectedCouncil[]
-  lga: string | null
+interface OutlineProps {
+  d: string | undefined
+  strokeWidth: number
 }
 
-function CouncilOutline({ councils, lga }: CouncilOutlineProps) {
-  const council = councils.find((c) => c.lga === lga)
-  if (!council) {
+function Outline({ d, strokeWidth }: OutlineProps) {
+  if (!d) {
     return null
   }
   return (
     <path
       className="pointer-events-none stroke-foreground"
-      d={council.d}
+      d={d}
       fill="none"
       strokeLinejoin="round"
-      strokeWidth={3}
-      vectorEffect="non-scaling-stroke"
-    />
-  )
-}
-
-interface SelectedOutlineProps {
-  suburbs: ProjectedSuburb[]
-  selectedId: string | null
-}
-
-// SVG has no z-index, so the selected suburb is drawn again last to keep its
-// outline above the neighbouring borders.
-function SelectedOutline({ suburbs, selectedId }: SelectedOutlineProps) {
-  const selected = suburbs.find((s) => s.id === selectedId)
-  if (!selected) {
-    return null
-  }
-  return (
-    <path
-      className="pointer-events-none stroke-foreground"
-      d={selected.d}
-      fill="none"
-      strokeLinejoin="round"
-      strokeWidth={2.5}
+      strokeWidth={strokeWidth}
       vectorEffect="non-scaling-stroke"
     />
   )
