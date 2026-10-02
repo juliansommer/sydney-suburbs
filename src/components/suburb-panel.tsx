@@ -5,6 +5,7 @@ import { useEffect, useEffectEvent, useRef, useState } from "react"
 
 import {
   FactsRow,
+  MoreDetails,
   SuburbMedia,
   Summary,
   useSuburbFacts,
@@ -76,6 +77,7 @@ function SuburbCard({
               <FactsRow state={facts} />
             </header>
             <Summary state={facts} />
+            <MoreDetails state={facts} />
           </div>
           <PanelBody
             key={suburb.id}
@@ -192,6 +194,7 @@ function SheetPopup({
               <div className="flex flex-col gap-2">
                 <FactsRow state={facts} />
                 <Summary state={facts} />
+                <MoreDetails state={facts} />
               </div>
             </div>
           </Drawer.Content>

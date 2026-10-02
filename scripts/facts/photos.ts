@@ -20,13 +20,6 @@ export interface ProcessedPhoto {
   body: Buffer
   width: number
   height: number
-  color: string
-}
-
-function toHex(channel: number | undefined) {
-  return Math.round(channel ?? 0)
-    .toString(16)
-    .padStart(2, "0")
 }
 
 // The name includes a hash of the contents, so a changed photo gets a new
@@ -40,27 +33,16 @@ export async function processPhoto(
   id: string,
   original: Uint8Array,
 ): Promise<ProcessedPhoto> {
-  const image = sharp(original).rotate().resize({
-    width: WIDTH,
-    withoutEnlargement: true,
-  })
-  const [{ data, info }, { channels }] = await Promise.all([
-    image
-      .clone()
-      .webp({ quality: QUALITY })
-      .toBuffer({ resolveWithObject: true }),
-    image.clone().stats(),
-  ])
+  const { data, info } = await sharp(original)
+    .rotate()
+    .resize({ width: WIDTH, withoutEnlargement: true })
+    .webp({ quality: QUALITY })
+    .toBuffer({ resolveWithObject: true })
   return {
     pathname: photoPathname(id, data),
     body: data,
     width: info.width,
     height: info.height,
-    // The average colour stands in for the photo while it loads.
-    color: `#${channels
-      .slice(0, 3)
-      .map((c) => toHex(c.mean))
-      .join("")}`,
   }
 }
 
@@ -124,7 +106,6 @@ export async function uploadPhotos(
         url,
         width: photo.width,
         height: photo.height,
-        color: photo.color,
         artist: source.artist,
         licence: source.licence,
         licenceUrl: source.licenceUrl,

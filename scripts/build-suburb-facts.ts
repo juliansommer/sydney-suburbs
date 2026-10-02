@@ -1,8 +1,10 @@
 // Builds the facts shown in the suburb panel. Run by hand with
 // `pnpm build:facts`; the output is committed.
 //
-// Source: ABS 2021 Census General Community Profile DataPack, table G01,
-//   licensed CC BY 4.0, for population.
+// Source: ABS 2021 Census General Community Profile DataPack, tables G01 and
+//   G02, licensed CC BY 4.0, for population, birthplace and medians.
+// Source: ABS ASGS Edition 3 Suburbs and Localities, licensed CC BY 4.0, for
+//   area and distance from the CBD.
 // Source: ABS ASGS Edition 3 Postal Areas, licensed CC BY 4.0, for postcodes.
 // Source: Wikidata, CC0, and Wikipedia, to match suburbs to photos.
 // Source: Wikimedia Commons, for photos, each credited in the app.
@@ -17,9 +19,15 @@ import { readFile, writeFile } from "node:fs/promises"
 
 import { z } from "zod/mini"
 
-import type { SuburbFactsFile } from "../src/types/suburb-facts.ts"
+import type { SuburbFactsFile, SuburbStats } from "../src/types/suburb-facts.ts"
 import { type CacheOptions, root } from "./download.ts"
-import { readPopulation, readPostcodes } from "./facts/abs.ts"
+import {
+  type CensusFacts,
+  type Geography,
+  readCensus,
+  readGeography,
+  readPostcodes,
+} from "./facts/abs.ts"
 import {
   isSuitableFile,
   type PhotoSource,
@@ -101,6 +109,33 @@ async function readSummaries(): Promise<Record<string, string>> {
     .parse(JSON.parse(await readFile(summariesPath, "utf-8")))
 }
 
+const AREA_DECIMALS = 100
+const DISTANCE_DECIMALS = 10
+
+function toStats(
+  census: CensusFacts | undefined,
+  geography: Geography,
+): SuburbStats {
+  const people = census?.population ?? 0
+  // Places with no residents still get figures from a few non-resident
+  // records, like a median age of 65 for Port Botany, so those are dropped.
+  const residents = people > 0 ? census : undefined
+  return {
+    medianAge: residents?.medianAge ?? null,
+    medianRent: residents?.medianRent ?? null,
+    medianHouseholdIncome: residents?.medianHouseholdIncome ?? null,
+    bornOverseas: residents?.bornOverseas ?? null,
+    areaKm2: Math.round(geography.areaKm2 * AREA_DECIMALS) / AREA_DECIMALS,
+    density:
+      people > 0 && geography.areaKm2 > 0
+        ? Math.round(people / geography.areaKm2)
+        : null,
+    cbdDistanceKm:
+      Math.round(geography.cbdDistanceKm * DISTANCE_DECIMALS) /
+      DISTANCE_DECIMALS,
+  }
+}
+
 interface PhotoChoice {
   source: PhotoSource
   fromPageImage: boolean
@@ -163,8 +198,10 @@ if (!process.env.BLOB_READ_WRITE_TOKEN) {
 const options: CacheOptions = { refresh: process.argv.includes("--refresh") }
 const prune = process.argv.includes("--prune")
 const suburbs = await readMapSuburbs()
-const population = await readPopulation()
-const postcodes = await readPostcodes(suburbs.map((s) => s.id))
+const ids = suburbs.map((s) => s.id)
+const census = await readCensus()
+const postcodes = await readPostcodes(ids)
+const geography = await readGeography(ids)
 const matches = await matchSuburbs(suburbs, options)
 const summaries = await readSummaries()
 
@@ -176,10 +213,15 @@ const upload = await uploadPhotos(
 
 const facts: SuburbFactsFile = {}
 for (const s of suburbs) {
+  const place = geography.get(s.id)
+  if (!place) {
+    throw new Error(`No boundary for suburb ${s.id} ${s.name}`)
+  }
   facts[s.id] = {
-    population: population.get(s.id) ?? null,
+    population: census.get(s.id)?.population ?? null,
     postcode: postcodes.get(s.id) ?? null,
     summary: summaries[s.id] ?? null,
+    stats: toStats(census.get(s.id), place),
     photo: upload.photos.get(s.id) ?? null,
   }
 }

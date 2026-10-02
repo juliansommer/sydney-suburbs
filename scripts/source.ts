@@ -17,20 +17,27 @@ export const SOURCE = {
     lgaName: "LGA_NAME21",
     mbCategory: "MB_CAT21",
     poaCode: "POA_CODE21",
+    areaSqKm: "AREASQKM21",
   },
   nsw: "1",
   greaterSydney: "1GSYD",
 } as const
 
-// General Community Profile DataPack for NSW suburbs. Table G01 has total
-// persons per suburb, with codes like "SAL10001".
+// General Community Profile DataPack for NSW suburbs, with codes like
+// "SAL10001". G01 has people and birthplace, G02 has the medians.
 export const CENSUS = {
   url: "https://www.abs.gov.au/census/find-census-data/datapacks/download/2021_GCP_SAL_for_NSW_short-header.zip",
   file: "2021_GCP_SAL_for_NSW_short-header.zip",
   g01: "2021 Census GCP Suburbs and Localities for NSW/2021Census_G01_NSW_SAL.csv",
+  g02: "2021 Census GCP Suburbs and Localities for NSW/2021Census_G02_NSW_SAL.csv",
   fields: {
     salCode: "SAL_CODE_2021",
     totalPersons: "Tot_P_P",
+    bornInAustralia: "Birthplace_Australia_P",
+    bornElsewhere: "Birthplace_Elsewhere_P",
+    medianAge: "Median_age_persons",
+    medianRent: "Median_rent_weekly",
+    medianHouseholdIncome: "Median_tot_hhd_inc_weekly",
   },
   salPrefix: "SAL",
 } as const

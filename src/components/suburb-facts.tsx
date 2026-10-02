@@ -1,7 +1,7 @@
+import { Collapsible } from "@base-ui/react/collapsible"
 import { useQuery } from "@tanstack/react-query"
 import { cn } from "cn"
-import { InfoIcon } from "lucide-react"
-import type { CSSProperties } from "react"
+import { ChevronRightIcon, InfoIcon } from "lucide-react"
 
 import {
   Popover,
@@ -9,9 +9,22 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { suburbFactsQuery } from "@/queries/suburb-facts"
-import type { SuburbFacts, SuburbPhoto } from "@/types/suburb-facts"
+import type {
+  SuburbFacts,
+  SuburbPhoto,
+  SuburbStats,
+} from "@/types/suburb-facts"
 
 const populationFormat = new Intl.NumberFormat("en-AU")
+const dollarFormat = new Intl.NumberFormat("en-AU", {
+  style: "currency",
+  currency: "AUD",
+  maximumFractionDigits: 0,
+})
+const oneDecimal = new Intl.NumberFormat("en-AU", { maximumFractionDigits: 1 })
+const twoDecimals = new Intl.NumberFormat("en-AU", {
+  maximumFractionDigits: 2,
+})
 
 type FactsState =
   | { status: "pending" }
@@ -65,20 +78,16 @@ interface PhotoProps {
   className?: string
 }
 
-type PlaceholderStyle = CSSProperties & Record<"--photo-color", string>
-
 function Photo({ photo, name, className }: PhotoProps) {
-  const placeholder: PlaceholderStyle = { "--photo-color": photo.color }
   return (
     <div className={cn("relative", className)}>
+      {/* Grey until it loads; transparent text keeps the alt from flashing up. */}
       <img
         alt={name}
-        className="aspect-3/2 w-full bg-(--photo-color) object-cover"
+        className="aspect-3/2 w-full bg-muted object-cover text-transparent"
         decoding="async"
         height={photo.height}
         src={photo.url}
-        // The photo's average colour shows until it loads.
-        style={placeholder}
         width={photo.width}
       />
       <PhotoCredit photo={photo} />
@@ -170,4 +179,85 @@ export function Summary({ state }: SummaryProps) {
     return null
   }
   return <p className="text-sm">{facts.summary}</p>
+}
+
+interface Stat {
+  label: string
+  value: string | null
+}
+
+function formatOr<T>(value: T | null, format: (v: T) => string) {
+  return value === null ? null : format(value)
+}
+
+// Census figures are missing where too few people live, so those are skipped.
+function toStats(stats: SuburbStats): Stat[] {
+  return [
+    {
+      label: "Median age",
+      value: formatOr(stats.medianAge, String),
+    },
+    {
+      label: "Born overseas",
+      value: formatOr(stats.bornOverseas, (n) => `${n}%`),
+    },
+    {
+      label: "Median rent",
+      value: formatOr(stats.medianRent, (n) => `${dollarFormat.format(n)}/wk`),
+    },
+    {
+      label: "Household income",
+      value: formatOr(
+        stats.medianHouseholdIncome,
+        (n) => `${dollarFormat.format(n)}/wk`,
+      ),
+    },
+    {
+      label: "Area",
+      value: `${(stats.areaKm2 < 1 ? twoDecimals : oneDecimal).format(stats.areaKm2)} km²`,
+    },
+    {
+      label: "Density",
+      value: formatOr(
+        stats.density,
+        (n) => `${populationFormat.format(n)}/km²`,
+      ),
+    },
+    {
+      label: "Straight line to CBD",
+      value: `${oneDecimal.format(stats.cbdDistanceKm)} km`,
+    },
+  ]
+}
+
+interface MoreDetailsProps {
+  state: FactsState
+}
+
+// Closed by default, so the panel stays short until someone wants the numbers.
+export function MoreDetails({ state }: MoreDetailsProps) {
+  if (state.status !== "success" || !state.facts) {
+    return null
+  }
+  const stats = toStats(state.facts.stats).filter(
+    (stat): stat is { label: string; value: string } => stat.value !== null,
+  )
+  return (
+    <Collapsible.Root>
+      <Collapsible.Trigger className="group flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground">
+        <ChevronRightIcon className="size-4 transition-transform group-data-panel-open:rotate-90" />
+        More details
+      </Collapsible.Trigger>
+      <Collapsible.Panel>
+        <dl className="grid grid-cols-2 gap-x-4 gap-y-2 pt-3">
+          {stats.map((stat) => (
+            <div key={stat.label}>
+              <dt className="text-xs text-muted-foreground">{stat.label}</dt>
+              <dd className="text-sm font-medium">{stat.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </Collapsible.Panel>
+    </Collapsible.Root>
+  )
 }

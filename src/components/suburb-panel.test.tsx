@@ -113,6 +113,45 @@ describe("SuburbPanel council", () => {
 })
 
 describe("SuburbPanel facts", () => {
+  it("shows census details when expanded", async () => {
+    mockFetch()
+    const user = userEvent.setup()
+    await renderPanel()
+
+    await user.click(
+      await screen.findByRole("button", { name: "More details" }),
+    )
+
+    const details = [
+      ["Median age", "34"],
+      ["Born overseas", "31%"],
+      ["Median rent", "$650/wk"],
+      ["Household income", "$2,450/wk"],
+      ["Area", "2.1 km²"],
+      ["Density", "7,286/km²"],
+      ["Straight line to CBD", "5.3 km"],
+    ]
+    for (const [label, value] of details) {
+      expect(screen.getByText(label ?? "").nextSibling).toHaveTextContent(
+        value ?? "",
+      )
+    }
+  })
+
+  it("skips census details the ABS didn't publish", async () => {
+    mockFetch()
+    const user = userEvent.setup()
+    await renderPanel({ suburb: beta })
+
+    await user.click(
+      await screen.findByRole("button", { name: "More details" }),
+    )
+
+    expect(screen.getByText("0.42 km²")).toBeVisible()
+    expect(screen.queryByText("Median age")).not.toBeInTheDocument()
+    expect(screen.queryByText("Density")).not.toBeInTheDocument()
+  })
+
   it("shows the photo, facts and summary", async () => {
     mockFetch()
     await renderPanel()
