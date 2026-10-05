@@ -84,7 +84,7 @@ export function clubLogo(club: ClubId): string {
 export const LGA_CLUBS = new Map<string, ClubId>(
   Object.entries({
     Bayside: "dragons",
-    Blacktown: "eels",
+    Blacktown: "panthers",
     Burwood: "wests-tigers",
     Camden: "wests-tigers",
     Campbelltown: "wests-tigers",
@@ -121,12 +121,9 @@ export const LGA_CLUBS = new Map<string, ClubId>(
 // council default, keyed by suburb name.
 export const SUBURB_OVERRIDES = new Map<string, ClubId>(
   Object.entries({
-    // Randwick east of Anzac Parade.
+    // Northern Randwick.
     "Centennial Park": "roosters",
     Clovelly: "roosters",
-    Coogee: "roosters",
-    Randwick: "roosters",
-    "South Coogee": "roosters",
     // Souths' heartland in the City of Sydney.
     Alexandria: "rabbitohs",
     Beaconsfield: "rabbitohs",
@@ -154,32 +151,6 @@ export const SUBURB_OVERRIDES = new Map<string, ClubId>(
     "St Peters": "rabbitohs",
     Sydenham: "rabbitohs",
     Tempe: "rabbitohs",
-    // Mount Druitt and the north-west, in Blacktown.
-    Bidwill: "panthers",
-    Blackett: "panthers",
-    Colebee: "panthers",
-    "Dean Park": "panthers",
-    Dharruk: "panthers",
-    Emerton: "panthers",
-    Glendenning: "panthers",
-    "Grantham Farm": "panthers",
-    "Hassall Grove": "panthers",
-    Hebersham: "panthers",
-    "Lethbridge Park": "panthers",
-    "Marsden Park": "panthers",
-    Melonba: "panthers",
-    Minchinbury: "panthers",
-    "Mount Druitt": "panthers",
-    Oakhurst: "panthers",
-    Plumpton: "panthers",
-    Richards: "panthers",
-    "Ropes Crossing": "panthers",
-    "Rooty Hill": "panthers",
-    Shalvey: "panthers",
-    "Shanes Park": "panthers",
-    Tregear: "panthers",
-    Whalan: "panthers",
-    Willmot: "panthers",
     // Liverpool's rural west, next to Penrith.
     "Badgerys Creek": "panthers",
     Greendale: "panthers",
