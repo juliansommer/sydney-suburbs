@@ -124,6 +124,9 @@ export const SUBURB_OVERRIDES = new Map<string, ClubId>(
     // Northern Randwick.
     "Centennial Park": "roosters",
     Clovelly: "roosters",
+    // Balmain's side of the City of Sydney.
+    "Forest Lodge": "wests-tigers",
+    Glebe: "wests-tigers",
     // Souths' heartland in the City of Sydney.
     Alexandria: "rabbitohs",
     Beaconsfield: "rabbitohs",
