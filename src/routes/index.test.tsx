@@ -35,7 +35,7 @@ function visitedRow(suburbId: string): UserSuburb {
 }
 
 function visitedFill() {
-  return document.querySelector(".fill-map-visited")
+  return document.querySelector('[data-layer="visited"]')
 }
 
 describe("map page", () => {
@@ -82,6 +82,44 @@ describe("map page", () => {
     await expect(
       screen.findByRole("button", { name: "2 of 3 suburbs visited" }),
     ).resolves.toBeInTheDocument()
+  })
+
+  it("shows NRL territories instead of visits in NRL mode", async () => {
+    signIn()
+    mockFetch({ suburbs: [visitedRow("1")] })
+
+    await renderRoute("/?mode=nrl")
+
+    await expect(
+      screen.findByText(/Not affiliated with or endorsed by the NRL/u),
+    ).resolves.toBeInTheDocument()
+    await waitFor(() => {
+      expect(document.querySelector('[data-layer="roosters"]')).not.toBeNull()
+    })
+    expect(visitedFill()).toBeNull()
+    expect(
+      screen.queryByRole("button", { name: /suburbs visited/u }),
+    ).not.toBeInTheDocument()
+  })
+
+  it("falls back to the visited mode for an unknown mode", async () => {
+    const { router } = await renderRoute("/?mode=rugby")
+
+    await expect(
+      screen.findByRole("button", { name: "Visited" }),
+    ).resolves.toHaveAttribute("aria-pressed", "true")
+    expect(router.state.location.search).not.toHaveProperty("mode")
+  })
+
+  it("keeps the selected suburb when switching mode", async () => {
+    const { router } = await renderRoute("/?suburb=1")
+
+    await userEvent.click(await screen.findByRole("button", { name: "NRL" }))
+
+    expect({ ...router.state.location.search }).toStrictEqual({
+      suburb: 1,
+      mode: "nrl",
+    })
   })
 
   it("selects a suburb on click and shows its panel", async () => {

@@ -1,5 +1,7 @@
 import type { Feature, MultiPolygon, Polygon } from "geojson"
 
+import type { MapTopology } from "@/queries/suburbs-topo"
+
 export interface SuburbProperties {
   id: string
   name: string
@@ -27,4 +29,6 @@ export interface SuburbMapData {
   councils: Council[]
   surrounds: Surrounds
   landuse: Landuse[]
+  // Kept for merging suburbs into other shapes, like NRL territories.
+  topology: MapTopology
 }

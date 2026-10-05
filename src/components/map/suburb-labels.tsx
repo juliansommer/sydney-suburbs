@@ -1,6 +1,6 @@
 import type { ZoomTransform } from "d3-zoom"
 
-import { labelVisible, placeLabels } from "@/lib/labels"
+import { labelVisible, placeLabels, type Rect } from "@/lib/labels"
 
 import type { ProjectedSuburb } from "./project"
 
@@ -12,6 +12,8 @@ interface SuburbLabelsProps {
   transform: ZoomTransform
   width: number
   height: number
+  // Screen space already taken, which labels give way to.
+  obstacles?: readonly Rect[]
 }
 
 // Drawn in screen space, outside the zoomed group, so text is never scaled
@@ -22,6 +24,7 @@ export function SuburbLabels({
   transform,
   width,
   height,
+  obstacles,
 }: SuburbLabelsProps) {
   const candidates = suburbs.flatMap((s) => {
     if (!s.label || !labelVisible(s, transform.k, FONT_SIZE)) {
@@ -41,7 +44,7 @@ export function SuburbLabels({
       strokeWidth={HALO_WIDTH}
       textAnchor="middle"
     >
-      {placeLabels(candidates, FONT_SIZE).map((c) => (
+      {placeLabels(candidates, FONT_SIZE, obstacles).map((c) => (
         <text key={c.id} x={c.x} y={c.y}>
           {c.name}
         </text>

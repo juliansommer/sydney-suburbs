@@ -74,6 +74,15 @@
   --color-map-visited: var(--map-visited);
   --color-map-label: var(--map-label);
   --color-map-halo: var(--map-halo);
+  --color-club-rabbitohs: color-mix(in oklab, #00843d 70%, var(--map-land));
+  --color-club-roosters: color-mix(in oklab, #002b5c 70%, var(--map-land));
+  --color-club-dragons: color-mix(in oklab, #e2001a 70%, var(--map-land));
+  --color-club-sharks: color-mix(in oklab, #00a9e0 70%, var(--map-land));
+  --color-club-bulldogs: color-mix(in oklab, #0055a5 70%, var(--map-land));
+  --color-club-eels: color-mix(in oklab, #ffc20e 70%, var(--map-land));
+  --color-club-panthers: color-mix(in oklab, #231f20 70%, var(--map-land));
+  --color-club-wests-tigers: color-mix(in oklab, #f37021 70%, var(--map-land));
+  --color-club-sea-eagles: color-mix(in oklab, #6f163d 70%, var(--map-land));
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);

@@ -12,7 +12,7 @@ function renderMap(props: Partial<Parameters<typeof SuburbMap>[0]> = {}) {
       data={toSuburbMap(suburbsTopology)}
       onSelect={() => {}}
       selectedId={null}
-      visitedIds={new Set()}
+      layers={{ fills: [], outlines: [], markers: [] }}
       {...props}
     />,
   )
@@ -33,13 +33,23 @@ describe("SuburbMap", () => {
     expect(screen.getByText("Beta").tagName).toBe("text")
   })
 
-  it("fills visited suburbs and marks the selected one", () => {
+  it("fills layer suburbs and marks the selected one", () => {
     const { container } = renderMap({
       selectedId: "2",
-      visitedIds: new Set(["1"]),
+      layers: {
+        fills: [
+          {
+            key: "visited",
+            ids: new Set(["1"]),
+            className: "fill-map-visited",
+          },
+        ],
+        outlines: [],
+        markers: [],
+      },
     })
 
-    expect(container.querySelector(".fill-map-visited")).toHaveAttribute(
+    expect(container.querySelector('[data-layer="visited"]')).toHaveAttribute(
       "d",
       screen.getByRole("button", { name: "Alpha" }).getAttribute("d"),
     )

@@ -54,4 +54,12 @@ describe("placeLabels", () => {
     const placed = placeLabels([at("Alpha", 0), at("Beta", 200)], 11)
     expect(placed).toHaveLength(2)
   })
+
+  it("drops labels that overlap an obstacle", () => {
+    const obstacle = { x0: 190, y0: -20, x1: 230, y1: 20 }
+    const placed = placeLabels([at("Alpha", 0), at("Beta", 200)], 11, [
+      obstacle,
+    ])
+    expect(placed.map((l) => l.name)).toStrictEqual(["Alpha"])
+  })
 })

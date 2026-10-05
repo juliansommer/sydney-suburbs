@@ -14,12 +14,15 @@ import { z } from "zod/mini"
 import { CouncilProgressButton } from "@/components/council-progress"
 import { SuburbMap, type SuburbMapHandle } from "@/components/map/suburb-map"
 import { SuburbSearch } from "@/components/map/suburb-search"
+import { NrlLegend } from "@/components/nrl-legend"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { authClient } from "@/lib/auth-client"
 import { whenIdle } from "@/lib/idle"
 import { mySuburbsKey, mySuburbsQuery } from "@/queries/my-suburbs"
+import { nrlLayersQuery } from "@/queries/nrl-layers"
 import { suburbFactsQuery } from "@/queries/suburb-facts"
 import { suburbsTopoQuery } from "@/queries/suburbs-topo"
+import type { MapLayers } from "@/types/map-layers"
 import type { SuburbMapData, SuburbProperties } from "@/types/suburb"
 import type { UserSuburb } from "@/types/user-suburb"
 
@@ -34,20 +37,35 @@ const SuburbPanel = lazy(async () => {
 // number. A malformed one is just no selection.
 const suburbParam = z.int()
 
+const MAP_MODES = ["visited", "nrl"] as const
+type MapMode = (typeof MAP_MODES)[number]
+// Visited is the default, so it stays out of the URL.
+const modeParam = z.enum(MAP_MODES)
+
+const MODE_LABELS: Record<MapMode, string> = { visited: "Visited", nrl: "NRL" }
+
+const NO_LAYERS: MapLayers = { fills: [], outlines: [], markers: [] }
+
 interface MapSearch {
   suburb?: number
+  mode?: MapMode
 }
 
 export const Route = createFileRoute("/")({
-  validateSearch: (search): MapSearch => ({
-    suburb: suburbParam.safeParse(search.suburb).data,
-  }),
+  validateSearch: (search): MapSearch => {
+    const mode = modeParam.safeParse(search.mode).data
+    return {
+      suburb: suburbParam.safeParse(search.suburb).data,
+      mode: mode === "visited" ? undefined : mode,
+    }
+  },
   component: MapPage,
 })
 
 type Rows = ReadonlyMap<string, UserSuburb>
 
 function MapPage() {
+  const { mode } = Route.useSearch()
   const { data, isError } = useQuery(suburbsTopoQuery)
   const { data: session, isPending } = authClient.useSession()
   const { data: rows } = useQuery({ ...mySuburbsQuery, enabled: !!session })
@@ -82,7 +100,7 @@ function MapPage() {
       <header className="absolute top-4 right-4">
         {isPending ? null : (
           <Account signedIn={!!session}>
-            {rows && data ? (
+            {rows && data && mode !== "nrl" ? (
               <CouncilProgressButton
                 onZoom={(lga) => {
                   map.current?.zoomToCouncil(lga)
@@ -115,8 +133,22 @@ function MapView({
   signedIn,
   rows,
 }: MapViewProps) {
-  const { suburb: selectedId } = Route.useSearch()
+  const { suburb: selectedId, mode = "visited" } = Route.useSearch()
   const navigate = Route.useNavigate()
+  const { data: nrlLayers } = useQuery({
+    ...nrlLayersQuery,
+    enabled: mode === "nrl",
+  })
+  const layers: MapLayers =
+    mode === "nrl"
+      ? (nrlLayers ?? NO_LAYERS)
+      : {
+          fills: [
+            { key: "visited", ids: visitedIds, className: "fill-map-visited" },
+          ],
+          outlines: [],
+          markers: [],
+        }
 
   const byId = new Map(suburbs.map((s) => [s.id, s]))
   // An id the map doesn't draw is no selection at all.
@@ -130,8 +162,18 @@ function MapView({
     // Switching suburbs replaces the entry, so Back leaves the map rather
     // than stepping through every suburb looked at.
     navigate({
-      search: id ? { suburb: Number(id) } : {},
+      search: (prev) => ({ ...prev, suburb: id ? Number(id) : undefined }),
       replace: !!selected && !!id,
+    })
+  }
+
+  function switchMode(next: MapMode) {
+    navigate({
+      search: (prev) => ({
+        ...prev,
+        mode: next === "visited" ? undefined : next,
+      }),
+      replace: true,
     })
   }
 
@@ -170,11 +212,15 @@ function MapView({
     <>
       <SuburbMap
         data={data}
+        layers={layers}
         onSelect={select}
         ref={map}
         selectedId={selected?.id ?? null}
-        visitedIds={visitedIds}
       />
+      <div className="absolute bottom-4 left-4 flex flex-col items-start gap-2">
+        {mode === "nrl" ? <NrlLegend /> : null}
+        <ModeSwitch mode={mode} onSwitch={switchMode} />
+      </div>
       <div className="absolute inset-x-4 top-14 md:right-auto md:w-72">
         <SuburbSearch
           onPick={(id) => {
@@ -199,6 +245,32 @@ function MapView({
         />
       </Suspense>
     </>
+  )
+}
+
+interface ModeSwitchProps {
+  mode: MapMode
+  onSwitch: (mode: MapMode) => void
+}
+
+function ModeSwitch({ mode, onSwitch }: ModeSwitchProps) {
+  return (
+    <fieldset className="flex gap-1 rounded-lg border bg-background p-0.5 shadow-sm">
+      <legend className="sr-only">Map mode</legend>
+      {MAP_MODES.map((m) => (
+        <Button
+          aria-pressed={m === mode}
+          key={m}
+          onClick={() => {
+            onSwitch(m)
+          }}
+          size="sm"
+          variant={m === mode ? "secondary" : "ghost"}
+        >
+          {MODE_LABELS[m]}
+        </Button>
+      ))}
+    </fieldset>
   )
 }
 

@@ -98,13 +98,21 @@ function byPriority(a: LabelCandidate, b: LabelCandidate): number {
   return b.width * b.height - a.width * a.height
 }
 
+export interface Rect {
+  x0: number
+  y0: number
+  x1: number
+  y1: number
+}
+
 // Places labels centred on (x, y) from highest priority down, dropping any
-// that would overlap one already placed.
+// that would overlap one already placed or an obstacle, like a logo.
 export function placeLabels<T extends LabelCandidate>(
   candidates: T[],
   fontSize: number,
+  obstacles: readonly Rect[] = [],
 ): T[] {
-  const placed: { x0: number; y0: number; x1: number; y1: number }[] = []
+  const placed: Rect[] = [...obstacles]
   return candidates.toSorted(byPriority).filter((c) => {
     const halfWidth = (c.name.length * CHAR_WIDTH * fontSize + LABEL_GAP) / 2
     const halfHeight = (fontSize + LABEL_GAP) / 2

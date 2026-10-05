@@ -5,6 +5,7 @@ import {
   zoom,
   type ZoomBehavior,
   zoomIdentity,
+  type ZoomTransform,
 } from "d3-zoom"
 import {
   type Ref,
@@ -17,16 +18,26 @@ import {
 } from "react"
 
 import { useElementSize } from "@/hooks/use-element-size"
+import type { Rect } from "@/lib/labels"
 import { type Bounds, fitBounds } from "@/lib/zoom"
+import type { MapLayers } from "@/types/map-layers"
 import type { LanduseKind, SuburbMapData } from "@/types/suburb"
 
-import { projectMap, type ProjectedSuburb } from "./project"
+import {
+  projectMap,
+  type ProjectedMarker,
+  type ProjectedSuburb,
+} from "./project"
 import { SuburbLabels } from "./suburb-labels"
 
 const MAX_ZOOM = 40
 // Pointer travel, in pixels, past which a press is a pan rather than a click.
 const CLICK_DISTANCE = 4
 const ZOOM_TO_MS = 600
+// Markers keep this size on screen at every zoom, smaller on narrow screens.
+const MARKER_SIZE = 44
+const SMALL_MARKER_SIZE = 32
+const SMALL_SCREEN_WIDTH = 768
 
 const LANDUSE_FILL: Record<LanduseKind, string> = {
   parkland: "fill-map-surrounds",
@@ -36,7 +47,7 @@ const LANDUSE_FILL: Record<LanduseKind, string> = {
 interface SuburbMapProps {
   data: SuburbMapData
   selectedId: string | null
-  visitedIds: ReadonlySet<string>
+  layers: MapLayers
   // Called with null when a click lands off the suburbs (water, surrounds).
   onSelect: (id: string | null) => void
   ref?: Ref<SuburbMapHandle>
@@ -75,23 +86,18 @@ interface ZoomableMapProps extends SuburbMapProps {
 function ZoomableMap({
   data,
   selectedId,
-  visitedIds,
+  layers,
   onSelect,
   ref,
   width,
   height,
 }: ZoomableMapProps) {
-  const [transform, setTransform] = useState(zoomIdentity)
-  // Firefox keeps a transformed group as a scaled bitmap for a few seconds
-  // after it stops changing, which looks blurry. Remounting it once a gesture
-  // ends makes it redraw sharp straight away.
-  const [gesture, setGesture] = useState(0)
-  const projected = projectMap(data, width, height)
-  const visitedD = projected.suburbs
-    .filter((s) => visitedIds.has(s.id))
-    .map((s) => s.d)
-    .join("")
-  const zoomer = useRef<Zoomer | null>(null)
+  const { svgRef, zoomer, transform, gesture } = useZoom(width, height)
+  const projected = projectMap(data, layers, width, height)
+  const { fills, outlines, markers } = projected
+  const markerSize =
+    width < SMALL_SCREEN_WIDTH ? SMALL_MARKER_SIZE : MARKER_SIZE
+  const placedMarkers = onScreen(markers, transform, width, height)
 
   const [outlinedLga, setOutlinedLga] = useState<string | null>(null)
 
@@ -165,6 +171,86 @@ function ZoomableMap({
     onDrawn()
   }, [])
 
+  return (
+    // Keyboard users select through the suburb paths and clear with Escape;
+    // this handler only adds "click off the suburbs to deselect".
+    // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+    <svg
+      aria-label="Map of Sydney suburbs"
+      className="block touch-none select-none"
+      height={height}
+      onClick={(event) => {
+        if (event.target instanceof Element) {
+          const suburb = event.target.closest<SVGElement>("[data-suburb-id]")
+          pick(suburb?.dataset.suburbId ?? null)
+        }
+      }}
+      ref={svgRef}
+      width={width}
+    >
+      <rect className="fill-map-water" height={height} width={width} />
+      <g key={gesture} transform={transform.toString()}>
+        <path className="fill-map-surrounds" d={projected.surrounds} />
+        {/* Plain land under the parks and water, joined into one path so it's cheap. */}
+        <path
+          className="fill-map-land"
+          d={projected.suburbs.map((s) => s.d).join("")}
+        />
+        {projected.landuse.map((l) => (
+          <path className={LANDUSE_FILL[l.kind]} d={l.d} key={l.kind} />
+        ))}
+        {/* Over the parks and water, so a filled suburb is filled edge to edge. */}
+        {fills.map((f) =>
+          f.d ? (
+            <path
+              className={f.className}
+              d={f.d}
+              data-layer={f.key}
+              key={f.key}
+            />
+          ) : null,
+        )}
+        <SuburbPaths
+          onSelect={pick}
+          selectedId={selectedId}
+          suburbs={projected.suburbs}
+        />
+        {outlines.map((o) => (
+          <Outline d={o.d} key={o.key} strokeWidth={1.5} />
+        ))}
+        <Outline
+          d={projected.councils.find((c) => c.lga === outlinedLga)?.d}
+          strokeWidth={3}
+        />
+        {/* SVG has no z-index, so the selected suburb is drawn again last to
+            keep its outline above the neighbouring borders. */}
+        <Outline
+          d={projected.suburbs.find((s) => s.id === selectedId)?.d}
+          strokeWidth={2.5}
+        />
+      </g>
+      <SuburbLabels
+        height={height}
+        obstacles={placedMarkers.map((m) => markerRect(m, markerSize))}
+        suburbs={projected.suburbs}
+        transform={transform}
+        width={width}
+      />
+      <Markers markers={placedMarkers} size={markerSize} />
+    </svg>
+  )
+}
+
+// d3-zoom on the map's SVG, with the current transform as state. The
+// behaviour is rebuilt whenever the viewport size changes.
+function useZoom(width: number, height: number) {
+  const [transform, setTransform] = useState(zoomIdentity)
+  // Firefox keeps a transformed group as a scaled bitmap for a few seconds
+  // after it stops changing, which looks blurry. Remounting it once a gesture
+  // ends makes it redraw sharp straight away.
+  const [gesture, setGesture] = useState(0)
+  const zoomer = useRef<Zoomer | null>(null)
+
   const svgRef = useCallback(
     (svg: SVGSVGElement | null) => {
       if (!svg) {
@@ -206,60 +292,7 @@ function ZoomableMap({
     [width, height],
   )
 
-  return (
-    // Keyboard users select through the suburb paths and clear with Escape;
-    // this handler only adds "click off the suburbs to deselect".
-    // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
-    <svg
-      aria-label="Map of Sydney suburbs"
-      className="block touch-none select-none"
-      height={height}
-      onClick={(event) => {
-        if (event.target instanceof Element) {
-          const suburb = event.target.closest<SVGElement>("[data-suburb-id]")
-          pick(suburb?.dataset.suburbId ?? null)
-        }
-      }}
-      ref={svgRef}
-      width={width}
-    >
-      <rect className="fill-map-water" height={height} width={width} />
-      <g key={gesture} transform={transform.toString()}>
-        <path className="fill-map-surrounds" d={projected.surrounds} />
-        {/* Plain land under the parks and water, joined into one path so it's cheap. */}
-        <path
-          className="fill-map-land"
-          d={projected.suburbs.map((s) => s.d).join("")}
-        />
-        {projected.landuse.map((l) => (
-          <path className={LANDUSE_FILL[l.kind]} d={l.d} key={l.kind} />
-        ))}
-        {/* Over the parks and water, so a visited suburb is filled edge to edge. */}
-        {visitedD ? <path className="fill-map-visited" d={visitedD} /> : null}
-        <SuburbPaths
-          onSelect={pick}
-          selectedId={selectedId}
-          suburbs={projected.suburbs}
-        />
-        <Outline
-          d={projected.councils.find((c) => c.lga === outlinedLga)?.d}
-          strokeWidth={3}
-        />
-        {/* SVG has no z-index, so the selected suburb is drawn again last to
-            keep its outline above the neighbouring borders. */}
-        <Outline
-          d={projected.suburbs.find((s) => s.id === selectedId)?.d}
-          strokeWidth={2.5}
-        />
-      </g>
-      <SuburbLabels
-        height={height}
-        suburbs={projected.suburbs}
-        transform={transform}
-        width={width}
-      />
-    </svg>
-  )
+  return { svgRef, zoomer, transform, gesture }
 }
 
 interface SuburbPathsProps {
@@ -321,5 +354,49 @@ function Outline({ d, strokeWidth }: OutlineProps) {
       strokeWidth={strokeWidth}
       vectorEffect="non-scaling-stroke"
     />
+  )
+}
+
+// Moves markers into screen space, dropping any that fall off screen.
+function onScreen(
+  markers: ProjectedMarker[],
+  transform: ZoomTransform,
+  width: number,
+  height: number,
+): ProjectedMarker[] {
+  return markers.flatMap((m) => {
+    const [x, y] = transform.apply([m.x, m.y])
+    const offScreen = x < 0 || x > width || y < 0 || y > height
+    return offScreen ? [] : [{ ...m, x, y }]
+  })
+}
+
+function markerRect({ x, y }: ProjectedMarker, size: number): Rect {
+  const half = size / 2
+  return { x0: x - half, y0: y - half, x1: x + half, y1: y + half }
+}
+
+interface MarkersProps {
+  markers: ProjectedMarker[]
+  size: number
+}
+
+// In screen space like the labels, so they stay one size at every zoom.
+// Clicks pass through to the suburb underneath.
+function Markers({ markers, size }: MarkersProps) {
+  return (
+    <g className="pointer-events-none">
+      {markers.map((m) => (
+        <image
+          aria-label={m.label}
+          height={size}
+          href={m.src}
+          key={m.key}
+          width={size}
+          x={m.x - size / 2}
+          y={m.y - size / 2}
+        />
+      ))}
+    </g>
   )
 }

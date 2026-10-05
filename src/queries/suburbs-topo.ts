@@ -1,4 +1,5 @@
 import { queryOptions } from "@tanstack/react-query"
+import type { MultiPolygon as GeoMultiPolygon } from "geojson"
 import { feature, merge } from "topojson-client"
 import type {
   GeometryCollection,
@@ -25,23 +26,34 @@ export type MapTopology = Topology<{
   landuse: GeometryCollection<{ kind: LanduseKind }>
 }>
 
-// Merges each council's suburbs, so shared borders drop out of its outline.
-function councilOutlines(topology: MapTopology): Council[] {
-  const byLga = new Map<string, (Polygon | MultiPolygon)[]>()
+// Merges the suburbs sharing a key, so shared borders drop out of each
+// group's outline. Suburbs with no key are left out.
+export function mergeSuburbs(
+  topology: MapTopology,
+  keyOf: (suburb: SuburbProperties) => string | undefined,
+): Map<string, GeoMultiPolygon> {
+  const groups = new Map<string, (Polygon | MultiPolygon)[]>()
   for (const geometry of topology.objects.suburbs.geometries) {
     const isArea =
       geometry.type === "Polygon" || geometry.type === "MultiPolygon"
-    const lga = isArea ? geometry.properties?.lga : undefined
-    if (isArea && lga !== undefined) {
-      byLga.set(lga, [
-        ...(byLga.get(lga) ?? []),
+    const key =
+      isArea && geometry.properties ? keyOf(geometry.properties) : undefined
+    if (isArea && key !== undefined) {
+      groups.set(key, [
+        ...(groups.get(key) ?? []),
         { ...geometry, properties: {} },
       ])
     }
   }
-  return [...byLga].map(([lga, geometries]) => ({
+  return new Map(
+    [...groups].map(([key, geometries]) => [key, merge(topology, geometries)]),
+  )
+}
+
+function councilOutlines(topology: MapTopology): Council[] {
+  return [...mergeSuburbs(topology, (s) => s.lga)].map(([lga, geometry]) => ({
     type: "Feature",
-    geometry: merge(topology, geometries),
+    geometry,
     properties: { lga },
   }))
 }
@@ -81,7 +93,13 @@ export function toSuburbMap(topology: MapTopology): SuburbMapData {
       })
     }
   }
-  return { suburbs, councils: councilOutlines(topology), surrounds, landuse }
+  return {
+    suburbs,
+    councils: councilOutlines(topology),
+    surrounds,
+    landuse,
+    topology,
+  }
 }
 
 // The file only changes on deploy, so it never goes stale in a session.
