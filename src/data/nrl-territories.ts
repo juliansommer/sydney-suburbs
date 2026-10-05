@@ -155,11 +155,16 @@ export const SUBURB_OVERRIDES = new Map<string, ClubId>(
     Stanmore: "rabbitohs",
     Sydenham: "rabbitohs",
     Tempe: "rabbitohs",
-    // Balmain's clubs in Parramatta council.
-    Carlingford: "wests-tigers",
-    Dundas: "wests-tigers",
-    "Dundas Valley": "wests-tigers",
+    // Epping, which joins on to Ryde.
     Epping: "wests-tigers",
+    // Canterbury-Bankstown league clubs in Liverpool council.
+    "Chipping Norton": "bulldogs",
+    Hammondville: "bulldogs",
+    Holsworthy: "bulldogs",
+    Moorebank: "bulldogs",
+    "Pleasure Point": "bulldogs",
+    "Voyager Point": "bulldogs",
+    "Wattle Grove": "bulldogs",
     // Liverpool's rural west, next to Penrith.
     "Badgerys Creek": "panthers",
     Greendale: "panthers",
