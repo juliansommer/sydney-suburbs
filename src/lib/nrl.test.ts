@@ -29,9 +29,10 @@ describe("nrlLayers", () => {
   it("gives each separate piece of the Wests Tigers its own logo", () => {
     const { markers } = nrlLayers(sydney)
 
+    // The inner west, Ryde across the river, and Macarthur.
     expect(
       markers.filter((m) => m.key.startsWith("wests-tigers-")),
-    ).toHaveLength(2)
+    ).toHaveLength(3)
   })
 
   it("gives tiny territories no logo", () => {

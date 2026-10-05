@@ -106,7 +106,7 @@ export const LGA_CLUBS = new Map<string, ClubId>(
     Parramatta: "eels",
     Penrith: "panthers",
     Randwick: "rabbitohs",
-    Ryde: "eels",
+    Ryde: "wests-tigers",
     Strathfield: "wests-tigers",
     "Sutherland Shire": "sharks",
     Sydney: "roosters",
@@ -124,9 +124,6 @@ export const SUBURB_OVERRIDES = new Map<string, ClubId>(
     // Northern Randwick.
     "Centennial Park": "roosters",
     Clovelly: "roosters",
-    // Balmain's side of the City of Sydney.
-    "Forest Lodge": "wests-tigers",
-    Glebe: "wests-tigers",
     // Souths' heartland in the City of Sydney.
     Alexandria: "rabbitohs",
     Beaconsfield: "rabbitohs",
@@ -148,12 +145,21 @@ export const SUBURB_OVERRIDES = new Map<string, ClubId>(
     Mascot: "rabbitohs",
     Pagewood: "rabbitohs",
     // The old Newtown district, in the Inner West.
+    "Dulwich Hill": "rabbitohs",
     Enmore: "rabbitohs",
+    Lewisham: "rabbitohs",
     Marrickville: "rabbitohs",
     Newtown: "rabbitohs",
+    Petersham: "rabbitohs",
     "St Peters": "rabbitohs",
+    Stanmore: "rabbitohs",
     Sydenham: "rabbitohs",
     Tempe: "rabbitohs",
+    // Balmain's clubs in Parramatta council.
+    Carlingford: "wests-tigers",
+    Dundas: "wests-tigers",
+    "Dundas Valley": "wests-tigers",
+    Epping: "wests-tigers",
     // Liverpool's rural west, next to Penrith.
     "Badgerys Creek": "panthers",
     Greendale: "panthers",
