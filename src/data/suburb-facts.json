@@ -7959,29 +7959,6 @@
       "sourceUrl": "https://commons.wikimedia.org/wiki/File:Lovett_Bay.jpg"
     }
   },
-  "12426": {
-    "population": 4,
-    "postcode": "2234",
-    "summary": "A southern suburb beside the Royal National Park, home to Australia's nuclear research reactor and a large waste facility.",
-    "stats": {
-      "medianAge": 56,
-      "medianRent": null,
-      "medianHouseholdIncome": null,
-      "bornOverseas": null,
-      "areaKm2": 9.93,
-      "density": 0,
-      "cbdDistanceKm": 28.3
-    },
-    "photo": {
-      "url": "https://gnedsyjrzrxocto7.public.blob.vercel-storage.com/suburbs/12426-e9c46a5f.webp",
-      "width": 800,
-      "height": 573,
-      "artist": "Yucalyptus",
-      "licence": "CC0",
-      "licenceUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
-      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Lucas_Heights.jpg"
-    }
-  },
   "12428": {
     "population": 1927,
     "postcode": "2745",
