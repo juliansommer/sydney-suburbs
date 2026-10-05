@@ -50,6 +50,8 @@ const EXCLUDED_SUBURBS = [
   // National park, with next to nobody living there.
   "Ku-ring-gai Chase",
   "Royal National Park",
+  // Nuclear reactor and waste facility, with only 4 people.
+  "Lucas Heights",
   // Rural fringe north of Glenorie.
   "Canoelands",
   "Cattai",

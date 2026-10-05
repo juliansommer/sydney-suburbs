@@ -172,6 +172,9 @@ importers:
       '@fontsource-variable/geist':
         specifier: ^5.3.0
         version: 5.3.0
+      '@hono/vercel':
+        specifier: ^1.0.0
+        version: 1.0.0(hono@4.13.12)
       '@hono/zod-validator':
         specifier: ^0.9.1
         version: 0.9.1(hono@4.13.12)(zod@4.6.5)
@@ -1068,6 +1071,12 @@ packages:
     engines: {node: '>=18.14.1'}
     peerDependencies:
       hono: ^4
+
+  '@hono/vercel@1.0.0':
+    resolution: {integrity: sha512-HSt/9BeqNl6+9inLesTm16GJrOx3nhc5mVPq3IEuDqhPmC1SjZy+E91V91Z0dL1SIa6/tcedoMSg1T7d080+Dw==}
+    engines: {node: '>=16.9.0'}
+    peerDependencies:
+      hono: '>=4.13.9'
 
   '@hono/vite-dev-server@0.26.1':
     resolution: {integrity: sha512-OlcWoXjNogKiJhVwV/ftMK87UcsJmIBfmImSdI4e8to/ZdwNHrW9ddKw2OGHjXI5/uS2RaZr+2y+l8T9VFbCmw==}
@@ -5509,6 +5518,10 @@ snapshots:
   '@fontsource-variable/geist@5.3.0': {}
 
   '@hono/node-server@1.19.17(hono@4.13.12)':
+    dependencies:
+      hono: 4.13.12
+
+  '@hono/vercel@1.0.0(hono@4.13.12)':
     dependencies:
       hono: 4.13.12
 

@@ -1,4 +1,4 @@
-import { handle } from "hono/vercel"
+import { handle } from "@hono/vercel"
 
 import app from "../server/index.js"
 
