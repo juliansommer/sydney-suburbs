@@ -42,6 +42,8 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("src", import.meta.url)),
+      // cva imports clsx; point it at cn's copy so we ship one implementation.
+      clsx: "cn/lite",
     },
   },
   test: {
