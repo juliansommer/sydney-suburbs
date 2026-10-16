@@ -91,6 +91,7 @@ export const suburbFacts: SuburbFactsFile = {
       areaKm2: 2.1,
       density: 7286,
     },
+    topBirthplace: { country: "England", percent: 6.7 },
     photo: {
       url: "https://example.public.blob.vercel-storage.com/suburbs/1-abcd1234.webp",
       width: 800,
@@ -116,6 +117,7 @@ export const suburbFacts: SuburbFactsFile = {
       areaKm2: 0.42,
       density: null,
     },
+    topBirthplace: null,
     photo: null,
   },
 }

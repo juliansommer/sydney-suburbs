@@ -1,9 +1,9 @@
 // Builds the facts shown in the suburb panel. Run by hand with
 // `pnpm build:facts`; the output is committed.
 //
-// Source: ABS 2021 Census General Community Profile DataPack, tables G01, G02
-//   and G37, licensed CC BY 4.0, for population, birthplace, medians and
-//   public housing.
+// Source: ABS 2021 Census General Community Profile DataPack, tables G01, G02,
+//   G09F to G09H and G37, licensed CC BY 4.0, for population, birthplace,
+//   medians and public housing.
 // Source: NSW Bureau of Crime Statistics and Research, recorded crime by
 //   suburb, licensed CC BY 4.0, for violent crime.
 // Source: NSW Department of Planning, Housing and Infrastructure, urban tree
@@ -244,6 +244,7 @@ for (const s of suburbs) {
       violentCrime.get(s.id),
       canopy.get(s.id),
     ),
+    topBirthplace: census.get(s.id)?.topBirthplace ?? null,
     photo: upload.photos.get(s.id) ?? null,
   }
 }

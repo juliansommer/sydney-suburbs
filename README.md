@@ -25,7 +25,7 @@ Suburb boundaries come from the ABS Australian Statistical Geography Standard (A
 
 Suburb facts come from these sources:
 
-- Population, birthplace, medians and housing commission: ABS 2021 Census General Community Profile DataPack, tables G01, G02 and G37, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0)
+- Population, birthplace, top overseas birthplace, medians and housing commission: ABS 2021 Census General Community Profile DataPack, tables G01, G02, G09F to G09H and G37, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0)
 - Violent crime: [NSW Bureau of Crime Statistics and Research](https://bocsar.nsw.gov.au) recorded crime by suburb, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0)
 - Tree canopy: NSW Department of Planning, Housing and Infrastructure urban tree canopy by suburb 2022, © State Government of NSW and NSW Department of Planning, Housing and Infrastructure 2023, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0)
 - Area and density: ABS ASGS Edition 3 Suburbs and Localities, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0)

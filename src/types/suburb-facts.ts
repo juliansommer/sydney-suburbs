@@ -33,6 +33,13 @@ export interface SuburbStats {
   density: number | null
 }
 
+// The most common country of birth other than Australia.
+export interface TopBirthplace {
+  country: string
+  // Percent of residents born there.
+  percent: number
+}
+
 // Precomputed by scripts/build-suburb-facts.ts.
 export interface SuburbFacts {
   population: number | null
@@ -40,6 +47,7 @@ export interface SuburbFacts {
   // One sentence on the region and what the suburb is known for.
   summary: string | null
   stats: SuburbStats
+  topBirthplace: TopBirthplace | null
   photo: SuburbPhoto | null
 }
 

@@ -39,18 +39,18 @@ describe("parseTable", () => {
 describe("toCensusFacts", () => {
   it("works out the share born overseas from those who answered", () => {
     expect(
-      toCensusFacts(
-        {
+      toCensusFacts({
+        g01: {
           Tot_P_P: 16_667,
           Birthplace_Australia_P: 3717,
           Birthplace_Elsewhere_P: 11_811,
         },
-        {
+        g02: {
           Median_age_persons: 32,
           Median_rent_weekly: 600,
           Median_tot_hhd_inc_weekly: 2227,
         },
-      ),
+      }),
     ).toStrictEqual({
       population: 16_667,
       medianAge: 32,
@@ -58,39 +58,67 @@ describe("toCensusFacts", () => {
       medianHouseholdIncome: 2227,
       bornOverseas: 76,
       publicHousing: null,
+      topBirthplace: null,
     })
   })
 
   it("works out the public housing share from homes with a stated tenure", () => {
     expect(
-      toCensusFacts(
-        { Tot_P_P: 2000, Birthplace_Australia_P: 0, Birthplace_Elsewhere_P: 0 },
-        undefined,
-        { R_ST_h_auth_Total: 125, Ten_type_NS_Total: 60, Total_Total: 860 },
-      ),
+      toCensusFacts({
+        g01: {
+          Tot_P_P: 2000,
+          Birthplace_Australia_P: 0,
+          Birthplace_Elsewhere_P: 0,
+        },
+        g37: {
+          R_ST_h_auth_Total: 125,
+          Ten_type_NS_Total: 60,
+          Total_Total: 860,
+        },
+      }),
     ).toHaveProperty("publicHousing", 15.6)
   })
 
   it("has no public housing share without any stated tenure", () => {
     expect(
-      toCensusFacts(
-        { Tot_P_P: 3, Birthplace_Australia_P: 0, Birthplace_Elsewhere_P: 0 },
-        undefined,
-        { R_ST_h_auth_Total: 0, Ten_type_NS_Total: 4, Total_Total: 4 },
-      ),
+      toCensusFacts({
+        g01: {
+          Tot_P_P: 3,
+          Birthplace_Australia_P: 0,
+          Birthplace_Elsewhere_P: 0,
+        },
+        g37: { R_ST_h_auth_Total: 0, Ten_type_NS_Total: 4, Total_Total: 4 },
+      }),
     ).toHaveProperty("publicHousing", null)
+  })
+
+  it("names the most common overseas birthplace", () => {
+    expect(
+      toCensusFacts({
+        g01: {
+          Tot_P_P: 2000,
+          Birthplace_Australia_P: 1200,
+          Birthplace_Elsewhere_P: 700,
+        },
+        g09: { P_China_Tot: 133, P_England_Tot: 90 },
+      }),
+    ).toHaveProperty("topBirthplace", { country: "China", percent: 6.7 })
   })
 
   it("treats a median of zero as unknown", () => {
     expect(
-      toCensusFacts(
-        { Tot_P_P: 3, Birthplace_Australia_P: 0, Birthplace_Elsewhere_P: 0 },
-        {
+      toCensusFacts({
+        g01: {
+          Tot_P_P: 3,
+          Birthplace_Australia_P: 0,
+          Birthplace_Elsewhere_P: 0,
+        },
+        g02: {
           Median_age_persons: 0,
           Median_rent_weekly: 0,
           Median_tot_hhd_inc_weekly: 0,
         },
-      ),
+      }),
     ).toStrictEqual({
       population: 3,
       medianAge: null,
@@ -98,6 +126,7 @@ describe("toCensusFacts", () => {
       medianHouseholdIncome: null,
       bornOverseas: null,
       publicHousing: null,
+      topBirthplace: null,
     })
   })
 })

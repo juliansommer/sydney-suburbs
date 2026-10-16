@@ -7,8 +7,14 @@ import { unzipSync } from "fflate"
 import geo from "mapshaper"
 import { z } from "zod/mini"
 
+import type { TopBirthplace } from "../../src/types/suburb-facts.ts"
 import { absCacheDir, download } from "../download.ts"
 import { boundaryUrl, CENSUS, SOURCE } from "../source.ts"
+import {
+  COUNTRY_COLUMNS,
+  type CountryColumn,
+  topBirthplace,
+} from "./birthplace.ts"
 
 // Census codes carry a prefix our ids don't: "SAL10001" is suburb "10001".
 export function stripSalPrefix(code: string): string {
@@ -77,6 +83,7 @@ export interface CensusFacts {
   // Percent of occupied private dwellings with a stated tenure that are
   // rented from the state housing authority, to one decimal place.
   publicHousing: number | null
+  topBirthplace: TopBirthplace | null
 }
 
 const PERCENT = 100
@@ -100,22 +107,27 @@ function publicHousingShare(
   return Math.round(share * ONE_DECIMAL) / ONE_DECIMAL
 }
 
-export function toCensusFacts(
-  g01: Row<(typeof G01_FIELDS)[number]>,
-  g02: Row<(typeof G02_FIELDS)[number]> | undefined,
-  g37?: Row<(typeof G37_FIELDS)[number]>,
-): CensusFacts {
+export interface CensusRows {
+  g01: Row<(typeof G01_FIELDS)[number]>
+  g02?: Row<(typeof G02_FIELDS)[number]>
+  g09?: Row<CountryColumn>
+  g37?: Row<(typeof G37_FIELDS)[number]>
+}
+
+export function toCensusFacts({ g01, g02, g09, g37 }: CensusRows): CensusFacts {
   const f = CENSUS.fields
   const bornElsewhere = g01[f.bornElsewhere] ?? 0
   const stated = (g01[f.bornInAustralia] ?? 0) + bornElsewhere
+  const population = g01[f.totalPersons] ?? 0
   return {
-    population: g01[f.totalPersons] ?? 0,
+    population,
     medianAge: median(g02?.[f.medianAge]),
     medianRent: median(g02?.[f.medianRent]),
     medianHouseholdIncome: median(g02?.[f.medianHouseholdIncome]),
     bornOverseas:
       stated > 0 ? Math.round((bornElsewhere / stated) * PERCENT) : null,
     publicHousing: publicHousingShare(g37),
+    topBirthplace: topBirthplace(g09 ?? {}, population),
   }
 }
 
@@ -127,19 +139,47 @@ function readEntry(files: Record<string, Uint8Array>, name: string): string {
   return new TextDecoder().decode(entry)
 }
 
+// Country of birth is split across several tables, each with some of the
+// countries, so their rows are joined.
+function readBirthplaces(
+  files: Record<string, Uint8Array>,
+): Map<string, Row<CountryColumn>> {
+  const joined = new Map<string, Row<CountryColumn>>()
+  for (const name of CENSUS.g09) {
+    const csv = readEntry(files, name)
+    const header = csv.slice(0, csv.indexOf("\n")).trim().split(",")
+    const fields = COUNTRY_COLUMNS.filter((c) => header.includes(c))
+    for (const [id, row] of parseTable(csv, fields)) {
+      joined.set(id, { ...joined.get(id), ...row })
+    }
+  }
+  return joined
+}
+
 export async function readCensus(): Promise<Map<string, CensusFacts>> {
   const path = await download(CENSUS.file, CENSUS.url)
+  const wanted = new Set<string>([
+    CENSUS.g01,
+    CENSUS.g02,
+    CENSUS.g37,
+    ...CENSUS.g09,
+  ])
   const files = unzipSync(new Uint8Array(await readFile(path)), {
-    filter: (file) =>
-      [CENSUS.g01, CENSUS.g02, CENSUS.g37].some((name) => file.name === name),
+    filter: (file) => wanted.has(file.name),
   })
   const g01 = parseTable(readEntry(files, CENSUS.g01), G01_FIELDS)
   const g02 = parseTable(readEntry(files, CENSUS.g02), G02_FIELDS)
+  const g09 = readBirthplaces(files)
   const g37 = parseTable(readEntry(files, CENSUS.g37), G37_FIELDS)
   return new Map(
     [...g01].map(([id, row]) => [
       id,
-      toCensusFacts(row, g02.get(id), g37.get(id)),
+      toCensusFacts({
+        g01: row,
+        g02: g02.get(id),
+        g09: g09.get(id),
+        g37: g37.get(id),
+      }),
     ]),
   )
 }

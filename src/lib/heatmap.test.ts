@@ -25,6 +25,7 @@ function factsWith(stats: Partial<SuburbStats>[]): SuburbFactsFile {
         postcode: null,
         summary: null,
         stats: { ...NO_STATS, ...s },
+        topBirthplace: null,
         photo: null,
       },
     ]),
