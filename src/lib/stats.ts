@@ -114,7 +114,7 @@ export const HEATMAP_BREAKS: Record<HeatmapStat, readonly number[]> = {
   medianRent: [400, 450, 500, 550, 600, 700],
   // Most suburbs have almost none, so the steps widen to spread them out.
   publicHousing: [1, 5, 10, 25, 50],
-  violentCrimeRate: [250, 500, 750, 1000, 1500, 2500],
+  violentCrimeRate: [250, 500, 750, 1000, 2500, 5000],
   density: [500, 1000, 2000, 3000, 4000, 6000],
   medianAge: [30, 35, 40, 45, 50],
   bornOverseas: [20, 30, 40, 50, 60, 70],

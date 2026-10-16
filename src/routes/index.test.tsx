@@ -140,7 +140,7 @@ describe("map page", () => {
     })
     await expect(
       screen.findByRole("list", { name: "Violent crime key" }),
-    ).resolves.toHaveTextContent("1,000 – 1,500 per 100k")
+    ).resolves.toHaveTextContent("1,000 – 2,500 per 100k")
   })
 
   it("shows a stat's heatmap from the suburb panel", async () => {
