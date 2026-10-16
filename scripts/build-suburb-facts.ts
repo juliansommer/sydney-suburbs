@@ -1,8 +1,11 @@
 // Builds the facts shown in the suburb panel. Run by hand with
 // `pnpm build:facts`; the output is committed.
 //
-// Source: ABS 2021 Census General Community Profile DataPack, tables G01 and
-//   G02, licensed CC BY 4.0, for population, birthplace and medians.
+// Source: ABS 2021 Census General Community Profile DataPack, tables G01, G02
+//   and G37, licensed CC BY 4.0, for population, birthplace, medians and
+//   public housing.
+// Source: NSW Bureau of Crime Statistics and Research, recorded crime by
+//   suburb, licensed CC BY 4.0, for violent crime.
 // Source: ABS ASGS Edition 3 Suburbs and Localities, licensed CC BY 4.0, for
 //   area and distance from the CBD.
 // Source: ABS ASGS Edition 3 Postal Areas, licensed CC BY 4.0, for postcodes.
@@ -33,6 +36,7 @@ import {
   type PhotoSource,
   readPhotoSources,
 } from "./facts/commons.ts"
+import { crimeRate, readViolentCrime } from "./facts/crime.ts"
 import { uploadPhotos } from "./facts/photos.ts"
 import {
   applyOverride,
@@ -52,7 +56,11 @@ const topoSuburbs = z.object({
     suburbs: z.object({
       geometries: z.array(
         z.object({
-          properties: z.object({ id: z.string(), name: z.string() }),
+          properties: z.object({
+            id: z.string(),
+            name: z.string(),
+            lga: z.string(),
+          }),
         }),
       ),
     }),
@@ -62,6 +70,7 @@ const topoSuburbs = z.object({
 interface MapSuburb {
   id: string
   name: string
+  lga: string
 }
 
 // The map's suburbs, so the facts always cover exactly the same set.
@@ -115,6 +124,7 @@ const DISTANCE_DECIMALS = 10
 function toStats(
   census: CensusFacts | undefined,
   geography: Geography,
+  violentIncidents: number | undefined,
 ): SuburbStats {
   const people = census?.population ?? 0
   // Places with no residents still get figures from a few non-resident
@@ -125,6 +135,8 @@ function toStats(
     medianRent: residents?.medianRent ?? null,
     medianHouseholdIncome: residents?.medianHouseholdIncome ?? null,
     bornOverseas: residents?.bornOverseas ?? null,
+    publicHousing: residents?.publicHousing ?? null,
+    violentCrimeRate: crimeRate(violentIncidents, people),
     areaKm2: Math.round(geography.areaKm2 * AREA_DECIMALS) / AREA_DECIMALS,
     density:
       people > 0 && geography.areaKm2 > 0
@@ -202,6 +214,7 @@ const ids = suburbs.map((s) => s.id)
 const census = await readCensus()
 const postcodes = await readPostcodes(ids)
 const geography = await readGeography(ids)
+const violentCrime = await readViolentCrime(suburbs)
 const matches = await matchSuburbs(suburbs, options)
 const summaries = await readSummaries()
 
@@ -221,7 +234,7 @@ for (const s of suburbs) {
     population: census.get(s.id)?.population ?? null,
     postcode: postcodes.get(s.id) ?? null,
     summary: summaries[s.id] ?? null,
-    stats: toStats(census.get(s.id), place),
+    stats: toStats(census.get(s.id), place, violentCrime.get(s.id)),
     photo: upload.photos.get(s.id) ?? null,
   }
 }
@@ -239,6 +252,10 @@ listMissing(
 listMissing(
   "postcode",
   suburbs.filter((s) => facts[s.id]?.postcode === null),
+)
+listMissing(
+  "BOCSAR crime figures",
+  suburbs.filter((s) => !violentCrime.has(s.id)),
 )
 listMissing(
   "Wikipedia article",

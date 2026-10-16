@@ -63,7 +63,28 @@ describe("toCensusFacts", () => {
       medianRent: 600,
       medianHouseholdIncome: 2227,
       bornOverseas: 76,
+      publicHousing: null,
     })
+  })
+
+  it("works out the public housing share from homes with a stated tenure", () => {
+    expect(
+      toCensusFacts(
+        { Tot_P_P: 2000, Birthplace_Australia_P: 0, Birthplace_Elsewhere_P: 0 },
+        undefined,
+        { R_ST_h_auth_Total: 125, Ten_type_NS_Total: 60, Total_Total: 860 },
+      ),
+    ).toHaveProperty("publicHousing", 15.6)
+  })
+
+  it("has no public housing share without any stated tenure", () => {
+    expect(
+      toCensusFacts(
+        { Tot_P_P: 3, Birthplace_Australia_P: 0, Birthplace_Elsewhere_P: 0 },
+        undefined,
+        { R_ST_h_auth_Total: 0, Ten_type_NS_Total: 4, Total_Total: 4 },
+      ),
+    ).toHaveProperty("publicHousing", null)
   })
 
   it("treats a median of zero as unknown", () => {
@@ -82,6 +103,7 @@ describe("toCensusFacts", () => {
       medianRent: null,
       medianHouseholdIncome: null,
       bornOverseas: null,
+      publicHousing: null,
     })
   })
 })

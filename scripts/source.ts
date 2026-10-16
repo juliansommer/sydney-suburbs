@@ -24,12 +24,14 @@ export const SOURCE = {
 } as const
 
 // General Community Profile DataPack for NSW suburbs, with codes like
-// "SAL10001". G01 has people and birthplace, G02 has the medians.
+// "SAL10001". G01 has people and birthplace, G02 has the medians, G37 has
+// tenure and landlord type.
 export const CENSUS = {
   url: "https://www.abs.gov.au/census/find-census-data/datapacks/download/2021_GCP_SAL_for_NSW_short-header.zip",
   file: "2021_GCP_SAL_for_NSW_short-header.zip",
   g01: "2021 Census GCP Suburbs and Localities for NSW/2021Census_G01_NSW_SAL.csv",
   g02: "2021 Census GCP Suburbs and Localities for NSW/2021Census_G02_NSW_SAL.csv",
+  g37: "2021 Census GCP Suburbs and Localities for NSW/2021Census_G37_NSW_SAL.csv",
   fields: {
     salCode: "SAL_CODE_2021",
     totalPersons: "Tot_P_P",
@@ -38,8 +40,19 @@ export const CENSUS = {
     medianAge: "Median_age_persons",
     medianRent: "Median_rent_weekly",
     medianHouseholdIncome: "Median_tot_hhd_inc_weekly",
+    stateHousing: "R_ST_h_auth_Total",
+    tenureNotStated: "Ten_type_NS_Total",
+    totalDwellings: "Total_Total",
   },
   salPrefix: "SAL",
+} as const
+
+// NSW recorded crime by suburb, offence and month, from BOCSAR, licensed
+// CC BY 4.0. Updated once a year.
+export const BOCSAR = {
+  url: "https://bocsarblob.blob.core.windows.net/bocsar-open-data/SuburbData.zip",
+  file: "SuburbData.zip",
+  csv: "SuburbData.csv",
 } as const
 
 export function boundaryUrl(file: string): string {

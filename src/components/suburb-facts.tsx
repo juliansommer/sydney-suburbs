@@ -213,6 +213,17 @@ function toStats(stats: SuburbStats): Stat[] {
       ),
     },
     {
+      label: "Housing commission",
+      value: formatOr(stats.publicHousing, (n) => `${oneDecimal.format(n)}%`),
+    },
+    {
+      label: "Violent crime",
+      value: formatOr(
+        stats.violentCrimeRate,
+        (n) => `${populationFormat.format(n)} per 100k`,
+      ),
+    },
+    {
       label: "Area",
       value: `${(stats.areaKm2 < 1 ? twoDecimals : oneDecimal).format(stats.areaKm2)} km²`,
     },

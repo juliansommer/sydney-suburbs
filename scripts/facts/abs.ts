@@ -27,6 +27,11 @@ const G02_FIELDS = [
   CENSUS.fields.medianRent,
   CENSUS.fields.medianHouseholdIncome,
 ] as const
+const G37_FIELDS = [
+  CENSUS.fields.stateHousing,
+  CENSUS.fields.tenureNotStated,
+  CENSUS.fields.totalDwellings,
+] as const
 
 // Every field is present once parseTable has checked the header.
 type Row<F extends string> = Partial<Record<F, number>>
@@ -69,18 +74,36 @@ export interface CensusFacts {
   medianHouseholdIncome: number | null
   // Percent of people who said where they were born, rounded.
   bornOverseas: number | null
+  // Percent of occupied private dwellings with a stated tenure that are
+  // rented from the state housing authority, to one decimal place.
+  publicHousing: number | null
 }
 
 const PERCENT = 100
+const ONE_DECIMAL = 10
 
 // The ABS reports a median of 0 when too few people answered to give one.
 function median(value: number | undefined): number | null {
   return value === undefined || value === 0 ? null : value
 }
 
+function publicHousingShare(
+  g37: Row<(typeof G37_FIELDS)[number]> | undefined,
+): number | null {
+  const f = CENSUS.fields
+  const stated =
+    (g37?.[f.totalDwellings] ?? 0) - (g37?.[f.tenureNotStated] ?? 0)
+  if (stated <= 0) {
+    return null
+  }
+  const share = ((g37?.[f.stateHousing] ?? 0) / stated) * PERCENT
+  return Math.round(share * ONE_DECIMAL) / ONE_DECIMAL
+}
+
 export function toCensusFacts(
   g01: Row<(typeof G01_FIELDS)[number]>,
   g02: Row<(typeof G02_FIELDS)[number]> | undefined,
+  g37?: Row<(typeof G37_FIELDS)[number]>,
 ): CensusFacts {
   const f = CENSUS.fields
   const bornElsewhere = g01[f.bornElsewhere] ?? 0
@@ -92,6 +115,7 @@ export function toCensusFacts(
     medianHouseholdIncome: median(g02?.[f.medianHouseholdIncome]),
     bornOverseas:
       stated > 0 ? Math.round((bornElsewhere / stated) * PERCENT) : null,
+    publicHousing: publicHousingShare(g37),
   }
 }
 
@@ -106,12 +130,17 @@ function readEntry(files: Record<string, Uint8Array>, name: string): string {
 export async function readCensus(): Promise<Map<string, CensusFacts>> {
   const path = await download(CENSUS.file, CENSUS.url)
   const files = unzipSync(new Uint8Array(await readFile(path)), {
-    filter: (file) => file.name === CENSUS.g01 || file.name === CENSUS.g02,
+    filter: (file) =>
+      [CENSUS.g01, CENSUS.g02, CENSUS.g37].some((name) => file.name === name),
   })
   const g01 = parseTable(readEntry(files, CENSUS.g01), G01_FIELDS)
   const g02 = parseTable(readEntry(files, CENSUS.g02), G02_FIELDS)
+  const g37 = parseTable(readEntry(files, CENSUS.g37), G37_FIELDS)
   return new Map(
-    [...g01].map(([id, row]) => [id, toCensusFacts(row, g02.get(id))]),
+    [...g01].map(([id, row]) => [
+      id,
+      toCensusFacts(row, g02.get(id), g37.get(id)),
+    ]),
   )
 }
 

@@ -127,6 +127,8 @@ describe("SuburbPanel facts", () => {
       ["Born overseas", "31%"],
       ["Median rent", "$650/wk"],
       ["Household income", "$2,450/wk"],
+      ["Housing commission", "4.2%"],
+      ["Violent crime", "1,350 per 100k"],
       ["Area", "2.1 km²"],
       ["Density", "7,286/km²"],
       ["Straight line to CBD", "5.3 km"],
@@ -150,6 +152,7 @@ describe("SuburbPanel facts", () => {
     expect(screen.getByText("0.42 km²")).toBeVisible()
     expect(screen.queryByText("Median age")).not.toBeInTheDocument()
     expect(screen.queryByText("Density")).not.toBeInTheDocument()
+    expect(screen.queryByText("Violent crime")).not.toBeInTheDocument()
   })
 
   it("shows the photo, facts and summary", async () => {
