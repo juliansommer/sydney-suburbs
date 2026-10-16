@@ -12,6 +12,7 @@ import {
 import { z } from "zod/mini"
 
 import { CouncilProgressButton } from "@/components/council-progress"
+import { GitHubLogo } from "@/components/github-logo"
 import { HeatmapLegend } from "@/components/heatmap-legend"
 import { SuburbMap, type SuburbMapHandle } from "@/components/map/suburb-map"
 import { SuburbSearch } from "@/components/map/suburb-search"
@@ -114,7 +115,16 @@ function MapPage() {
       <h1 className="pointer-events-none absolute top-4 left-4 text-lg font-semibold">
         Sydney Suburbs
       </h1>
-      <header className="absolute top-4 right-4">
+      <header className="absolute top-4 right-4 flex items-center gap-2">
+        <a
+          aria-label="Source on GitHub"
+          className={buttonVariants({ size: "icon", variant: "ghost" })}
+          href="https://github.com/juliansommer/sydney-suburbs"
+          rel="noreferrer"
+          target="_blank"
+        >
+          <GitHubLogo />
+        </a>
         {isPending ? null : (
           <Account signedIn={!!session}>
             {rows && data && mode === undefined ? (
