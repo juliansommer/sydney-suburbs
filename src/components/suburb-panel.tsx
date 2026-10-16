@@ -35,7 +35,7 @@ interface SuburbPanelProps {
   onZoomToCouncil: (lga: string) => void
   // The stat on the map, if it's showing a heatmap.
   heatmapStat: HeatmapStat | undefined
-  onShowHeatmap: (stat: HeatmapStat) => void
+  onToggleHeatmap: (stat: HeatmapStat) => void
 }
 
 // Tailwind's `md`: a card beside the map from here up, a bottom sheet below.
@@ -57,7 +57,7 @@ function SuburbCard({
   onClose,
   onZoomToCouncil,
   heatmapStat,
-  onShowHeatmap,
+  onToggleHeatmap,
 }: SuburbPanelProps) {
   const facts = useSuburbFacts(suburb?.id)
   if (!suburb) {
@@ -85,7 +85,7 @@ function SuburbCard({
             <Summary state={facts} />
             <MoreDetails
               heatmapStat={heatmapStat}
-              onShowHeatmap={onShowHeatmap}
+              onToggleHeatmap={onToggleHeatmap}
               state={facts}
             />
           </div>
@@ -111,7 +111,7 @@ function SuburbSheet({
   onClose,
   onZoomToCouncil,
   heatmapStat,
-  onShowHeatmap,
+  onToggleHeatmap,
 }: SuburbPanelProps) {
   const [snapPoint, setSnapPoint] = useState<Drawer.Root.SnapPoint | null>(PEEK)
   const [shown, setShown] = useState(suburb)
@@ -142,7 +142,7 @@ function SuburbSheet({
           <SheetPopup
             heatmapStat={heatmapStat}
             onClose={onClose}
-            onShowHeatmap={onShowHeatmap}
+            onToggleHeatmap={onToggleHeatmap}
             // Drops to the peek so the outlined council is in view.
             onZoomToCouncil={(lga) => {
               setSnapPoint(PEEK)
@@ -171,7 +171,7 @@ function SheetPopup({
   onClose,
   onZoomToCouncil,
   heatmapStat,
-  onShowHeatmap,
+  onToggleHeatmap,
 }: SheetPopupProps) {
   const facts = useSuburbFacts(suburb.id)
   return (
@@ -212,7 +212,7 @@ function SheetPopup({
                 <Summary state={facts} />
                 <MoreDetails
                   heatmapStat={heatmapStat}
-                  onShowHeatmap={onShowHeatmap}
+                  onToggleHeatmap={onToggleHeatmap}
                   state={facts}
                 />
               </div>

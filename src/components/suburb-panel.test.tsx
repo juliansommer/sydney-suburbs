@@ -22,7 +22,7 @@ interface RenderPanelOptions {
   signedIn?: boolean
   onZoomToCouncil?: (lga: string) => void
   heatmapStat?: HeatmapStat
-  onShowHeatmap?: (stat: HeatmapStat) => void
+  onToggleHeatmap?: (stat: HeatmapStat) => void
 }
 
 // The panel links to /login, so it needs a router around it.
@@ -31,7 +31,7 @@ async function renderPanel({
   signedIn = true,
   onZoomToCouncil = () => {},
   heatmapStat,
-  onShowHeatmap = () => {},
+  onToggleHeatmap = () => {},
 }: RenderPanelOptions = {}) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -43,7 +43,7 @@ async function renderPanel({
         <SuburbPanel
           heatmapStat={heatmapStat}
           onClose={() => {}}
-          onShowHeatmap={onShowHeatmap}
+          onToggleHeatmap={onToggleHeatmap}
           onZoomToCouncil={onZoomToCouncil}
           rows={new Map()}
           signedIn={signedIn}
@@ -149,9 +149,9 @@ describe("SuburbPanel facts", () => {
 
   it("shows a stat's heatmap when it's clicked", async () => {
     mockFetch()
-    const onShowHeatmap = vi.fn<(stat: HeatmapStat) => void>()
+    const onToggleHeatmap = vi.fn<(stat: HeatmapStat) => void>()
     const user = userEvent.setup()
-    await renderPanel({ onShowHeatmap })
+    await renderPanel({ onToggleHeatmap })
 
     await user.click(
       await screen.findByRole("button", { name: "More details" }),
@@ -160,7 +160,7 @@ describe("SuburbPanel facts", () => {
       screen.getByRole("button", { name: "Show Violent crime heatmap" }),
     )
 
-    expect(onShowHeatmap).toHaveBeenCalledWith("violentCrimeRate")
+    expect(onToggleHeatmap).toHaveBeenCalledWith("violentCrimeRate")
     expect(
       screen.queryByRole("button", { name: "Show Area heatmap" }),
     ).not.toBeInTheDocument()

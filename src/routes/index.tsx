@@ -220,6 +220,15 @@ function MapView({
     })
   }
 
+  // Picking the stat already on the map goes back to the visited mode.
+  function toggleHeatmap(next: HeatmapStat) {
+    if (mode === "heatmap" && stat === next) {
+      switchMode("visited")
+    } else {
+      showHeatmap(next)
+    }
+  }
+
   const onKeyDown = useEffectEvent((event: KeyboardEvent) => {
     const { target } = event
     const typing =
@@ -287,7 +296,7 @@ function MapView({
           onClose={() => {
             select(null)
           }}
-          onShowHeatmap={showHeatmap}
+          onToggleHeatmap={toggleHeatmap}
           onZoomToCouncil={(lga) => {
             map.current?.zoomToCouncil(lga)
           }}

@@ -199,15 +199,16 @@ interface MoreDetailsProps {
   state: FactsState
   // The stat on the map, if it's showing a heatmap.
   heatmapStat: HeatmapStat | undefined
-  onShowHeatmap: (stat: HeatmapStat) => void
+  onToggleHeatmap: (stat: HeatmapStat) => void
 }
 
 // Closed by default, so the panel stays short until someone wants the numbers.
-// Stats with a heatmap show it on the map when clicked.
+// Stats with a heatmap show it on the map when clicked, and hide it when
+// clicked again.
 export function MoreDetails({
   state,
   heatmapStat,
-  onShowHeatmap,
+  onToggleHeatmap,
 }: MoreDetailsProps) {
   if (state.status !== "success" || !state.facts) {
     return null
@@ -224,7 +225,7 @@ export function MoreDetails({
           {stats.map((stat) => (
             <StatCell
               key={stat.key}
-              onShowHeatmap={onShowHeatmap}
+              onToggleHeatmap={onToggleHeatmap}
               shown={stat.key === heatmapStat}
               stat={stat}
             />
@@ -238,12 +239,12 @@ export function MoreDetails({
 interface StatCellProps {
   stat: Stat
   shown: boolean
-  onShowHeatmap: (stat: HeatmapStat) => void
+  onToggleHeatmap: (stat: HeatmapStat) => void
 }
 
 // The label's button stretches over the whole cell, so the value is part of
 // the click target too.
-function StatCell({ stat, shown, onShowHeatmap }: StatCellProps) {
+function StatCell({ stat, shown, onToggleHeatmap }: StatCellProps) {
   const { key } = stat
   return (
     <div
@@ -260,7 +261,7 @@ function StatCell({ stat, shown, onShowHeatmap }: StatCellProps) {
             aria-pressed={shown}
             className="outline-none after:absolute after:inset-0 after:rounded-md focus-visible:after:ring-2 focus-visible:after:ring-ring"
             onClick={() => {
-              onShowHeatmap(key)
+              onToggleHeatmap(key)
             }}
             type="button"
           >

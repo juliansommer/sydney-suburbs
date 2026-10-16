@@ -163,6 +163,21 @@ describe("map page", () => {
     ).resolves.toBeInTheDocument()
   })
 
+  it("hides the heatmap when its stat is clicked again", async () => {
+    const { router } = await renderRoute(
+      "/?suburb=1&mode=heatmap&stat=medianRent",
+    )
+
+    await userEvent.click(
+      await screen.findByRole("button", { name: "More details" }),
+    )
+    await userEvent.click(
+      screen.getByRole("button", { name: "Show Median rent heatmap" }),
+    )
+
+    expect({ ...router.state.location.search }).toStrictEqual({ suburb: 1 })
+  })
+
   it("drops an unknown stat, and any stat outside the heatmap", async () => {
     const { router } = await renderRoute("/?mode=heatmap&stat=vibes")
 
