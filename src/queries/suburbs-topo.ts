@@ -39,11 +39,15 @@ export function mergeSuburbs(
       geometry.type === "Polygon" || geometry.type === "MultiPolygon"
     const key =
       isArea && geometry.properties ? keyOf(geometry.properties) : undefined
-    if (isArea && key !== undefined) {
-      groups.set(key, [
-        ...(groups.get(key) ?? []),
-        { ...geometry, properties: {} },
-      ])
+    if (!isArea || key === undefined) {
+      continue
+    }
+    const group = groups.get(key)
+    const area = { ...geometry, properties: {} }
+    if (group) {
+      group.push(area)
+    } else {
+      groups.set(key, [area])
     }
   }
   return new Map(
