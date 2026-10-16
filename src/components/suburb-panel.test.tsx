@@ -9,6 +9,7 @@ import { act, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import type { HeatmapStat } from "@/lib/stats"
 import { mockFetch } from "@/test/mock-fetch"
 
 import { SuburbPanel } from "./suburb-panel"
@@ -20,6 +21,8 @@ interface RenderPanelOptions {
   suburb?: typeof alpha
   signedIn?: boolean
   onZoomToCouncil?: (lga: string) => void
+  heatmapStat?: HeatmapStat
+  onShowHeatmap?: (stat: HeatmapStat) => void
 }
 
 // The panel links to /login, so it needs a router around it.
@@ -27,6 +30,8 @@ async function renderPanel({
   suburb = alpha,
   signedIn = true,
   onZoomToCouncil = () => {},
+  heatmapStat,
+  onShowHeatmap = () => {},
 }: RenderPanelOptions = {}) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -36,7 +41,9 @@ async function renderPanel({
     routeTree: createRootRoute({
       component: () => (
         <SuburbPanel
+          heatmapStat={heatmapStat}
           onClose={() => {}}
+          onShowHeatmap={onShowHeatmap}
           onZoomToCouncil={onZoomToCouncil}
           rows={new Map()}
           signedIn={signedIn}
@@ -134,10 +141,46 @@ describe("SuburbPanel facts", () => {
       ["Straight line to CBD", "5.3 km"],
     ]
     for (const [label, value] of details) {
-      expect(screen.getByText(label ?? "").nextSibling).toHaveTextContent(
+      expect(screen.getByText(label ?? "").closest("div")).toHaveTextContent(
         value ?? "",
       )
     }
+  })
+
+  it("shows a stat's heatmap when it's clicked", async () => {
+    mockFetch()
+    const onShowHeatmap = vi.fn<(stat: HeatmapStat) => void>()
+    const user = userEvent.setup()
+    await renderPanel({ onShowHeatmap })
+
+    await user.click(
+      await screen.findByRole("button", { name: "More details" }),
+    )
+    await user.click(
+      screen.getByRole("button", { name: "Show Violent crime heatmap" }),
+    )
+
+    expect(onShowHeatmap).toHaveBeenCalledWith("violentCrimeRate")
+    expect(
+      screen.queryByRole("button", { name: "Show Area heatmap" }),
+    ).not.toBeInTheDocument()
+  })
+
+  it("marks the stat the map is showing", async () => {
+    mockFetch()
+    const user = userEvent.setup()
+    await renderPanel({ heatmapStat: "medianRent" })
+
+    await user.click(
+      await screen.findByRole("button", { name: "More details" }),
+    )
+
+    expect(
+      screen.getByRole("button", { name: "Show Median rent heatmap" }),
+    ).toHaveAttribute("aria-pressed", "true")
+    expect(
+      screen.getByRole("button", { name: "Show Median age heatmap" }),
+    ).toHaveAttribute("aria-pressed", "false")
   })
 
   it("skips census details the ABS didn't publish", async () => {

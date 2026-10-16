@@ -83,6 +83,18 @@
   --color-club-panthers: color-mix(in oklab, #231f20 70%, var(--map-land));
   --color-club-wests-tigers: color-mix(in oklab, #f37021 70%, var(--map-land));
   --color-club-sea-eagles: color-mix(in oklab, #6f163d 70%, var(--map-land));
+  --color-heat-1: color-mix(in oklab, var(--heat-red) 10%, var(--map-land));
+  --color-heat-2: color-mix(in oklab, var(--heat-red) 25%, var(--map-land));
+  --color-heat-3: color-mix(in oklab, var(--heat-red) 40%, var(--map-land));
+  --color-heat-4: color-mix(in oklab, var(--heat-red) 55%, var(--map-land));
+  --color-heat-5: color-mix(in oklab, var(--heat-red) 70%, var(--map-land));
+  --color-heat-6: color-mix(in oklab, var(--heat-red) 85%, var(--map-land));
+  --color-heat-7: color-mix(in oklab, var(--heat-red) 100%, var(--map-land));
+  --color-heat-none: color-mix(
+    in oklab,
+    var(--map-border) 70%,
+    var(--map-land)
+  );
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -158,6 +170,7 @@
   --map-visited: oklch(0.75 0.14 300);
   --map-label: oklch(0.35 0 0);
   --map-halo: oklch(1 0 0 / 80%);
+  --heat-red: oklch(0.58 0.22 27);
 }
 
 .dark {
@@ -225,6 +238,7 @@
   --map-visited: oklch(0.5 0.14 300);
   --map-label: oklch(0.88 0 0);
   --map-halo: oklch(0.2 0 0 / 80%);
+  --heat-red: oklch(0.6 0.2 27);
 }
 
 @layer base {

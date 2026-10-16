@@ -102,6 +102,80 @@ describe("map page", () => {
     ).not.toBeInTheDocument()
   })
 
+  it("shows a heatmap of household income by default", async () => {
+    signIn()
+    mockFetch({ suburbs: [visitedRow("1")] })
+
+    await renderRoute("/?mode=heatmap")
+
+    await expect(
+      screen.findByRole("combobox", { name: "Statistic" }),
+    ).resolves.toHaveValue("medianHouseholdIncome")
+    const key = await screen.findByRole("list", {
+      name: "Household income key",
+    })
+    expect(key).toHaveTextContent("$2,000 – $2,500/wk")
+    expect(key).toHaveTextContent("No data")
+    expect(document.querySelector('[data-layer="heat-3"]')).toHaveAttribute(
+      "d",
+      screen.getByRole("button", { name: "Alpha" }).getAttribute("d"),
+    )
+    expect(visitedFill()).toBeNull()
+    expect(
+      screen.queryByRole("button", { name: /suburbs visited/u }),
+    ).not.toBeInTheDocument()
+  })
+
+  it("switches the heatmap's stat from the key", async () => {
+    const { router } = await renderRoute("/?mode=heatmap")
+
+    await userEvent.selectOptions(
+      await screen.findByRole("combobox", { name: "Statistic" }),
+      "Violent crime",
+    )
+
+    expect({ ...router.state.location.search }).toStrictEqual({
+      mode: "heatmap",
+      stat: "violentCrimeRate",
+    })
+    await expect(
+      screen.findByRole("list", { name: "Violent crime key" }),
+    ).resolves.toHaveTextContent("1,000 – 1,500 per 100k")
+  })
+
+  it("shows a stat's heatmap from the suburb panel", async () => {
+    const { router } = await renderRoute("/?suburb=1")
+
+    await userEvent.click(
+      await screen.findByRole("button", { name: "More details" }),
+    )
+    await userEvent.click(
+      screen.getByRole("button", { name: "Show Median rent heatmap" }),
+    )
+
+    expect({ ...router.state.location.search }).toStrictEqual({
+      suburb: 1,
+      mode: "heatmap",
+      stat: "medianRent",
+    })
+    await expect(
+      screen.findByRole("list", { name: "Median rent key" }),
+    ).resolves.toBeInTheDocument()
+  })
+
+  it("drops an unknown stat, and any stat outside the heatmap", async () => {
+    const { router } = await renderRoute("/?mode=heatmap&stat=vibes")
+
+    await expect(
+      screen.findByRole("combobox", { name: "Statistic" }),
+    ).resolves.toHaveValue("medianHouseholdIncome")
+    expect(router.state.location.search).not.toHaveProperty("stat")
+
+    await userEvent.click(screen.getByRole("button", { name: "NRL" }))
+
+    expect({ ...router.state.location.search }).toStrictEqual({ mode: "nrl" })
+  })
+
   it("falls back to the visited mode for an unknown mode", async () => {
     const { router } = await renderRoute("/?mode=rugby")
 

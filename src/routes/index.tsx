@@ -12,12 +12,19 @@ import {
 import { z } from "zod/mini"
 
 import { CouncilProgressButton } from "@/components/council-progress"
+import { HeatmapLegend } from "@/components/heatmap-legend"
 import { SuburbMap, type SuburbMapHandle } from "@/components/map/suburb-map"
 import { SuburbSearch } from "@/components/map/suburb-search"
 import { NrlLegend } from "@/components/nrl-legend"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { authClient } from "@/lib/auth-client"
 import { whenIdle } from "@/lib/idle"
+import {
+  DEFAULT_HEATMAP_STAT,
+  HEATMAP_STATS,
+  type HeatmapStat,
+} from "@/lib/stats"
+import { heatmapQuery } from "@/queries/heatmap"
 import { mySuburbsKey, mySuburbsQuery } from "@/queries/my-suburbs"
 import { nrlLayersQuery } from "@/queries/nrl-layers"
 import { suburbFactsQuery } from "@/queries/suburb-facts"
@@ -37,26 +44,36 @@ const SuburbPanel = lazy(async () => {
 // number. A malformed one is just no selection.
 const suburbParam = z.int()
 
-const MAP_MODES = ["visited", "nrl"] as const
+const MAP_MODES = ["visited", "nrl", "heatmap"] as const
 type MapMode = (typeof MAP_MODES)[number]
 // Visited is the default, so it stays out of the URL.
 const modeParam = z.enum(MAP_MODES)
+// Only the heatmap mode has a stat, and the default one stays out of the URL.
+const statParam = z.enum(HEATMAP_STATS)
 
-const MODE_LABELS: Record<MapMode, string> = { visited: "Visited", nrl: "NRL" }
+const MODE_LABELS: Record<MapMode, string> = {
+  visited: "Visited",
+  nrl: "NRL",
+  heatmap: "Heatmap",
+}
 
 const NO_LAYERS: MapLayers = { fills: [], outlines: [], markers: [] }
 
 interface MapSearch {
   suburb?: number
   mode?: MapMode
+  stat?: HeatmapStat
 }
 
 export const Route = createFileRoute("/")({
   validateSearch: (search): MapSearch => {
     const mode = modeParam.safeParse(search.mode).data
+    const stat = statParam.safeParse(search.stat).data
     return {
       suburb: suburbParam.safeParse(search.suburb).data,
       mode: mode === "visited" ? undefined : mode,
+      stat:
+        mode === "heatmap" && stat !== DEFAULT_HEATMAP_STAT ? stat : undefined,
     }
   },
   component: MapPage,
@@ -100,7 +117,7 @@ function MapPage() {
       <header className="absolute top-4 right-4">
         {isPending ? null : (
           <Account signedIn={!!session}>
-            {rows && data && mode !== "nrl" ? (
+            {rows && data && mode === undefined ? (
               <CouncilProgressButton
                 onZoom={(lga) => {
                   map.current?.zoomToCouncil(lga)
@@ -133,22 +150,31 @@ function MapView({
   signedIn,
   rows,
 }: MapViewProps) {
-  const { suburb: selectedId, mode = "visited" } = Route.useSearch()
+  const {
+    suburb: selectedId,
+    mode = "visited",
+    stat = DEFAULT_HEATMAP_STAT,
+  } = Route.useSearch()
   const navigate = Route.useNavigate()
   const { data: nrlLayers } = useQuery({
     ...nrlLayersQuery,
     enabled: mode === "nrl",
   })
-  const layers: MapLayers =
-    mode === "nrl"
-      ? (nrlLayers ?? NO_LAYERS)
-      : {
-          fills: [
-            { key: "visited", ids: visitedIds, className: "fill-map-visited" },
-          ],
-          outlines: [],
-          markers: [],
-        }
+  const { data: heatmap } = useQuery({
+    ...heatmapQuery(stat),
+    enabled: mode === "heatmap",
+  })
+  const visitedLayers: MapLayers = {
+    fills: [{ key: "visited", ids: visitedIds, className: "fill-map-visited" }],
+    outlines: [],
+    markers: [],
+  }
+  const layersByMode: Record<MapMode, MapLayers> = {
+    visited: visitedLayers,
+    nrl: nrlLayers ?? NO_LAYERS,
+    heatmap: heatmap?.layers ?? NO_LAYERS,
+  }
+  const layers = layersByMode[mode]
 
   const byId = new Map(suburbs.map((s) => [s.id, s]))
   // An id the map doesn't draw is no selection at all.
@@ -173,6 +199,13 @@ function MapView({
         ...prev,
         mode: next === "visited" ? undefined : next,
       }),
+      replace: true,
+    })
+  }
+
+  function showHeatmap(next: HeatmapStat) {
+    navigate({
+      search: (prev) => ({ ...prev, mode: "heatmap", stat: next }),
       replace: true,
     })
   }
@@ -219,6 +252,13 @@ function MapView({
       />
       <div className="absolute bottom-4 left-4 flex flex-col items-start gap-2">
         {mode === "nrl" ? <NrlLegend /> : null}
+        {mode === "heatmap" ? (
+          <HeatmapLegend
+            heatmap={heatmap}
+            onStatChange={showHeatmap}
+            stat={stat}
+          />
+        ) : null}
         <ModeSwitch mode={mode} onSwitch={switchMode} />
       </div>
       <div className="absolute inset-x-4 top-14 md:right-auto md:w-72">
@@ -233,9 +273,11 @@ function MapView({
       </div>
       <Suspense>
         <SuburbPanel
+          heatmapStat={mode === "heatmap" ? stat : undefined}
           onClose={() => {
             select(null)
           }}
+          onShowHeatmap={showHeatmap}
           onZoomToCouncil={(lga) => {
             map.current?.zoomToCouncil(lga)
           }}

@@ -7,6 +7,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import {
+  DETAIL_STATS,
+  type HeatmapStat,
+  isHeatmapStat,
+  type StatKey,
+  STATS,
+} from "@/lib/stats"
 import { cn } from "@/lib/utils"
 import { suburbFactsQuery } from "@/queries/suburb-facts"
 import type {
@@ -16,15 +23,6 @@ import type {
 } from "@/types/suburb-facts"
 
 const populationFormat = new Intl.NumberFormat("en-AU")
-const dollarFormat = new Intl.NumberFormat("en-AU", {
-  style: "currency",
-  currency: "AUD",
-  maximumFractionDigits: 0,
-})
-const oneDecimal = new Intl.NumberFormat("en-AU", { maximumFractionDigits: 1 })
-const twoDecimals = new Intl.NumberFormat("en-AU", {
-  maximumFractionDigits: 2,
-})
 
 type FactsState =
   | { status: "pending" }
@@ -182,77 +180,39 @@ export function Summary({ state }: SummaryProps) {
 }
 
 interface Stat {
+  key: StatKey
   label: string
-  value: string | null
-}
-
-function formatOr<T>(value: T | null, format: (v: T) => string) {
-  return value === null ? null : format(value)
+  value: string
 }
 
 // Census figures are missing where too few people live, so those are skipped.
 function toStats(stats: SuburbStats): Stat[] {
-  return [
-    {
-      label: "Median age",
-      value: formatOr(stats.medianAge, String),
-    },
-    {
-      label: "Born overseas",
-      value: formatOr(stats.bornOverseas, (n) => `${n}%`),
-    },
-    {
-      label: "Median rent",
-      value: formatOr(stats.medianRent, (n) => `${dollarFormat.format(n)}/wk`),
-    },
-    {
-      label: "Household income",
-      value: formatOr(
-        stats.medianHouseholdIncome,
-        (n) => `${dollarFormat.format(n)}/wk`,
-      ),
-    },
-    {
-      label: "Housing commission",
-      value: formatOr(stats.publicHousing, (n) => `${oneDecimal.format(n)}%`),
-    },
-    {
-      label: "Violent crime",
-      value: formatOr(
-        stats.violentCrimeRate,
-        (n) => `${populationFormat.format(n)} per 100k`,
-      ),
-    },
-    {
-      label: "Area",
-      value: `${(stats.areaKm2 < 1 ? twoDecimals : oneDecimal).format(stats.areaKm2)} km²`,
-    },
-    {
-      label: "Density",
-      value: formatOr(
-        stats.density,
-        (n) => `${populationFormat.format(n)}/km²`,
-      ),
-    },
-    {
-      label: "Straight line to CBD",
-      value: `${oneDecimal.format(stats.cbdDistanceKm)} km`,
-    },
-  ]
+  return DETAIL_STATS.flatMap((key) => {
+    const value = stats[key]
+    return value === null
+      ? []
+      : [{ key, label: STATS[key].label, value: STATS[key].format(value) }]
+  })
 }
 
 interface MoreDetailsProps {
   state: FactsState
+  // The stat on the map, if it's showing a heatmap.
+  heatmapStat: HeatmapStat | undefined
+  onShowHeatmap: (stat: HeatmapStat) => void
 }
 
 // Closed by default, so the panel stays short until someone wants the numbers.
-export function MoreDetails({ state }: MoreDetailsProps) {
+// Stats with a heatmap show it on the map when clicked.
+export function MoreDetails({
+  state,
+  heatmapStat,
+  onShowHeatmap,
+}: MoreDetailsProps) {
   if (state.status !== "success" || !state.facts) {
     return null
   }
-  const stats = toStats(state.facts.stats).filter(
-    (stat): stat is { label: string; value: string } => stat.value !== null,
-  )
+  const stats = toStats(state.facts.stats)
   return (
     <Collapsible.Root>
       <Collapsible.Trigger className="group flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground">
@@ -260,15 +220,57 @@ export function MoreDetails({ state }: MoreDetailsProps) {
         More details
       </Collapsible.Trigger>
       <Collapsible.Panel>
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-2 pt-3">
+        <dl className="grid grid-cols-2 gap-x-2 gap-y-1 pt-3">
           {stats.map((stat) => (
-            <div key={stat.label}>
-              <dt className="text-xs text-muted-foreground">{stat.label}</dt>
-              <dd className="text-sm font-medium">{stat.value}</dd>
-            </div>
+            <StatCell
+              key={stat.key}
+              onShowHeatmap={onShowHeatmap}
+              shown={stat.key === heatmapStat}
+              stat={stat}
+            />
           ))}
         </dl>
       </Collapsible.Panel>
     </Collapsible.Root>
+  )
+}
+
+interface StatCellProps {
+  stat: Stat
+  shown: boolean
+  onShowHeatmap: (stat: HeatmapStat) => void
+}
+
+// The label's button stretches over the whole cell, so the value is part of
+// the click target too.
+function StatCell({ stat, shown, onShowHeatmap }: StatCellProps) {
+  const { key } = stat
+  return (
+    <div
+      className={cn(
+        "relative rounded-md px-2 py-1",
+        isHeatmapStat(key) && "hover:bg-muted",
+        shown && "bg-muted",
+      )}
+    >
+      <dt className="text-xs text-muted-foreground">
+        {isHeatmapStat(key) ? (
+          <button
+            aria-label={`Show ${stat.label} heatmap`}
+            aria-pressed={shown}
+            className="outline-none after:absolute after:inset-0 after:rounded-md focus-visible:after:ring-2 focus-visible:after:ring-ring"
+            onClick={() => {
+              onShowHeatmap(key)
+            }}
+            type="button"
+          >
+            {stat.label}
+          </button>
+        ) : (
+          stat.label
+        )}
+      </dt>
+      <dd className="text-sm font-medium">{stat.value}</dd>
+    </div>
   )
 }
