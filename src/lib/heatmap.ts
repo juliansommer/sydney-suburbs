@@ -66,18 +66,14 @@ function levelFor(
 }
 
 // Fills each suburb by its bucket for `stat`, and suburbs with no figure in
-// grey. `ids` are the suburbs on the map.
-export function heatmap(
-  stat: HeatmapStat,
-  facts: SuburbFactsFile,
-  ids: string[],
-): Heatmap {
+// grey. The facts file covers every suburb on the map.
+export function heatmap(stat: HeatmapStat, facts: SuburbFactsFile): Heatmap {
   const breaks = HEATMAP_BREAKS[stat]
   const count = breaks.length + 1
   const members = Array.from({ length: count }, () => new Set<string>())
   const noData = new Set<string>()
-  for (const id of ids) {
-    const value = facts[id]?.stats[stat]
+  for (const [id, { stats }] of Object.entries(facts)) {
+    const value = stats[stat]
     if (value === null || value === undefined) {
       noData.add(id)
     } else {
