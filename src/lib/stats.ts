@@ -65,6 +65,12 @@ export const STATS: Record<StatKey, StatInfo> = {
     " per 100k",
     "NSW BOCSAR, incidents over the latest 12 months per 100,000 residents",
   ),
+  treeCanopy: stat(
+    "Tree canopy",
+    formatOneDecimal,
+    "%",
+    "NSW Department of Planning, Housing and Infrastructure, 2022 share of the suburb's urban area under tree canopy",
+  ),
   areaKm2: stat(
     "Area",
     (value) => (value < 1 ? twoDecimals : oneDecimal).format(value),
@@ -82,6 +88,7 @@ export const DETAIL_STATS: readonly StatKey[] = [
   "medianHouseholdIncome",
   "publicHousing",
   "violentCrimeRate",
+  "treeCanopy",
   "areaKm2",
   "density",
 ]
@@ -92,6 +99,7 @@ export const HEATMAP_STATS = [
   "medianRent",
   "publicHousing",
   "violentCrimeRate",
+  "treeCanopy",
   "density",
   "medianAge",
   "bornOverseas",
@@ -110,6 +118,7 @@ export const HEATMAP_BREAKS: Record<HeatmapStat, readonly number[]> = {
   density: [500, 1000, 2000, 3000, 4000, 6000],
   medianAge: [30, 35, 40, 45, 50],
   bornOverseas: [20, 30, 40, 50, 60, 70],
+  treeCanopy: [10, 15, 20, 30, 40, 50],
 }
 
 export const DEFAULT_HEATMAP_STAT: HeatmapStat = "medianHouseholdIncome"

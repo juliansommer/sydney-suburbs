@@ -11,6 +11,7 @@ const NO_STATS: SuburbStats = {
   bornOverseas: null,
   publicHousing: null,
   violentCrimeRate: null,
+  treeCanopy: null,
   areaKm2: 1,
   density: null,
 }
@@ -87,6 +88,16 @@ describe("heatmap", () => {
     expect(map.buckets).toHaveLength(6)
     expect(fillOf(map, "0")).toBe("fill-heat-1")
     expect(fillOf(map, "1")).toBe("fill-heat-7")
+  })
+
+  it("colours tree canopy in greens", () => {
+    const facts = factsWith([{ treeCanopy: 5 }, { treeCanopy: 60 }])
+
+    const map = heatmap("treeCanopy", facts, Object.keys(facts))
+
+    expect(fillOf(map, "0")).toBe("fill-canopy-1")
+    expect(fillOf(map, "1")).toBe("fill-canopy-7")
+    expect(map.buckets.at(-1)?.swatch).toBe("bg-canopy-7")
   })
 
   it("greys out suburbs without a figure", () => {

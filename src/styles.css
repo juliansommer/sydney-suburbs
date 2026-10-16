@@ -90,6 +90,41 @@
   --color-heat-5: color-mix(in oklab, var(--heat-red) 70%, var(--map-land));
   --color-heat-6: color-mix(in oklab, var(--heat-red) 85%, var(--map-land));
   --color-heat-7: color-mix(in oklab, var(--heat-red) 100%, var(--map-land));
+  --color-canopy-1: color-mix(
+    in oklab,
+    var(--canopy-green) 10%,
+    var(--map-land)
+  );
+  --color-canopy-2: color-mix(
+    in oklab,
+    var(--canopy-green) 25%,
+    var(--map-land)
+  );
+  --color-canopy-3: color-mix(
+    in oklab,
+    var(--canopy-green) 40%,
+    var(--map-land)
+  );
+  --color-canopy-4: color-mix(
+    in oklab,
+    var(--canopy-green) 55%,
+    var(--map-land)
+  );
+  --color-canopy-5: color-mix(
+    in oklab,
+    var(--canopy-green) 70%,
+    var(--map-land)
+  );
+  --color-canopy-6: color-mix(
+    in oklab,
+    var(--canopy-green) 85%,
+    var(--map-land)
+  );
+  --color-canopy-7: color-mix(
+    in oklab,
+    var(--canopy-green) 100%,
+    var(--map-land)
+  );
   --color-heat-none: color-mix(
     in oklab,
     var(--map-border) 70%,
@@ -171,6 +206,7 @@
   --map-label: oklch(0.35 0 0);
   --map-halo: oklch(1 0 0 / 80%);
   --heat-red: oklch(0.58 0.22 27);
+  --canopy-green: oklch(0.5 0.15 145);
 }
 
 .dark {
@@ -239,6 +275,7 @@
   --map-label: oklch(0.88 0 0);
   --map-halo: oklch(0.2 0 0 / 80%);
   --heat-red: oklch(0.6 0.2 27);
+  --canopy-green: oklch(0.6 0.15 145);
 }
 
 @layer base {

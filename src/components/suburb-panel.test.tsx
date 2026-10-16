@@ -136,6 +136,7 @@ describe("SuburbPanel facts", () => {
       ["Household income", "$2,450/wk"],
       ["Housing commission", "4.2%"],
       ["Violent crime", "1,350 per 100k"],
+      ["Tree canopy", "24.6%"],
       ["Area", "2.1 km²"],
       ["Density", "7,286/km²"],
     ]

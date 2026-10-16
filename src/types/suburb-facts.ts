@@ -11,7 +11,7 @@ export interface SuburbPhoto {
   sourceUrl: string
 }
 
-// From the 2021 Census, ABS boundaries and BOCSAR. Census figures are null
+// From the 2021 Census, ABS boundaries, BOCSAR and NSW tree canopy data. Census figures are null
 // where too few people live there for the ABS to publish them.
 export interface SuburbStats {
   medianAge: number | null
@@ -25,6 +25,9 @@ export interface SuburbStats {
   // Yearly violent incidents per 100,000 residents, from BOCSAR. Null under
   // 500 residents, where one incident skews the rate.
   violentCrimeRate: number | null
+  // Percent of the suburb's urban area under tree canopy in 2022. Null outside
+  // Greater Sydney's urban area.
+  treeCanopy: number | null
   areaKm2: number
   // People per square kilometre.
   density: number | null

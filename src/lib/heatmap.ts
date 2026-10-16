@@ -2,8 +2,13 @@ import { HEATMAP_BREAKS, type HeatmapStat } from "@/lib/stats"
 import type { MapLayers } from "@/types/map-layers"
 import type { SuburbFactsFile } from "@/types/suburb-facts"
 
+interface HeatLevel {
+  fill: string
+  swatch: string
+}
+
 // Literal class names, white to red, so Tailwind generates them.
-export const HEAT_LEVELS = [
+const RED_LEVELS: readonly HeatLevel[] = [
   { fill: "fill-heat-1", swatch: "bg-heat-1" },
   { fill: "fill-heat-2", swatch: "bg-heat-2" },
   { fill: "fill-heat-3", swatch: "bg-heat-3" },
@@ -11,9 +16,24 @@ export const HEAT_LEVELS = [
   { fill: "fill-heat-5", swatch: "bg-heat-5" },
   { fill: "fill-heat-6", swatch: "bg-heat-6" },
   { fill: "fill-heat-7", swatch: "bg-heat-7" },
-] as const
-export const NO_DATA = { fill: "fill-heat-none", swatch: "bg-heat-none" }
-const HOTTEST = HEAT_LEVELS.at(-1) ?? HEAT_LEVELS[0]
+]
+// White to green, for stats where more is greener.
+const GREEN_LEVELS: readonly HeatLevel[] = [
+  { fill: "fill-canopy-1", swatch: "bg-canopy-1" },
+  { fill: "fill-canopy-2", swatch: "bg-canopy-2" },
+  { fill: "fill-canopy-3", swatch: "bg-canopy-3" },
+  { fill: "fill-canopy-4", swatch: "bg-canopy-4" },
+  { fill: "fill-canopy-5", swatch: "bg-canopy-5" },
+  { fill: "fill-canopy-6", swatch: "bg-canopy-6" },
+  { fill: "fill-canopy-7", swatch: "bg-canopy-7" },
+]
+const PALETTES: Partial<Record<HeatmapStat, readonly HeatLevel[]>> = {
+  treeCanopy: GREEN_LEVELS,
+}
+export const NO_DATA: HeatLevel = {
+  fill: "fill-heat-none",
+  swatch: "bg-heat-none",
+}
 
 export interface HeatBucket {
   // Null for the open-ended lowest and highest buckets.
@@ -34,11 +54,15 @@ export function bucketOf(value: number, breaks: readonly number[]): number {
   return breaks.filter((edge) => value >= edge).length
 }
 
-// Spreads however many buckets there are across the full white-to-red range.
-function levelFor(bucket: number, count: number) {
-  const top = HEAT_LEVELS.length - 1
+// Spreads however many buckets there are across the palette's full range.
+function levelFor(
+  bucket: number,
+  count: number,
+  levels: readonly HeatLevel[],
+): HeatLevel {
+  const top = levels.length - 1
   const index = count > 1 ? Math.round((bucket * top) / (count - 1)) : top
-  return HEAT_LEVELS[index] ?? HOTTEST
+  return levels[index] ?? NO_DATA
 }
 
 // Fills each suburb by its bucket for `stat`, and suburbs with no figure in
@@ -60,7 +84,8 @@ export function heatmap(
       members[bucketOf(value, breaks)]?.add(id)
     }
   }
-  const levels = members.map((_, i) => levelFor(i, count))
+  const palette = PALETTES[stat] ?? RED_LEVELS
+  const levels = members.map((_, i) => levelFor(i, count, palette))
 
   return {
     layers: {
@@ -69,7 +94,7 @@ export function heatmap(
         ...members.map((bucket, i) => ({
           key: `heat-${i}`,
           ids: bucket,
-          className: levels[i]?.fill ?? HOTTEST.fill,
+          className: levels[i]?.fill ?? NO_DATA.fill,
         })),
       ],
       outlines: [],
