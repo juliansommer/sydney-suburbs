@@ -11,6 +11,7 @@ import type {
 import { readJson } from "@/lib/json"
 import type {
   Council,
+  Land,
   Landuse,
   LanduseKind,
   SuburbFeature,
@@ -71,16 +72,24 @@ export function toSuburbMap(topology: MapTopology): SuburbMapData {
       })
     }
   }
-  const [land] = feature(topology, objects.surrounds).features
+  const [around] = feature(topology, objects.surrounds).features
   if (
-    land?.geometry.type !== "Polygon" &&
-    land?.geometry.type !== "MultiPolygon"
+    around?.geometry.type !== "Polygon" &&
+    around?.geometry.type !== "MultiPolygon"
   ) {
     throw new Error("TopoJSON surrounds layer is empty")
   }
   const surrounds: Surrounds = {
     type: "Feature",
-    geometry: land.geometry,
+    geometry: around.geometry,
+    properties: {},
+  }
+  const land: Land = {
+    type: "Feature",
+    geometry: mergeSuburbs(topology, () => "land").get("land") ?? {
+      type: "MultiPolygon",
+      coordinates: [],
+    },
     properties: {},
   }
   const landuse: Landuse[] = []
@@ -97,6 +106,7 @@ export function toSuburbMap(topology: MapTopology): SuburbMapData {
     suburbs,
     councils: councilOutlines(topology),
     surrounds,
+    land,
     landuse,
     topology,
   }

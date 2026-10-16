@@ -16,6 +16,9 @@ export type SuburbFeature = Feature<Polygon | MultiPolygon, SuburbProperties>
 // Land around and under the suburbs, drawn behind them.
 export type Surrounds = Feature<Polygon | MultiPolygon>
 
+// Every suburb merged into one shape, for the plain land under the parks.
+export type Land = Feature<MultiPolygon>
+
 export type LanduseKind = "parkland" | "water"
 
 // Parks and water inside the mapped suburbs, one feature per kind.
@@ -28,6 +31,7 @@ export interface SuburbMapData {
   suburbs: SuburbFeature[]
   councils: Council[]
   surrounds: Surrounds
+  land: Land
   landuse: Landuse[]
   // Kept for merging suburbs into other shapes, like NRL territories.
   topology: MapTopology

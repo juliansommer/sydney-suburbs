@@ -52,6 +52,7 @@ export interface ProjectedBase {
   suburbs: ProjectedSuburb[]
   councils: ProjectedCouncil[]
   surrounds: string
+  land: string
   landuse: ProjectedLanduse[]
 }
 
@@ -64,7 +65,7 @@ export interface ProjectedLayers {
 // Fits the suburbs to the viewport and projects the base map to SVG path
 // strings, bounding box sizes and label positions, all in unzoomed pixels.
 export function projectBase(
-  { suburbs, councils, surrounds, landuse }: SuburbMapData,
+  { suburbs, councils, surrounds, land, landuse }: SuburbMapData,
   width: number,
   height: number,
 ): ProjectedBase {
@@ -95,6 +96,7 @@ export function projectBase(
       bounds: path.bounds(c),
     })),
     surrounds: path(surrounds) ?? "",
+    land: path(land) ?? "",
     landuse: landuse.map((l) => ({
       kind: l.properties.kind,
       d: path(l) ?? "",

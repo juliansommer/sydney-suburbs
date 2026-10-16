@@ -199,11 +199,8 @@ function ZoomableMap({
       <rect className="fill-map-water" height={height} width={width} />
       <g key={gesture} transform={transform.toString()}>
         <path className="fill-map-surrounds" d={projected.surrounds} />
-        {/* Plain land under the parks and water, joined into one path so it's cheap. */}
-        <path
-          className="fill-map-land"
-          d={projected.suburbs.map((s) => s.d).join("")}
-        />
+        {/* Plain land under the parks and water. */}
+        <path className="fill-map-land" d={projected.land} />
         {projected.landuse.map((l) => (
           <path className={LANDUSE_FILL[l.kind]} d={l.d} key={l.kind} />
         ))}
