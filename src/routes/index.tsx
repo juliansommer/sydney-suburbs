@@ -11,13 +11,11 @@ import {
 } from "react"
 import { z } from "zod/mini"
 
-import { BirthplaceLegend } from "@/components/birthplace-legend"
 import { CouncilProgressButton } from "@/components/council-progress"
 import { GitHubLogo } from "@/components/github-logo"
 import { HeatmapLegend } from "@/components/heatmap-legend"
 import { SuburbMap, type SuburbMapHandle } from "@/components/map/suburb-map"
 import { SuburbSearch } from "@/components/map/suburb-search"
-import { NrlLegend } from "@/components/nrl-legend"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { authClient } from "@/lib/auth-client"
 import { whenIdle } from "@/lib/idle"
@@ -41,6 +39,17 @@ import type { UserSuburb } from "@/types/user-suburb"
 // chunk once the map renders.
 const SuburbPanel = lazy(async () => {
   const { SuburbPanel: component } = await import("@/components/suburb-panel")
+  return { default: component }
+})
+
+// The flags and club logos load with their mode rather than with the map.
+const BirthplaceLegend = lazy(async () => {
+  const { BirthplaceLegend: component } =
+    await import("@/components/birthplace-legend")
+  return { default: component }
+})
+const NrlLegend = lazy(async () => {
+  const { NrlLegend: component } = await import("@/components/nrl-legend")
   return { default: component }
 })
 
@@ -288,7 +297,7 @@ function MapView({
         selectedId={selected?.id ?? null}
       />
       <div className="absolute bottom-4 left-4 flex flex-col items-start gap-2">
-        {mode === "nrl" ? <NrlLegend /> : null}
+        <Suspense>{mode === "nrl" ? <NrlLegend /> : null}</Suspense>
         {mode === "heatmap" ? (
           <HeatmapLegend
             heatmap={heatmap}
@@ -296,7 +305,9 @@ function MapView({
             stat={stat}
           />
         ) : null}
-        {mode === "birthplace" ? <BirthplaceLegend /> : null}
+        <Suspense>
+          {mode === "birthplace" ? <BirthplaceLegend /> : null}
+        </Suspense>
         <ModeSwitch mode={mode} onSwitch={switchMode} />
       </div>
       <div className="absolute inset-x-4 top-14 md:right-auto md:w-72">
