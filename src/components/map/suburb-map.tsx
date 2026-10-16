@@ -25,8 +25,9 @@ import type { MapLayers } from "@/types/map-layers"
 import type { LanduseKind, SuburbMapData } from "@/types/suburb"
 
 import {
-  projectMap,
+  projectBase,
   type ProjectedFill,
+  projectLayers,
   type ProjectedMarker,
   type ProjectedSuburb,
 } from "./project"
@@ -100,8 +101,8 @@ function ZoomableMap({
   height,
 }: ZoomableMapProps) {
   const { svgRef, zoomer, transform, gesture } = useZoom(width, height)
-  const projected = projectMap(data, layers, width, height)
-  const { fills, outlines, markers } = projected
+  const projected = projectBase(data, width, height)
+  const { fills, outlines, markers } = projectLayers(layers, projected)
   const markerSize =
     width < SMALL_SCREEN_WIDTH ? SMALL_MARKER_SIZE : MARKER_SIZE
   const placedMarkers = onScreen(markers, transform, width, height)

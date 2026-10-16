@@ -47,25 +47,27 @@ export interface ProjectedMarker {
   label: string
 }
 
-export interface ProjectedMap {
+export interface ProjectedBase {
+  projection: GeoProjection
   suburbs: ProjectedSuburb[]
   councils: ProjectedCouncil[]
   surrounds: string
   landuse: ProjectedLanduse[]
+}
+
+export interface ProjectedLayers {
   fills: ProjectedFill[]
   outlines: ProjectedOutline[]
   markers: ProjectedMarker[]
 }
 
-// Fits the suburbs to the viewport and projects everything, layers
-// included, to SVG path strings, bounding box sizes and label positions, all
-// in unzoomed pixels.
-export function projectMap(
+// Fits the suburbs to the viewport and projects the base map to SVG path
+// strings, bounding box sizes and label positions, all in unzoomed pixels.
+export function projectBase(
   { suburbs, councils, surrounds, landuse }: SuburbMapData,
-  layers: MapLayers,
   width: number,
   height: number,
-): ProjectedMap {
+): ProjectedBase {
   const projection = geoMercator().fitSize([width, height], {
     type: "FeatureCollection",
     features: suburbs,
@@ -85,8 +87,8 @@ export function projectMap(
     }
   })
   return {
+    projection,
     suburbs: projectedSuburbs,
-    ...projectLayers(layers, projectedSuburbs, projection),
     councils: councils.map((c) => ({
       lga: c.properties.lga,
       d: path(c) ?? "",
@@ -100,12 +102,12 @@ export function projectMap(
   }
 }
 
-// Fills reuse the projected suburb paths.
-function projectLayers(
+// Separate from the base so changing layers skips re-projecting every
+// suburb. Fills reuse the projected suburb paths.
+export function projectLayers(
   { fills, outlines, markers }: MapLayers,
-  suburbs: ProjectedSuburb[],
-  projection: GeoProjection,
-): Pick<ProjectedMap, "fills" | "outlines" | "markers"> {
+  { suburbs, projection }: ProjectedBase,
+): ProjectedLayers {
   const path = geoPath(projection)
   return {
     fills: fills.map((f) => {
