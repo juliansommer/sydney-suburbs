@@ -89,7 +89,6 @@ export const suburbFacts: SuburbFactsFile = {
       violentCrimeRate: 1350,
       areaKm2: 2.1,
       density: 7286,
-      cbdDistanceKm: 5.3,
     },
     photo: {
       url: "https://example.public.blob.vercel-storage.com/suburbs/1-abcd1234.webp",
@@ -114,7 +113,6 @@ export const suburbFacts: SuburbFactsFile = {
       violentCrimeRate: null,
       areaKm2: 0.42,
       density: null,
-      cbdDistanceKm: 0.8,
     },
     photo: null,
   },

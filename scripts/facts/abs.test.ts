@@ -1,12 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import {
-  distanceKm,
-  parseTable,
-  stripSalPrefix,
-  SYDNEY_CBD,
-  toCensusFacts,
-} from "./abs.ts"
+import { parseTable, stripSalPrefix, toCensusFacts } from "./abs.ts"
 
 describe("stripSalPrefix", () => {
   it("strips the Census prefix to match our ids", () => {
@@ -105,14 +99,5 @@ describe("toCensusFacts", () => {
       bornOverseas: null,
       publicHousing: null,
     })
-  })
-})
-
-describe("distanceKm", () => {
-  it("measures from the CBD", () => {
-    const parramatta = { lon: 151.0036, lat: -33.8148 }
-
-    expect(distanceKm(SYDNEY_CBD, SYDNEY_CBD)).toBe(0)
-    expect(distanceKm(parramatta, SYDNEY_CBD)).toBeCloseTo(19.7, 0)
   })
 })

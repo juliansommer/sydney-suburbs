@@ -28,8 +28,6 @@ export interface SuburbStats {
   areaKm2: number
   // People per square kilometre.
   density: number | null
-  // Straight line from Sydney Town Hall.
-  cbdDistanceKm: number
 }
 
 // Precomputed by scripts/build-suburb-facts.ts.

@@ -138,7 +138,6 @@ describe("SuburbPanel facts", () => {
       ["Violent crime", "1,350 per 100k"],
       ["Area", "2.1 km²"],
       ["Density", "7,286/km²"],
-      ["Straight line to CBD", "5.3 km"],
     ]
     for (const [label, value] of details) {
       expect(screen.getByText(label ?? "").closest("div")).toHaveTextContent(

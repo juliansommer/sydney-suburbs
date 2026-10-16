@@ -72,12 +72,6 @@ export const STATS: Record<StatKey, StatInfo> = {
     ABS_BOUNDARIES,
   ),
   density: stat("Density", formatWhole, "/km²", CENSUS),
-  cbdDistanceKm: stat(
-    "Straight line to CBD",
-    formatOneDecimal,
-    " km",
-    `${ABS_BOUNDARIES}, from Sydney Town Hall`,
-  ),
 }
 
 // The order of the panel's details.
@@ -90,11 +84,9 @@ export const DETAIL_STATS: readonly StatKey[] = [
   "violentCrimeRate",
   "areaKm2",
   "density",
-  "cbdDistanceKm",
 ]
 
-// Area and distance to the CBD are left off, since their heatmaps only show
-// suburb size and geography.
+// Area is left off, since its heatmap only shows suburb size.
 export const HEATMAP_STATS = [
   "medianHouseholdIncome",
   "medianRent",

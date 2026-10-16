@@ -7,7 +7,7 @@
 // Source: NSW Bureau of Crime Statistics and Research, recorded crime by
 //   suburb, licensed CC BY 4.0, for violent crime.
 // Source: ABS ASGS Edition 3 Suburbs and Localities, licensed CC BY 4.0, for
-//   area and distance from the CBD.
+//   area.
 // Source: ABS ASGS Edition 3 Postal Areas, licensed CC BY 4.0, for postcodes.
 // Source: Wikidata, CC0, and Wikipedia, to match suburbs to photos.
 // Source: Wikimedia Commons, for photos, each credited in the app.
@@ -119,7 +119,6 @@ async function readSummaries(): Promise<Record<string, string>> {
 }
 
 const AREA_DECIMALS = 100
-const DISTANCE_DECIMALS = 10
 
 function toStats(
   census: CensusFacts | undefined,
@@ -142,9 +141,6 @@ function toStats(
       people > 0 && geography.areaKm2 > 0
         ? Math.round(people / geography.areaKm2)
         : null,
-    cbdDistanceKm:
-      Math.round(geography.cbdDistanceKm * DISTANCE_DECIMALS) /
-      DISTANCE_DECIMALS,
   }
 }
 

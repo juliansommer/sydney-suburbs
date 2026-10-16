@@ -180,47 +180,18 @@ export async function readPostcodes(
   return postcodes
 }
 
-interface LonLat {
-  lon: number
-  lat: number
-}
-
-// Sydney Town Hall, where distances to the city are usually measured from.
-export const SYDNEY_CBD: LonLat = { lon: 151.2065, lat: -33.8731 }
-const EARTH_RADIUS_KM = 6371
-
-function toRadians(degrees: number): number {
-  return (degrees * Math.PI) / 180
-}
-
-// Great-circle distance, which is plenty accurate across one city.
-export function distanceKm(a: LonLat, b: LonLat): number {
-  const dLat = toRadians(b.lat - a.lat)
-  const dLon = toRadians(b.lon - a.lon)
-  const h =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRadians(a.lat)) *
-      Math.cos(toRadians(b.lat)) *
-      Math.sin(dLon / 2) ** 2
-  return 2 * EARTH_RADIUS_KM * Math.asin(Math.sqrt(h))
-}
-
 const geographyRows = z.array(
   z.object({
     id: z.string(),
     area: z.number(),
-    lon: z.number(),
-    lat: z.number(),
   }),
 )
 
 export interface Geography {
   areaKm2: number
-  cbdDistanceKm: number
 }
 
-// Each suburb's area, and how far its centre is from the city. The inner
-// point always lands inside the suburb, where a centroid might not.
+// Each suburb's area in square kilometres.
 export async function readGeography(
   ids: string[],
 ): Promise<Map<string, Geography>> {
@@ -230,17 +201,11 @@ export async function readGeography(
     [
       `-i "${absCacheDir}${SOURCE.sal}"`,
       `-filter '${JSON.stringify(ids)}.includes(${f.salCode})'`,
-      "-points inner",
-      `-each 'id = ${f.salCode}, area = ${f.areaSqKm}, lon = this.x, lat = this.y'`,
-      "-filter-fields id,area,lon,lat",
+      `-each 'id = ${f.salCode}, area = ${f.areaSqKm}'`,
+      "-filter-fields id,area",
       "-o geography.json format=json",
     ].join(" "),
   )
   const rows = geographyRows.parse(JSON.parse(out["geography.json"] ?? "null"))
-  return new Map(
-    rows.map((row) => [
-      row.id,
-      { areaKm2: row.area, cbdDistanceKm: distanceKm(row, SYDNEY_CBD) },
-    ]),
-  )
+  return new Map(rows.map((row) => [row.id, { areaKm2: row.area }]))
 }

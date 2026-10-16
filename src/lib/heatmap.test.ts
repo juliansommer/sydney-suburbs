@@ -13,7 +13,6 @@ const NO_STATS: SuburbStats = {
   violentCrimeRate: null,
   areaKm2: 1,
   density: null,
-  cbdDistanceKm: 1,
 }
 
 function factsWith(stats: Partial<SuburbStats>[]): SuburbFactsFile {
