@@ -42,6 +42,9 @@ const SMALL_MARKER_SIZE = 32
 const SMALL_SCREEN_WIDTH = 768
 // Fill images are flags, drawn at 4:3.
 const IMAGE_ASPECT = [4, 3] as const
+// Firefox keeps a transformed group as a scaled bitmap for a few seconds
+// after it stops changing, which looks blurry, so it gets remounted there.
+const REMOUNT_AFTER_GESTURE = navigator.userAgent.includes("Firefox")
 
 const LANDUSE_FILL: Record<LanduseKind, string> = {
   parkland: "fill-map-surrounds",
@@ -240,9 +243,7 @@ function ZoomableMap({
 // behaviour is rebuilt whenever the viewport size changes.
 function useZoom(width: number, height: number) {
   const [transform, setTransform] = useState(zoomIdentity)
-  // Firefox keeps a transformed group as a scaled bitmap for a few seconds
-  // after it stops changing, which looks blurry. Remounting it once a gesture
-  // ends makes it redraw sharp straight away.
+  // Bumped when a gesture ends in Firefox, to redraw the map sharp.
   const [gesture, setGesture] = useState(0)
   const zoomer = useRef<Zoomer | null>(null)
 
@@ -270,7 +271,7 @@ function useZoom(width: number, height: number) {
         .on("end", (event: D3ZoomEvent<SVGSVGElement, unknown>) => {
           // A plain click starts and ends a gesture too, and remounting then
           // would swap the paths out from under the click.
-          if (event.transform !== startTransform) {
+          if (REMOUNT_AFTER_GESTURE && event.transform !== startTransform) {
             setGesture((n) => n + 1)
           }
         })
