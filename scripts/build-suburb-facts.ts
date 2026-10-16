@@ -248,7 +248,7 @@ for (const s of suburbs) {
     photo: upload.photos.get(s.id) ?? null,
   }
 }
-await writeFile(factsPath, `${JSON.stringify(facts, null, 2)}\n`)
+await writeFile(factsPath, JSON.stringify(facts))
 
 console.log(`Suburbs: ${suburbs.length}`)
 console.log(`Photos uploaded: ${upload.uploaded}`)

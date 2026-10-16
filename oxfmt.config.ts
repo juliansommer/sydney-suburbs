@@ -15,6 +15,7 @@ export default defineConfig({
     "dist/**",
     "drizzle/**",
     "public/sydney-suburbs.topo.json",
+    "src/data/suburb-facts.json",
     "src/routeTree.gen.ts",
     "src/lib/cn-tables.ts",
   ],
