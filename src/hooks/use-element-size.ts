@@ -16,7 +16,12 @@ export function useElementSize() {
     const observer = new ResizeObserver(([entry]) => {
       if (entry) {
         const { width, height } = entry.contentRect
-        setSize({ width, height })
+        // A new object for the same size would re-project the whole map.
+        setSize((prev) =>
+          prev?.width === width && prev.height === height
+            ? prev
+            : { width, height },
+        )
       }
     })
     observer.observe(element)
