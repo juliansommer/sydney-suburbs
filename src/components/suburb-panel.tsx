@@ -14,7 +14,7 @@ import { Button, buttonVariants } from "@/components/ui/button"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { councilName } from "@/lib/council"
 import { sydneyToday } from "@/lib/dates"
-import type { HeatmapStat } from "@/lib/stats"
+import type { Overlay } from "@/lib/stats"
 import { useUpdateSuburb } from "@/mutations/use-update-suburb"
 import type { SuburbProperties } from "@/types/suburb"
 import type { UserSuburb } from "@/types/user-suburb"
@@ -33,9 +33,9 @@ interface SuburbPanelProps {
   onClose: () => void
   // Outlines the council on the map, like the progress list does.
   onZoomToCouncil: (lga: string) => void
-  // The stat on the map, if it's showing a heatmap.
-  heatmapStat: HeatmapStat | undefined
-  onToggleHeatmap: (stat: HeatmapStat) => void
+  // What the map is showing from the panel, if anything.
+  overlay: Overlay | undefined
+  onToggleOverlay: (overlay: Overlay) => void
 }
 
 // Tailwind's `md`: a card beside the map from here up, a bottom sheet below.
@@ -56,8 +56,8 @@ function SuburbCard({
   rows,
   onClose,
   onZoomToCouncil,
-  heatmapStat,
-  onToggleHeatmap,
+  overlay,
+  onToggleOverlay,
 }: SuburbPanelProps) {
   const facts = useSuburbFacts(suburb?.id)
   if (!suburb) {
@@ -84,8 +84,8 @@ function SuburbCard({
             </header>
             <Summary state={facts} />
             <MoreDetails
-              heatmapStat={heatmapStat}
-              onToggleHeatmap={onToggleHeatmap}
+              overlay={overlay}
+              onToggleOverlay={onToggleOverlay}
               state={facts}
             />
           </div>
@@ -110,8 +110,8 @@ function SuburbSheet({
   rows,
   onClose,
   onZoomToCouncil,
-  heatmapStat,
-  onToggleHeatmap,
+  overlay,
+  onToggleOverlay,
 }: SuburbPanelProps) {
   const [snapPoint, setSnapPoint] = useState<Drawer.Root.SnapPoint | null>(PEEK)
   const [shown, setShown] = useState(suburb)
@@ -140,9 +140,9 @@ function SuburbSheet({
       <Drawer.VirtualKeyboardProvider>
         {shown ? (
           <SheetPopup
-            heatmapStat={heatmapStat}
+            overlay={overlay}
             onClose={onClose}
-            onToggleHeatmap={onToggleHeatmap}
+            onToggleOverlay={onToggleOverlay}
             // Drops to the peek so the outlined council is in view.
             onZoomToCouncil={(lga) => {
               setSnapPoint(PEEK)
@@ -170,8 +170,8 @@ function SheetPopup({
   rows,
   onClose,
   onZoomToCouncil,
-  heatmapStat,
-  onToggleHeatmap,
+  overlay,
+  onToggleOverlay,
 }: SheetPopupProps) {
   const facts = useSuburbFacts(suburb.id)
   return (
@@ -211,8 +211,8 @@ function SheetPopup({
                 <FactsRow state={facts} />
                 <Summary state={facts} />
                 <MoreDetails
-                  heatmapStat={heatmapStat}
-                  onToggleHeatmap={onToggleHeatmap}
+                  overlay={overlay}
+                  onToggleOverlay={onToggleOverlay}
                   state={facts}
                 />
               </div>

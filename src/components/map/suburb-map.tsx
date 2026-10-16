@@ -12,6 +12,7 @@ import {
   useCallback,
   useEffect,
   useEffectEvent,
+  useId,
   useImperativeHandle,
   useRef,
   useState,
@@ -25,6 +26,7 @@ import type { LanduseKind, SuburbMapData } from "@/types/suburb"
 
 import {
   projectMap,
+  type ProjectedFill,
   type ProjectedMarker,
   type ProjectedSuburb,
 } from "./project"
@@ -38,6 +40,8 @@ const ZOOM_TO_MS = 600
 const MARKER_SIZE = 44
 const SMALL_MARKER_SIZE = 32
 const SMALL_SCREEN_WIDTH = 768
+// Fill images are flags, drawn at 4:3.
+const IMAGE_ASPECT = [4, 3] as const
 
 const LANDUSE_FILL: Record<LanduseKind, string> = {
   parkland: "fill-map-surrounds",
@@ -200,16 +204,7 @@ function ZoomableMap({
           <path className={LANDUSE_FILL[l.kind]} d={l.d} key={l.kind} />
         ))}
         {/* Over the parks and water, so a filled suburb is filled edge to edge. */}
-        {fills.map((f) =>
-          f.d ? (
-            <path
-              className={f.className}
-              d={f.d}
-              data-layer={f.key}
-              key={f.key}
-            />
-          ) : null,
-        )}
+        {fills.map((f) => (f.d ? <FillPath fill={f} key={f.key} /> : null))}
         <SuburbPaths
           onSelect={pick}
           selectedId={selectedId}
@@ -339,6 +334,43 @@ function SuburbPaths({ suburbs, selectedId, onSelect }: SuburbPathsProps) {
 interface OutlineProps {
   d: string | undefined
   strokeWidth: number
+}
+
+interface FillPathProps {
+  fill: ProjectedFill
+}
+
+// An image fill is a pattern sized to each suburb's bounding box, so every
+// suburb shows the whole image, cropped to its shape rather than stretched.
+function FillPath({ fill }: FillPathProps) {
+  const patternId = useId()
+  if (!fill.image) {
+    return <path className={fill.className} d={fill.d} data-layer={fill.key} />
+  }
+  return (
+    <g data-layer={fill.key} fill={`url(#${patternId})`}>
+      <defs>
+        <pattern
+          height={1}
+          id={patternId}
+          patternUnits="objectBoundingBox"
+          preserveAspectRatio="xMidYMid slice"
+          viewBox={`0 0 ${IMAGE_ASPECT[0]} ${IMAGE_ASPECT[1]}`}
+          width={1}
+        >
+          <image
+            height={IMAGE_ASPECT[1]}
+            href={fill.image}
+            preserveAspectRatio="none"
+            width={IMAGE_ASPECT[0]}
+          />
+        </pattern>
+      </defs>
+      {fill.parts.map((p) => (
+        <path d={p.d} key={p.id} />
+      ))}
+    </g>
+  )
 }
 
 function Outline({ d, strokeWidth }: OutlineProps) {

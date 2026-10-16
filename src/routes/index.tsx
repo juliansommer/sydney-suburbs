@@ -11,6 +11,7 @@ import {
 } from "react"
 import { z } from "zod/mini"
 
+import { BirthplaceLegend } from "@/components/birthplace-legend"
 import { CouncilProgressButton } from "@/components/council-progress"
 import { GitHubLogo } from "@/components/github-logo"
 import { HeatmapLegend } from "@/components/heatmap-legend"
@@ -24,7 +25,9 @@ import {
   DEFAULT_HEATMAP_STAT,
   HEATMAP_STATS,
   type HeatmapStat,
+  type Overlay,
 } from "@/lib/stats"
+import { birthplaceQuery } from "@/queries/birthplace"
 import { heatmapQuery } from "@/queries/heatmap"
 import { mySuburbsKey, mySuburbsQuery } from "@/queries/my-suburbs"
 import { nrlLayersQuery } from "@/queries/nrl-layers"
@@ -45,7 +48,7 @@ const SuburbPanel = lazy(async () => {
 // number. A malformed one is just no selection.
 const suburbParam = z.int()
 
-const MAP_MODES = ["visited", "nrl", "heatmap"] as const
+const MAP_MODES = ["visited", "heatmap", "birthplace", "nrl"] as const
 type MapMode = (typeof MAP_MODES)[number]
 // Visited is the default, so it stays out of the URL.
 const modeParam = z.enum(MAP_MODES)
@@ -56,6 +59,7 @@ const MODE_LABELS: Record<MapMode, string> = {
   visited: "Visited",
   nrl: "NRL",
   heatmap: "Heatmap",
+  birthplace: "Birthplace",
 }
 
 const NO_LAYERS: MapLayers = { fills: [], outlines: [], markers: [] }
@@ -174,6 +178,10 @@ function MapView({
     ...heatmapQuery(stat),
     enabled: mode === "heatmap",
   })
+  const { data: birthplace } = useQuery({
+    ...birthplaceQuery,
+    enabled: mode === "birthplace",
+  })
   const visitedLayers: MapLayers = {
     fills: [{ key: "visited", ids: visitedIds, className: "fill-map-visited" }],
     outlines: [],
@@ -183,8 +191,16 @@ function MapView({
     visited: visitedLayers,
     nrl: nrlLayers ?? NO_LAYERS,
     heatmap: heatmap?.layers ?? NO_LAYERS,
+    birthplace: birthplace ?? NO_LAYERS,
   }
   const layers = layersByMode[mode]
+  const overlayByMode: Record<MapMode, Overlay | undefined> = {
+    visited: undefined,
+    nrl: undefined,
+    heatmap: stat,
+    birthplace: "birthplace",
+  }
+  const overlay = overlayByMode[mode]
 
   const byId = new Map(suburbs.map((s) => [s.id, s]))
   // An id the map doesn't draw is no selection at all.
@@ -220,10 +236,12 @@ function MapView({
     })
   }
 
-  // Picking the stat already on the map goes back to the visited mode.
-  function toggleHeatmap(next: HeatmapStat) {
-    if (mode === "heatmap" && stat === next) {
+  // Picking what's already on the map goes back to the visited mode.
+  function toggleOverlay(next: Overlay) {
+    if (next === overlay) {
       switchMode("visited")
+    } else if (next === "birthplace") {
+      switchMode("birthplace")
     } else {
       showHeatmap(next)
     }
@@ -278,6 +296,7 @@ function MapView({
             stat={stat}
           />
         ) : null}
+        {mode === "birthplace" ? <BirthplaceLegend /> : null}
         <ModeSwitch mode={mode} onSwitch={switchMode} />
       </div>
       <div className="absolute inset-x-4 top-14 md:right-auto md:w-72">
@@ -292,11 +311,11 @@ function MapView({
       </div>
       <Suspense>
         <SuburbPanel
-          heatmapStat={mode === "heatmap" ? stat : undefined}
+          overlay={overlay}
           onClose={() => {
             select(null)
           }}
-          onToggleHeatmap={toggleHeatmap}
+          onToggleOverlay={toggleOverlay}
           onZoomToCouncil={(lga) => {
             map.current?.zoomToCouncil(lga)
           }}

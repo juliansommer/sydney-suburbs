@@ -121,6 +121,10 @@ export const HEATMAP_BREAKS: Record<HeatmapStat, readonly number[]> = {
   treeCanopy: [10, 15, 20, 30, 40, 50],
 }
 
+// Something the panel can put on the map: a stat's heatmap or the top
+// overseas birthplaces.
+export type Overlay = HeatmapStat | "birthplace"
+
 export const DEFAULT_HEATMAP_STAT: HeatmapStat = "medianHouseholdIncome"
 
 export function isHeatmapStat(key: StatKey): key is HeatmapStat {

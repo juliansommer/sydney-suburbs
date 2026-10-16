@@ -6,6 +6,8 @@ export interface FillLayer {
   ids: ReadonlySet<string>
   // A Tailwind fill class.
   className: string
+  // A picture covering each suburb in the layer, in place of the fill colour.
+  image?: string
 }
 
 // A merged shape outlined over the suburb borders.

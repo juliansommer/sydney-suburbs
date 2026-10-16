@@ -125,6 +125,7 @@
     var(--canopy-green) 100%,
     var(--map-land)
   );
+  --color-country-other: color-mix(in oklab, #a3a3a3 70%, var(--map-land));
   --color-heat-none: color-mix(
     in oklab,
     var(--map-border) 70%,

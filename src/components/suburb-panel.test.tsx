@@ -9,7 +9,7 @@ import { act, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import type { HeatmapStat } from "@/lib/stats"
+import type { Overlay } from "@/lib/stats"
 import { mockFetch } from "@/test/mock-fetch"
 
 import { SuburbPanel } from "./suburb-panel"
@@ -21,8 +21,8 @@ interface RenderPanelOptions {
   suburb?: typeof alpha
   signedIn?: boolean
   onZoomToCouncil?: (lga: string) => void
-  heatmapStat?: HeatmapStat
-  onToggleHeatmap?: (stat: HeatmapStat) => void
+  overlay?: Overlay
+  onToggleOverlay?: (overlay: Overlay) => void
 }
 
 // The panel links to /login, so it needs a router around it.
@@ -30,8 +30,8 @@ async function renderPanel({
   suburb = alpha,
   signedIn = true,
   onZoomToCouncil = () => {},
-  heatmapStat,
-  onToggleHeatmap = () => {},
+  overlay,
+  onToggleOverlay = () => {},
 }: RenderPanelOptions = {}) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -41,9 +41,9 @@ async function renderPanel({
     routeTree: createRootRoute({
       component: () => (
         <SuburbPanel
-          heatmapStat={heatmapStat}
+          overlay={overlay}
           onClose={() => {}}
-          onToggleHeatmap={onToggleHeatmap}
+          onToggleOverlay={onToggleOverlay}
           onZoomToCouncil={onZoomToCouncil}
           rows={new Map()}
           signedIn={signedIn}
@@ -137,6 +137,7 @@ describe("SuburbPanel facts", () => {
       ["Housing commission", "4.2%"],
       ["Violent crime", "1,350 per 100k"],
       ["Tree canopy", "24.6%"],
+      ["Top birthplace", "England · 6.7%"],
       ["Area", "2.1 km²"],
       ["Density", "7,286/km²"],
     ]
@@ -149,9 +150,9 @@ describe("SuburbPanel facts", () => {
 
   it("shows a stat's heatmap when it's clicked", async () => {
     mockFetch()
-    const onToggleHeatmap = vi.fn<(stat: HeatmapStat) => void>()
+    const onToggleOverlay = vi.fn<(overlay: Overlay) => void>()
     const user = userEvent.setup()
-    await renderPanel({ onToggleHeatmap })
+    await renderPanel({ onToggleOverlay })
 
     await user.click(
       await screen.findByRole("button", { name: "More details" }),
@@ -160,16 +161,32 @@ describe("SuburbPanel facts", () => {
       screen.getByRole("button", { name: "Show Violent crime heatmap" }),
     )
 
-    expect(onToggleHeatmap).toHaveBeenCalledWith("violentCrimeRate")
+    expect(onToggleOverlay).toHaveBeenCalledWith("violentCrimeRate")
     expect(
       screen.queryByRole("button", { name: "Show Area heatmap" }),
     ).not.toBeInTheDocument()
   })
 
+  it("shows the birthplace map when the top birthplace is clicked", async () => {
+    mockFetch()
+    const onToggleOverlay = vi.fn<(overlay: Overlay) => void>()
+    const user = userEvent.setup()
+    await renderPanel({ onToggleOverlay })
+
+    await user.click(
+      await screen.findByRole("button", { name: "More details" }),
+    )
+    await user.click(
+      screen.getByRole("button", { name: "Show birthplace map" }),
+    )
+
+    expect(onToggleOverlay).toHaveBeenCalledWith("birthplace")
+  })
+
   it("marks the stat the map is showing", async () => {
     mockFetch()
     const user = userEvent.setup()
-    await renderPanel({ heatmapStat: "medianRent" })
+    await renderPanel({ overlay: "medianRent" })
 
     await user.click(
       await screen.findByRole("button", { name: "More details" }),

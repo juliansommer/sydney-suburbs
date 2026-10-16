@@ -29,6 +29,9 @@ export interface ProjectedFill {
   key: string
   d: string
   className: string
+  image?: string
+  // Each suburb's path on its own, for an image fill.
+  parts: { id: string; d: string }[]
 }
 
 export interface ProjectedOutline {
@@ -105,14 +108,18 @@ function projectLayers(
 ): Pick<ProjectedMap, "fills" | "outlines" | "markers"> {
   const path = geoPath(projection)
   return {
-    fills: fills.map((f) => ({
-      key: f.key,
-      className: f.className,
-      d: suburbs
+    fills: fills.map((f) => {
+      const parts = suburbs
         .filter((s) => f.ids.has(s.id))
-        .map((s) => s.d)
-        .join(""),
-    })),
+        .map((s) => ({ id: s.id, d: s.d }))
+      return {
+        key: f.key,
+        className: f.className,
+        image: f.image,
+        d: parts.map((p) => p.d).join(""),
+        parts: f.image ? parts : [],
+      }
+    }),
     outlines: outlines.map((o) => ({ key: o.key, d: path(o.feature) ?? "" })),
     markers: markers.flatMap((m) => {
       const point = projection(m.coords)

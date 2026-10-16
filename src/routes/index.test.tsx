@@ -102,6 +102,44 @@ describe("map page", () => {
     ).not.toBeInTheDocument()
   })
 
+  it("shows each suburb's top overseas birthplace in birthplace mode", async () => {
+    await renderRoute("/?mode=birthplace")
+
+    const key = await screen.findByRole("list", { name: "Birthplace key" })
+    expect(key).toHaveTextContent("England")
+    expect(key).toHaveTextContent("No data")
+    await waitFor(() => {
+      expect(
+        document.querySelector('[data-layer="country-england"] path'),
+      ).toHaveAttribute(
+        "d",
+        screen.getByRole("button", { name: "Alpha" }).getAttribute("d"),
+      )
+    })
+    expect(
+      document.querySelector('[data-layer="country-england"]'),
+    ).toHaveAttribute("fill", expect.stringMatching(/^url\(#/u))
+  })
+
+  it("toggles the birthplace map from the suburb panel", async () => {
+    const { router } = await renderRoute("/?suburb=1")
+
+    await userEvent.click(
+      await screen.findByRole("button", { name: "More details" }),
+    )
+    const button = screen.getByRole("button", { name: "Show birthplace map" })
+    await userEvent.click(button)
+
+    expect({ ...router.state.location.search }).toStrictEqual({
+      suburb: 1,
+      mode: "birthplace",
+    })
+
+    await userEvent.click(button)
+
+    expect({ ...router.state.location.search }).toStrictEqual({ suburb: 1 })
+  })
+
   it("shows a heatmap of household income by default", async () => {
     signIn()
     mockFetch({ suburbs: [visitedRow("1")] })
