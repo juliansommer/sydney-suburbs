@@ -8,6 +8,7 @@ import {
   type ZoomTransform,
 } from "d3-zoom"
 import {
+  type ReactNode,
   type Ref,
   useCallback,
   useEffect,
@@ -16,6 +17,7 @@ import {
   useImperativeHandle,
   useRef,
   useState,
+  useSyncExternalStore,
 } from "react"
 
 import { useElementSize } from "@/hooks/use-element-size"
@@ -112,11 +114,8 @@ function ZoomableMap({
   width,
   height,
 }: ZoomableMapProps) {
-  const { svgRef, zoomer, transform, gesture } = useZoom(width, height)
+  const { svgRef, zoomer, transforms, gesture } = useZoom(width, height)
   const { fills, outlines, markers } = projectLayers(layers, projected)
-  const markerSize =
-    width < SMALL_SCREEN_WIDTH ? SMALL_MARKER_SIZE : MARKER_SIZE
-  const placedMarkers = onScreen(markers, transform, width, height)
 
   const [outlinedLga, setOutlinedLga] = useState<string | null>(null)
 
@@ -208,7 +207,7 @@ function ZoomableMap({
       width={width}
     >
       <rect className="fill-map-water" height={height} width={width} />
-      <g key={gesture} transform={transform.toString()}>
+      <ZoomGroup key={gesture} transforms={transforms}>
         <path className="fill-map-surrounds" d={projected.surrounds} />
         {/* Plain land under the parks and water. */}
         <path className="fill-map-land" d={projected.land} />
@@ -235,23 +234,56 @@ function ZoomableMap({
           d={projected.suburbs.find((s) => s.id === selectedId)?.d}
           strokeWidth={2.5}
         />
-      </g>
-      <SuburbLabels
+      </ZoomGroup>
+      <ScreenLayer
         height={height}
-        obstacles={placedMarkers.map((m) => markerRect(m, markerSize))}
+        markers={markers}
         suburbs={projected.suburbs}
-        transform={transform}
+        transforms={transforms}
         width={width}
       />
-      <Markers markers={placedMarkers} size={markerSize} />
     </svg>
   )
 }
 
-// d3-zoom on the map's SVG, with the current transform as state. The
+// The zoom transform, kept outside React state so a zoom frame re-renders
+// only what moves with it rather than every suburb path.
+interface TransformStore {
+  get: () => ZoomTransform
+  set: (transform: ZoomTransform) => void
+  subscribe: (onChange: () => void) => () => void
+}
+
+function createTransformStore(): TransformStore {
+  let current = zoomIdentity
+  const listeners = new Set<() => void>()
+  return {
+    get: () => current,
+    set: (transform) => {
+      current = transform
+      for (const listener of listeners) {
+        listener()
+      }
+    },
+    subscribe: (onChange) => {
+      listeners.add(onChange)
+      return () => {
+        listeners.delete(onChange)
+      }
+    },
+  }
+}
+
+function useTransform(transforms: TransformStore): ZoomTransform {
+  return useSyncExternalStore(transforms.subscribe, transforms.get)
+}
+
+// d3-zoom on the map's SVG, with the current transform in a store. The
 // behaviour is rebuilt whenever the viewport size changes.
 function useZoom(width: number, height: number) {
-  const [transform, setTransform] = useState(zoomIdentity)
+  // One store per map, created once; it changes itself, so there's no setter.
+  // oxlint-disable-next-line react/hook-use-state
+  const [transforms] = useState(createTransformStore)
   // Bumped when a gesture ends in Firefox, to redraw the map sharp.
   const [gesture, setGesture] = useState(0)
   const zoomer = useRef<Zoomer | null>(null)
@@ -275,7 +307,7 @@ function useZoom(width: number, height: number) {
           startTransform = event.transform
         })
         .on("zoom", (event: D3ZoomEvent<SVGSVGElement, unknown>) => {
-          setTransform(event.transform)
+          transforms.set(event.transform)
         })
         .on("end", (event: D3ZoomEvent<SVGSVGElement, unknown>) => {
           // A plain click starts and ends a gesture too, and remounting then
@@ -294,10 +326,56 @@ function useZoom(width: number, height: number) {
         selection.interrupt().on(".zoom", null)
       }
     },
-    [width, height],
+    [width, height, transforms],
   )
 
-  return { svgRef, zoomer, transform, gesture }
+  return { svgRef, zoomer, transforms, gesture }
+}
+
+interface ZoomGroupProps {
+  transforms: TransformStore
+  children: ReactNode
+}
+
+// The children are the same elements every frame, so only the transform
+// changes as the map zooms.
+function ZoomGroup({ transforms, children }: ZoomGroupProps) {
+  const transform = useTransform(transforms)
+  return <g transform={transform.toString()}>{children}</g>
+}
+
+interface ScreenLayerProps {
+  transforms: TransformStore
+  suburbs: ProjectedSuburb[]
+  markers: ProjectedMarker[]
+  width: number
+  height: number
+}
+
+// Labels and markers follow the zoom but are drawn in screen space.
+function ScreenLayer({
+  transforms,
+  suburbs,
+  markers,
+  width,
+  height,
+}: ScreenLayerProps) {
+  const transform = useTransform(transforms)
+  const markerSize =
+    width < SMALL_SCREEN_WIDTH ? SMALL_MARKER_SIZE : MARKER_SIZE
+  const placedMarkers = onScreen(markers, transform, width, height)
+  return (
+    <>
+      <SuburbLabels
+        height={height}
+        obstacles={placedMarkers.map((m) => markerRect(m, markerSize))}
+        suburbs={suburbs}
+        transform={transform}
+        width={width}
+      />
+      <Markers markers={placedMarkers} size={markerSize} />
+    </>
+  )
 }
 
 interface SuburbPathsProps {
