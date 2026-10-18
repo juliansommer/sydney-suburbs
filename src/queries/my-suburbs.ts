@@ -5,7 +5,7 @@ import {
   createOptimisticStore,
   useContext,
 } from "solid-js"
-import { z } from "zod/mini"
+import { array } from "valibot"
 
 import { apiFetch } from "@/lib/api"
 import { retry } from "@/lib/load"
@@ -14,7 +14,7 @@ import { type UserSuburb, userSuburbSchema } from "@/types/user-suburb"
 export const getMySuburbs = query(
   async () =>
     await retry(
-      async () => await apiFetch("/api/me/suburbs", z.array(userSuburbSchema)),
+      async () => await apiFetch("/api/me/suburbs", array(userSuburbSchema)),
     ),
   "my-suburbs",
 )

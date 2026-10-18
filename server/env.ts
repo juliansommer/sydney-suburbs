@@ -1,22 +1,29 @@
-import { z } from "zod/mini"
+import {
+  minLength,
+  object,
+  parse,
+  pipe,
+  string,
+  type InferOutput,
+} from "valibot"
 
-const envSchema = z.object({
-  DATABASE_URL: z.string().check(z.minLength(1)),
-  BETTER_AUTH_SECRET: z.string().check(z.minLength(1)),
-  BETTER_AUTH_URL: z.string().check(z.minLength(1)),
-  GOOGLE_CLIENT_ID: z.string().check(z.minLength(1)),
-  GOOGLE_CLIENT_SECRET: z.string().check(z.minLength(1)),
-  GITHUB_CLIENT_ID: z.string().check(z.minLength(1)),
-  GITHUB_CLIENT_SECRET: z.string().check(z.minLength(1)),
+const envSchema = object({
+  DATABASE_URL: pipe(string(), minLength(1)),
+  BETTER_AUTH_SECRET: pipe(string(), minLength(1)),
+  BETTER_AUTH_URL: pipe(string(), minLength(1)),
+  GOOGLE_CLIENT_ID: pipe(string(), minLength(1)),
+  GOOGLE_CLIENT_SECRET: pipe(string(), minLength(1)),
+  GITHUB_CLIENT_ID: pipe(string(), minLength(1)),
+  GITHUB_CLIENT_SECRET: pipe(string(), minLength(1)),
 })
 
-export type Env = z.infer<typeof envSchema>
+export type Env = InferOutput<typeof envSchema>
 
 let parsed: Env | undefined
 
 // Read on first use rather than at import, so a missing variable fails the
 // request that needs it with a clear message instead of crashing the function.
 export function getEnv(): Env {
-  parsed ??= envSchema.parse(process.env)
+  parsed ??= parse(envSchema, process.env)
   return parsed
 }

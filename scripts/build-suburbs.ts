@@ -14,7 +14,19 @@ import { gzipSync } from "node:zlib"
 
 import geo from "mapshaper"
 import polylabel from "polylabel"
-import { z } from "zod/mini"
+import {
+  array,
+  literal,
+  minLength,
+  number,
+  object,
+  parse,
+  pipe,
+  string,
+  tuple,
+  variant,
+  type InferOutput,
+} from "valibot"
 
 import { absCacheDir as cacheDir, download, root } from "./download.ts"
 import { boundaryUrl, SOURCE } from "./source.ts"
@@ -145,33 +157,37 @@ const SEED_CHUNK = 200
 const topoPath = `${root}public/sydney-suburbs.topo.json`
 const migrationsDir = `${root}drizzle/migrations/`
 
-const point = z.tuple([z.number(), z.number()])
-const ring = z.array(point)
-const polygon = z.array(ring)
-const suburbCollection = z.object({
-  type: z.literal("FeatureCollection"),
-  features: z.array(
-    z.object({
-      type: z.literal("Feature"),
-      geometry: z.discriminatedUnion("type", [
-        z.object({ type: z.literal("Polygon"), coordinates: polygon }),
-        z.object({
-          type: z.literal("MultiPolygon"),
-          coordinates: z.array(polygon),
+const point = tuple([number(), number()])
+const ring = array(point)
+const polygon = array(ring)
+const suburbCollection = object({
+  type: literal("FeatureCollection"),
+  features: array(
+    object({
+      type: literal("Feature"),
+      geometry: variant("type", [
+        object({ type: literal("Polygon"), coordinates: polygon }),
+        object({
+          type: literal("MultiPolygon"),
+          coordinates: array(polygon),
         }),
       ]),
-      properties: z.object({
-        id: z.string().check(z.minLength(1)),
-        name: z.string().check(z.minLength(1)),
-        lga: z.string().check(z.minLength(1)),
+      properties: object({
+        id: pipe(string(), minLength(1)),
+        name: pipe(string(), minLength(1)),
+        lga: pipe(string(), minLength(1)),
       }),
     }),
   ),
 })
 
-type Ring = z.infer<typeof ring>
-type Geometry = z.infer<typeof suburbCollection>["features"][number]["geometry"]
-type Suburb = z.infer<typeof suburbCollection>["features"][number]["properties"]
+type Ring = InferOutput<typeof ring>
+type Geometry = InferOutput<
+  typeof suburbCollection
+>["features"][number]["geometry"]
+type Suburb = InferOutput<
+  typeof suburbCollection
+>["features"][number]["properties"]
 
 async function buildGeoJson() {
   const f = SOURCE.fields
@@ -204,7 +220,7 @@ async function buildGeoJson() {
       "-o suburbs.json format=geojson precision=0.00001",
     ].join(" "),
   )
-  return suburbCollection.parse(JSON.parse(out["suburbs.json"] ?? "null"))
+  return parse(suburbCollection, JSON.parse(out["suburbs.json"] ?? "null"))
 }
 
 // Parks as fresh shapes. Mesh blocks import with national topology, which

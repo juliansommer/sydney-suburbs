@@ -1,6 +1,6 @@
 // Photo credits from Wikimedia Commons, and which images make good headers.
 
-import { z } from "zod/mini"
+import { array, object, optional, string, type InferOutput } from "valibot"
 
 import { type CacheOptions, fetchJson } from "../download.ts"
 import { chunk, resolveTitles, titleMappings } from "./titles.ts"
@@ -20,21 +20,21 @@ export interface PhotoSource {
   sourceUrl: string
 }
 
-const metadataValue = z.optional(z.object({ value: z.string() }))
-const imageInfo = z.object({
-  query: z.optional(
-    z.object({
-      ...titleMappings.shape,
-      pages: z.array(
-        z.object({
-          title: z.string(),
-          imageinfo: z.optional(
-            z.array(
-              z.object({
-                thumburl: z.string(),
-                descriptionurl: z.string(),
-                mime: z.string(),
-                extmetadata: z.object({
+const metadataValue = optional(object({ value: string() }))
+const imageInfo = object({
+  query: optional(
+    object({
+      ...titleMappings.entries,
+      pages: array(
+        object({
+          title: string(),
+          imageinfo: optional(
+            array(
+              object({
+                thumburl: string(),
+                descriptionurl: string(),
+                mime: string(),
+                extmetadata: object({
                   Artist: metadataValue,
                   LicenseShortName: metadataValue,
                   LicenseUrl: metadataValue,
@@ -118,7 +118,7 @@ function stripTracking(url: string) {
 }
 
 type ImagePage = NonNullable<
-  z.infer<typeof imageInfo>["query"]
+  InferOutput<typeof imageInfo>["query"]
 >["pages"][number]
 
 // A photo we may use: a free licence, a named author and a raster format.

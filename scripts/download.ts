@@ -7,7 +7,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises"
 import { setTimeout as sleep } from "node:timers/promises"
 import { fileURLToPath } from "node:url"
 
-import type { z } from "zod/mini"
+import { parse, type GenericSchema } from "valibot"
 
 export const root = fileURLToPath(new URL("..", import.meta.url))
 export const absCacheDir = `${root}.cache/abs/`
@@ -83,9 +83,9 @@ export async function fetchCached(
 // Fetches and parses JSON, so callers get a typed value back.
 export async function fetchJson<T>(
   url: string,
-  schema: z.ZodMiniType<T>,
+  schema: GenericSchema<unknown, T>,
   options?: CacheOptions,
 ): Promise<T> {
   const body = await fetchCached(url, options)
-  return schema.parse(JSON.parse(new TextDecoder().decode(body)))
+  return parse(schema, JSON.parse(new TextDecoder().decode(body)))
 }
