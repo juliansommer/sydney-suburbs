@@ -35,7 +35,7 @@ export function CouncilProgressButton(props: CouncilProgressProps) {
       </PopoverTrigger>
       <PopoverContent align="end">
         <ul class="-m-1 flex max-h-96 flex-col overflow-y-auto">
-          <For each={councils()}>
+          <For each={councils()} keyed={(c) => c.lga}>
             {(c) => (
               // The button's ::after covers the whole row, bar included.
               <li class="relative flex flex-col gap-1 rounded-md px-2 py-1.5 hover:bg-muted has-focus-visible:bg-muted">
@@ -43,19 +43,19 @@ export function CouncilProgressButton(props: CouncilProgressProps) {
                   class="flex w-full justify-between gap-2 text-left outline-none after:absolute after:inset-0"
                   onClick={() => {
                     setOpen(false)
-                    props.onZoom(c.lga)
+                    props.onZoom(c().lga)
                   }}
                   type="button"
                 >
-                  <span class="truncate">{c.lga}</span>
+                  <span class="truncate">{c().lga}</span>
                   <span class="text-muted-foreground tabular-nums">
-                    {c.visited} / {c.total}
+                    {c().visited} / {c().total}
                   </span>
                 </button>
                 <Progress
-                  aria-label={`${c.lga} visited`}
-                  max={c.total}
-                  value={c.visited}
+                  aria-label={`${c().lga} visited`}
+                  max={c().total}
+                  value={c().visited}
                   variant="visited"
                 />
               </li>

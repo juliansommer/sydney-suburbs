@@ -46,11 +46,14 @@ export function HeatmapLegend(props: HeatmapLegendProps) {
         aria-label={`${info().label} key`}
         class="flex flex-col gap-1 text-xs"
       >
-        <For each={props.heatmap?.buckets.toReversed() ?? []}>
+        <For
+          each={props.heatmap?.buckets.toReversed() ?? []}
+          keyed={(b) => b.swatch}
+        >
           {(b) => (
             <li class="flex items-center gap-2">
-              <Swatch class={b.swatch} />
-              {bucketLabel(b, info())}
+              <Swatch class={b().swatch} />
+              {bucketLabel(b(), info())}
             </li>
           )}
         </For>

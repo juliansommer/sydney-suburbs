@@ -217,8 +217,8 @@ function ZoomableMap(props: ZoomableMapProps) {
             <path class="fill-map-surrounds" d={props.projected.surrounds} />
             {/* Plain land under the parks and water. */}
             <path class="fill-map-land" d={props.projected.land} />
-            <For each={props.projected.landuse}>
-              {(l) => <path class={LANDUSE_FILL[l.kind]} d={l.d} />}
+            <For each={props.projected.landuse} keyed={(l) => l.kind}>
+              {(l) => <path class={LANDUSE_FILL[l().kind]} d={l().d} />}
             </For>
             {/* Over the parks and water, so a filled suburb is filled edge to edge. */}
             {/* Keyed by layer, so a re-projection updates paths in place. */}
@@ -449,7 +449,9 @@ function FillPath(props: FillPathProps) {
               />
             </pattern>
           </defs>
-          <For each={props.fill.parts}>{(p) => <path d={p.d} />}</For>
+          <For each={props.fill.parts} keyed={(p) => p.id}>
+            {(p) => <path d={p().d} />}
+          </For>
         </g>
       )}
     </Show>

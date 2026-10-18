@@ -251,14 +251,17 @@ export function MoreDetails(props: MoreDetailsProps) {
           </Collapsible.Trigger>
           <Collapsible.Panel>
             <dl class="grid grid-cols-2 gap-x-2 gap-y-1 pt-3">
-              <For each={toDetails(facts().stats, facts().topBirthplace)}>
+              <For
+                each={toDetails(facts().stats, facts().topBirthplace)}
+                keyed={(d) => d.key}
+              >
                 {(detail) => (
                   <DetailCell
-                    detail={detail}
+                    detail={detail()}
                     onToggleOverlay={props.onToggleOverlay}
                     shown={
-                      detail.overlay !== undefined &&
-                      detail.overlay === props.overlay
+                      detail().overlay !== undefined &&
+                      detail().overlay === props.overlay
                     }
                   />
                 )}
