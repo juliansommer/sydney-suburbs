@@ -10,8 +10,8 @@ import {
 } from "react"
 import { z } from "zod/mini"
 
-import { GitHubLogo } from "@/components/github-logo"
 import { HeatmapLegend } from "@/components/heatmap-legend"
+import { GitHubLogo } from "@/components/logos"
 import { SearchPlaceholder } from "@/components/map/search-placeholder"
 import { SuburbMap, type SuburbMapHandle } from "@/components/map/suburb-map"
 import { Button, buttonVariants } from "@/components/ui/button"

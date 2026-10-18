@@ -1,8 +1,7 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router"
 import { z } from "zod/mini"
 
-import { GitHubLogo } from "@/components/github-logo"
-import { GoogleLogo } from "@/components/google-logo"
+import { GitHubLogo, GoogleLogo } from "@/components/logos"
 import { Button } from "@/components/ui/button"
 import { authClient } from "@/lib/auth-client"
 
