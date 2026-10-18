@@ -61,34 +61,25 @@ function logoMarkers(
 // a logo in every sizeable piece of it.
 export function nrlLayers({ suburbs, topology }: SuburbMapData): MapLayers {
   const territories = mergeSuburbs(topology, clubFor)
-  const clubs = CLUB_IDS.filter((club) => territories.has(club))
-  return {
-    fills: clubs.map((club) => ({
+  const layers: MapLayers = { fills: [], outlines: [], markers: [] }
+  for (const club of CLUB_IDS) {
+    const geometry = territories.get(club)
+    if (!geometry) {
+      continue
+    }
+    const members = suburbs
+      .map((s) => s.properties)
+      .filter((s) => clubFor(s) === club)
+    layers.fills.push({
       key: club,
-      ids: new Set(
-        suburbs
-          .filter((s) => clubFor(s.properties) === club)
-          .map((s) => s.properties.id),
-      ),
+      ids: new Set(members.map((s) => s.id)),
       className: CLUBS[club].fill,
-    })),
-    outlines: clubs.flatMap((club) => {
-      const geometry = territories.get(club)
-      return geometry
-        ? [
-            {
-              key: club,
-              feature: { type: "Feature", geometry, properties: {} },
-            },
-          ]
-        : []
-    }),
-    markers: clubs.flatMap((club) =>
-      logoMarkers(
-        club,
-        territories.get(club)?.coordinates ?? [],
-        suburbs.map((s) => s.properties).filter((s) => clubFor(s) === club),
-      ),
-    ),
+    })
+    layers.outlines.push({
+      key: club,
+      feature: { type: "Feature", geometry, properties: {} },
+    })
+    layers.markers.push(...logoMarkers(club, geometry.coordinates, members))
   }
+  return layers
 }

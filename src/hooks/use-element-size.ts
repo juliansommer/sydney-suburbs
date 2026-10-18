@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react"
+import { useState } from "react"
 
 interface Size {
   width: number
@@ -9,7 +9,7 @@ interface Size {
 // until the first measurement.
 export function useElementSize() {
   const [size, setSize] = useState<Size | null>(null)
-  const ref = useCallback((element: Element | null) => {
+  const ref = (element: Element | null) => {
     if (!element) {
       return undefined
     }
@@ -28,6 +28,6 @@ export function useElementSize() {
     return () => {
       observer.disconnect()
     }
-  }, [])
+  }
   return [ref, size] as const
 }

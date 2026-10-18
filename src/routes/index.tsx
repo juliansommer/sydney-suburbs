@@ -6,7 +6,6 @@ import {
   type RefObject,
   Suspense,
   useEffect,
-  useEffectEvent,
   useRef,
 } from "react"
 import { z } from "zod/mini"
@@ -17,6 +16,7 @@ import { HeatmapLegend } from "@/components/heatmap-legend"
 import { SuburbMap, type SuburbMapHandle } from "@/components/map/suburb-map"
 import { SuburbSearch } from "@/components/map/suburb-search"
 import { Button, buttonVariants } from "@/components/ui/button"
+import { useShortcut } from "@/hooks/use-shortcut"
 import { authClient } from "@/lib/auth-client"
 import { whenIdle } from "@/lib/idle"
 import {
@@ -256,21 +256,9 @@ function MapView({
     }
   }
 
-  const onKeyDown = useEffectEvent((event: KeyboardEvent) => {
-    const { target } = event
-    const typing =
-      target instanceof HTMLTextAreaElement ||
-      target instanceof HTMLInputElement
-    if (event.key === "Escape" && !typing) {
-      select(null)
-    }
+  useShortcut("Escape", () => {
+    select(null)
   })
-  useEffect(() => {
-    document.addEventListener("keydown", onKeyDown)
-    return () => {
-      document.removeEventListener("keydown", onKeyDown)
-    }
-  }, [])
 
   // The map has rendered by now, so fetch facts when the browser is idle and
   // they never compete with it. A deep link's panel fetches them right away.
