@@ -5,17 +5,15 @@ import { GitHubLogo, GoogleLogo } from "@/components/logos"
 import { Button } from "@/components/ui/button"
 import { getSession, signInWith } from "@/lib/auth"
 
-// Only same-origin paths, so the login page can't bounce someone off-site.
-// `//host` and `/\host` are protocol-relative to browsers.
-function redirectPath(value: string | string[] | undefined): string {
-  const single = Array.isArray(value) ? undefined : value
-  return single !== undefined && /^\/(?![/\\])/.test(single) ? single : "/"
-}
-
 export default function LoginPage() {
-  const [search] = useSearchParams()
+  const [search] = useSearchParams<{ redirect?: string }>()
   const session = createMemo(async () => await getSession())
-  const redirect = () => redirectPath(search.redirect)
+  // Only same-origin paths, so the login page can't bounce someone off-site.
+  // `//host` and `/\host` are protocol-relative to browsers.
+  const redirect = () => {
+    const to = search.redirect ?? "/"
+    return /^\/(?![/\\])/.test(to) ? to : "/"
+  }
   const [failed, setFailed] = createSignal(false)
 
   async function signIn(provider: "google" | "github") {

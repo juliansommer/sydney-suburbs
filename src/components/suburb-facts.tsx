@@ -32,15 +32,14 @@ const populationFormat = new Intl.NumberFormat("en-AU")
 export function useSuburbFacts(
   suburbId: Accessor<string | undefined>,
 ): Accessor<SuburbFacts | undefined> {
-  return createMemo((): Promise<SuburbFacts | undefined> | undefined => {
+  return createMemo(async (): Promise<SuburbFacts | undefined> => {
     const id = suburbId()
-    return id === undefined ? undefined : factsFor(id)
+    if (id === undefined) {
+      return undefined
+    }
+    const facts = await getSuburbFacts()
+    return facts[id]
   })
-}
-
-async function factsFor(suburbId: string): Promise<SuburbFacts | undefined> {
-  const facts = await getSuburbFacts()
-  return facts[suburbId]
 }
 
 interface SuburbMediaProps {

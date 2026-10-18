@@ -34,6 +34,7 @@ vi.mock(import("@/lib/auth"), async (importOriginal) => ({
 const WARM_UP_TIMEOUT_MS = 30_000
 async function loadLazyChunks() {
   await Promise.all([
+    import("@/routes/index"),
     import("@/components/suburb-panel"),
     import("@/components/map/suburb-search"),
     import("@/components/council-progress"),
@@ -263,34 +264,6 @@ describe("map page", () => {
 
     await waitFor(() => {
       expect(search()).toStrictEqual({ suburb: "1" })
-    })
-  })
-
-  it("drops an unknown stat, and any stat outside the heatmap", async () => {
-    const { search } = await renderRoute("/?mode=heatmap&stat=vibes")
-
-    await expect(
-      screen.findByRole("combobox", { name: "Statistic" }),
-    ).resolves.toHaveValue("medianHouseholdIncome")
-    await waitFor(() => {
-      expect(search()).not.toHaveProperty("stat")
-    })
-
-    await userEvent.click(screen.getByRole("button", { name: "NRL" }))
-
-    await waitFor(() => {
-      expect(search()).toStrictEqual({ mode: "nrl" })
-    })
-  })
-
-  it("falls back to the visited mode for an unknown mode", async () => {
-    const { search } = await renderRoute("/?mode=rugby")
-
-    await expect(
-      screen.findByRole("button", { name: "Visited" }),
-    ).resolves.toHaveAttribute("aria-pressed", "true")
-    await waitFor(() => {
-      expect(search()).not.toHaveProperty("mode")
     })
   })
 

@@ -37,35 +37,26 @@ let lastSave: Promise<void> = Promise.resolve()
 
 // Saves go out one at a time, so a later change can't land before an earlier
 // one, like a notes save overtaking the toggle before it.
-async function inOrder<T>(send: () => Promise<T>): Promise<T> {
+async function save(suburbId: string, patch: UserSuburbPatch): Promise<void> {
   const previous = lastSave
-  const next = (async () => {
-    await previous
-    return await send()
+  lastSave = (async () => {
+    try {
+      await previous
+    } catch {
+      // Its own caller handles a failed save; this one goes out regardless.
+    }
+    await apiFetch(
+      `/api/me/suburbs/${encodeURIComponent(suburbId)}`,
+      z.nullable(userSuburbSchema),
+      {
+        method: "PATCH",
+        body: JSON.stringify(patch),
+        // The page may be going away, so let the request outlive it.
+        keepalive: document.visibilityState === "hidden",
+      },
+    )
   })()
-  lastSave = settled(next)
-  return await next
-}
-
-async function settled(save: Promise<unknown>): Promise<void> {
-  try {
-    await save
-  } catch {
-    // The next save goes out whether or not this one failed.
-  }
-}
-
-async function sendPatch(suburbId: string, patch: UserSuburbPatch) {
-  return await apiFetch(
-    `/api/me/suburbs/${encodeURIComponent(suburbId)}`,
-    z.nullable(userSuburbSchema),
-    {
-      method: "PATCH",
-      body: JSON.stringify(patch),
-      // The page may be going away, so let the request outlive it.
-      keepalive: document.visibilityState === "hidden",
-    },
-  )
+  await lastSave
 }
 
 type SaveStatus = "idle" | "saved" | "failed"
@@ -77,11 +68,11 @@ export function useUpdateSuburb(suburbId: string) {
   const [saving, setSaving] = createOptimistic(false)
   const [status, setStatus] = createSignal<SaveStatus>("idle")
 
-  const update = action(function* update(patch: UserSuburbPatch) {
+  const mutate = action(function* update(patch: UserSuburbPatch) {
     setSaving(true)
     setRows((rows) => applyPatch(rows, suburbId, patch))
     try {
-      yield inOrder(async () => await sendPatch(suburbId, patch))
+      yield save(suburbId, patch)
       setStatus("saved")
     } catch {
       setStatus("failed")
@@ -92,7 +83,7 @@ export function useUpdateSuburb(suburbId: string) {
   })
 
   return {
-    mutate: update,
+    mutate,
     get isPending() {
       return saving()
     },
