@@ -34,6 +34,19 @@ describe("login page", () => {
     })
   })
 
+  it("offers GitHub sign-in", async () => {
+    await renderRoute("/login")
+
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Sign in with GitHub" }),
+    )
+
+    expect(authClient.signIn.social).toHaveBeenCalledWith({
+      provider: "github",
+      callbackURL: "/",
+    })
+  })
+
   it("sends signed-in users to the map", async () => {
     signIn()
 

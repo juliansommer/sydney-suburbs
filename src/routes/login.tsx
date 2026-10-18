@@ -1,6 +1,7 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router"
 import { z } from "zod/mini"
 
+import { GitHubLogo } from "@/components/github-logo"
 import { GoogleLogo } from "@/components/google-logo"
 import { Button } from "@/components/ui/button"
 import { authClient } from "@/lib/auth-client"
@@ -41,19 +42,34 @@ function LoginPage() {
       <p className="text-muted-foreground">
         Sign in to track the suburbs you&rsquo;ve visited.
       </p>
-      <Button
-        size="lg"
-        variant="outline"
-        onClick={async () => {
-          await authClient.signIn.social({
-            provider: "google",
-            callbackURL: redirect,
-          })
-        }}
-      >
-        <GoogleLogo />
-        Sign in with Google
-      </Button>
+      <div className="flex flex-col gap-2">
+        <Button
+          size="lg"
+          variant="outline"
+          onClick={async () => {
+            await authClient.signIn.social({
+              provider: "google",
+              callbackURL: redirect,
+            })
+          }}
+        >
+          <GoogleLogo />
+          Sign in with Google
+        </Button>
+        <Button
+          size="lg"
+          variant="outline"
+          onClick={async () => {
+            await authClient.signIn.social({
+              provider: "github",
+              callbackURL: redirect,
+            })
+          }}
+        >
+          <GitHubLogo />
+          Sign in with GitHub
+        </Button>
+      </div>
     </main>
   )
 }

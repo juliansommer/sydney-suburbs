@@ -6,6 +6,8 @@ const envSchema = z.object({
   BETTER_AUTH_URL: z.string().check(z.minLength(1)),
   GOOGLE_CLIENT_ID: z.string().check(z.minLength(1)),
   GOOGLE_CLIENT_SECRET: z.string().check(z.minLength(1)),
+  GITHUB_CLIENT_ID: z.string().check(z.minLength(1)),
+  GITHUB_CLIENT_SECRET: z.string().check(z.minLength(1)),
 })
 
 export type Env = z.infer<typeof envSchema>

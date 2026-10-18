@@ -8,14 +8,14 @@ Track which Sydney suburbs you've visited.
 - Click a suburb to select it and mark it visited
 - Keep notes and a visit date for each suburb
 - See your progress, e.g. "142 / 648 suburbs"
-- Sign in with Google to track your visits across devices
+- Sign in with Google or GitHub to track your visits across devices
 
 ## Tech Stack
 
 - **Frontend:** Vite, React, TypeScript, TanStack Router and Query, Tailwind CSS
 - **Map:** SVG drawn with d3-geo and d3-zoom from a TopoJSON file
 - **API:** Hono in a Vercel Function
-- **Auth:** Better Auth with Google sign-in
+- **Auth:** Better Auth with Google and GitHub sign-in
 - **Database:** Neon Postgres with Drizzle ORM
 - **Hosting:** Vercel
 
