@@ -26,6 +26,7 @@ import type { LanduseKind, SuburbMapData } from "@/types/suburb"
 
 import {
   projectBase,
+  type ProjectedBase,
   type ProjectedFill,
   projectLayers,
   type ProjectedMarker,
@@ -75,24 +76,35 @@ interface Zoomer {
 
 // Fills its container. The map is drawn once the container has a size, and
 // then zooms to the selected suburb, if any.
-export function SuburbMap(props: SuburbMapProps) {
+export function SuburbMap({ data, ...props }: SuburbMapProps) {
   const [ref, size] = useElementSize()
+  const width = size?.width ?? 0
+  const height = size?.height ?? 0
+  // Projected here because ZoomableMap renders on every zoom frame.
+  const projected =
+    width > 0 && height > 0 ? projectBase(data, width, height) : null
   return (
     <div className="size-full" ref={ref}>
-      {size && size.width > 0 && size.height > 0 ? (
-        <ZoomableMap {...props} height={size.height} width={size.width} />
+      {projected ? (
+        <ZoomableMap
+          {...props}
+          height={height}
+          projected={projected}
+          width={width}
+        />
       ) : null}
     </div>
   )
 }
 
-interface ZoomableMapProps extends SuburbMapProps {
+interface ZoomableMapProps extends Omit<SuburbMapProps, "data"> {
+  projected: ProjectedBase
   width: number
   height: number
 }
 
 function ZoomableMap({
-  data,
+  projected,
   selectedId,
   layers,
   onSelect,
@@ -101,7 +113,6 @@ function ZoomableMap({
   height,
 }: ZoomableMapProps) {
   const { svgRef, zoomer, transform, gesture } = useZoom(width, height)
-  const projected = projectBase(data, width, height)
   const { fills, outlines, markers } = projectLayers(layers, projected)
   const markerSize =
     width < SMALL_SCREEN_WIDTH ? SMALL_MARKER_SIZE : MARKER_SIZE
