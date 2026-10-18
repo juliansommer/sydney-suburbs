@@ -46,13 +46,13 @@ export default defineConfig(({ mode }) => ({
   },
   test: {
     clearMocks: true,
+    environment: "happy-dom",
     projects: [
       {
         extends: true,
         test: {
           name: "client",
           globals: true,
-          environment: "happy-dom",
           include: ["src/**/*.test.{ts,tsx}"],
           setupFiles: "./src/test/setup.ts",
           pool: "threads",
