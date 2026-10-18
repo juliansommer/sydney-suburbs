@@ -9,18 +9,15 @@ import {
 } from "solid-js"
 
 import { Button, buttonVariants } from "@/components/ui/button"
-import { councilName } from "@/lib/council"
 import { sydneyToday } from "@/lib/dates"
 import type { Overlay } from "@/lib/stats"
 import { useUpdateSuburb } from "@/mutations/use-update-suburb"
 import { useMySuburbs } from "@/queries/my-suburbs"
-import type { SuburbProperties } from "@/types/suburb"
+import type { Suburb } from "@/types/suburb"
 import type { UserSuburb } from "@/types/user-suburb"
 
 const NOTES_DEBOUNCE_MS = 600
 const NOTES_MAX_LENGTH = 10_000
-
-export type Suburb = Pick<SuburbProperties, "id" | "name" | "lga">
 
 export interface SuburbPanelProps {
   // Undefined when nothing is selected.
@@ -48,7 +45,7 @@ export function CouncilButton(props: CouncilButtonProps) {
       }}
       type="button"
     >
-      {councilName(props.lga)}
+      {`${props.lga} Council`}
     </button>
   )
 }

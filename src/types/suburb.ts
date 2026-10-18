@@ -11,6 +11,9 @@ export interface SuburbProperties {
   ly: number
 }
 
+// The fields the search and suburb panel need.
+export type Suburb = Pick<SuburbProperties, "id" | "name" | "lga">
+
 export type SuburbFeature = Feature<Polygon | MultiPolygon, SuburbProperties>
 
 // Land around and under the suburbs, drawn behind them.

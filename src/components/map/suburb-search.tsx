@@ -12,9 +12,7 @@ import {
 import { InputGroupAddon } from "@/components/ui/input-group"
 import { useShortcut } from "@/hooks/use-shortcut"
 import { buildIndex, normalise, search } from "@/lib/search"
-import type { SuburbProperties } from "@/types/suburb"
-
-type Suburb = Pick<SuburbProperties, "id" | "name" | "lga">
+import type { Suburb } from "@/types/suburb"
 
 interface SuburbSearchProps {
   suburbs: readonly Suburb[]

@@ -12,9 +12,9 @@ import {
   CloseButton,
   CouncilButton,
   PanelBody,
-  type Suburb,
   type SuburbPanelProps,
 } from "@/components/suburb-panel-body"
+import type { Suburb } from "@/types/suburb"
 
 // Tall enough for the name, the council and the visited button.
 const PEEK = "9.5rem"
