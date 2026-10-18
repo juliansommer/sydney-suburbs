@@ -197,7 +197,9 @@ describe("map page", () => {
     const key = await screen.findByRole("list", {
       name: "Household income key",
     })
-    expect(key).toHaveTextContent("$2,000 – $2,500/wk")
+    await waitFor(() => {
+      expect(key).toHaveTextContent("$2,000 – $2,500/wk")
+    })
     expect(key).toHaveTextContent("No data")
     expect(document.querySelector('[data-layer="heat-3"]')).toHaveAttribute(
       "d",
