@@ -160,6 +160,7 @@ describe("/api/me/suburbs", () => {
     ["an empty body", {}],
     ["an unknown key", { visted: true }],
     ["a malformed date", { visitedOn: "2024-13-01" }],
+    ["an impossible date", { visitedOn: "2023-02-29" }],
     ["a future date", { visitedOn: "2999-01-01" }],
     ["notes over 10,000 characters", { notes: "x".repeat(10_001) }],
     ["a non-boolean visited", { visited: "yes" }],
