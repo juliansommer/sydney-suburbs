@@ -1,5 +1,10 @@
 import { queryOptions } from "@tanstack/react-query"
-import type { MultiPolygon as GeoMultiPolygon } from "geojson"
+import type {
+  Feature,
+  Geometry,
+  MultiPolygon as GeoMultiPolygon,
+  Polygon as GeoPolygon,
+} from "geojson"
 import { feature, merge } from "topojson-client"
 import type {
   GeometryCollection,
@@ -55,6 +60,13 @@ export function mergeSuburbs(
   )
 }
 
+// Whether a feature is an area rather than a stray point or line.
+function hasArea<P>(
+  f: Feature<Geometry, P>,
+): f is Feature<GeoPolygon | GeoMultiPolygon, P> {
+  return f.geometry.type === "Polygon" || f.geometry.type === "MultiPolygon"
+}
+
 function councilOutlines(topology: MapTopology): Council[] {
   return [...mergeSuburbs(topology, (s) => s.lga)].map(([lga, geometry]) => ({
     type: "Feature",
@@ -65,22 +77,16 @@ function councilOutlines(topology: MapTopology): Council[] {
 
 export function toSuburbMap(topology: MapTopology): SuburbMapData {
   const { objects } = topology
-  const suburbs: SuburbFeature[] = []
-  for (const f of feature(topology, objects.suburbs).features) {
-    if (f.geometry.type === "Polygon" || f.geometry.type === "MultiPolygon") {
-      suburbs.push({
-        type: "Feature",
-        id: f.properties.id,
-        geometry: f.geometry,
-        properties: f.properties,
-      })
-    }
-  }
-  const [around] = feature(topology, objects.surrounds).features
-  if (
-    around?.geometry.type !== "Polygon" &&
-    around?.geometry.type !== "MultiPolygon"
-  ) {
+  const suburbs: SuburbFeature[] = feature(topology, objects.suburbs)
+    .features.filter(hasArea)
+    .map((f) => ({
+      type: "Feature",
+      id: f.properties.id,
+      geometry: f.geometry,
+      properties: f.properties,
+    }))
+  const around = feature(topology, objects.surrounds).features.find(hasArea)
+  if (!around) {
     throw new Error("TopoJSON surrounds layer is empty")
   }
   const surrounds: Surrounds = {
@@ -96,16 +102,13 @@ export function toSuburbMap(topology: MapTopology): SuburbMapData {
     },
     properties: {},
   }
-  const landuse: Landuse[] = []
-  for (const f of feature(topology, objects.landuse).features) {
-    if (f.geometry.type === "Polygon" || f.geometry.type === "MultiPolygon") {
-      landuse.push({
-        type: "Feature",
-        geometry: f.geometry,
-        properties: f.properties,
-      })
-    }
-  }
+  const landuse: Landuse[] = feature(topology, objects.landuse)
+    .features.filter(hasArea)
+    .map((f) => ({
+      type: "Feature",
+      geometry: f.geometry,
+      properties: f.properties,
+    }))
   return {
     suburbs,
     councils: councilOutlines(topology),

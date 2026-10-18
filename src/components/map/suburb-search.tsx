@@ -1,5 +1,5 @@
 import { SearchIcon } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 
 import {
   Combobox,
@@ -10,6 +10,7 @@ import {
   ComboboxList,
 } from "@/components/ui/combobox"
 import { InputGroupAddon } from "@/components/ui/input-group"
+import { useShortcut } from "@/hooks/use-shortcut"
 import { buildIndex, normalise, search } from "@/lib/search"
 import type { SuburbProperties } from "@/types/suburb"
 
@@ -33,22 +34,10 @@ export function SuburbSearch({
   const index = buildIndex(suburbs, (s) => s.name)
   const results = search(index, query)
 
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      const { target } = event
-      const typing =
-        target instanceof HTMLTextAreaElement ||
-        target instanceof HTMLInputElement
-      if (event.key === "/" && !typing) {
-        event.preventDefault()
-        input.current?.focus()
-      }
-    }
-    document.addEventListener("keydown", onKeyDown)
-    return () => {
-      document.removeEventListener("keydown", onKeyDown)
-    }
-  }, [])
+  useShortcut("/", (event) => {
+    event.preventDefault()
+    input.current?.focus()
+  })
 
   return (
     <div className="rounded-lg bg-background shadow-sm">

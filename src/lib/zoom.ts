@@ -20,10 +20,9 @@ export function fitBounds(
   height: number,
   minZoom = MIN_FOCUS_ZOOM,
 ): ZoomTarget {
-  const padding = PADDING
   const fit = Math.min(
-    (width - 2 * padding) / Math.max(x1 - x0, 1e-6),
-    (height - 2 * padding) / Math.max(y1 - y0, 1e-6),
+    (width - 2 * PADDING) / Math.max(x1 - x0, 1e-6),
+    (height - 2 * PADDING) / Math.max(y1 - y0, 1e-6),
   )
   const k = Math.min(MAX_FOCUS_ZOOM, Math.max(minZoom, fit))
   return {
