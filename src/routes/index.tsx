@@ -18,6 +18,7 @@ import { useShortcut } from "@/hooks/use-shortcut"
 import { getSession, signOut } from "@/lib/auth"
 import type { Heatmap } from "@/lib/heatmap"
 import { whenIdle } from "@/lib/idle"
+import { preload } from "@/lib/load"
 import {
   DEFAULT_HEATMAP_STAT,
   type HeatmapStat,
@@ -289,15 +290,18 @@ function MapView(props: MapViewProps) {
     select(null)
   })
 
-  // The map has rendered by now, so fetch facts when the browser is idle and
-  // they never compete with it. A deep link's panel fetches them right away.
+  // The map has rendered by now, so fetch the facts and the other modes' code
+  // when the browser is idle, ready before they're picked. A deep link's panel
+  // fetches the facts right away.
   onSettled(() =>
     whenIdle(async () => {
-      try {
-        await getSuburbFacts()
-      } catch {
-        // The panel tries again when it opens, and handles the error.
-      }
+      await preload(
+        getSuburbFacts,
+        NrlLegend.preload,
+        BirthplaceLegend.preload,
+        async () => await import("@/lib/nrl"),
+        async () => await import("@/lib/birthplace"),
+      )
     }),
   )
 

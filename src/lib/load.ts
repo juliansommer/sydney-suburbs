@@ -59,3 +59,11 @@ export function clearOnce() {
     loads.clear()
   }
 }
+
+// Starts loads ahead of need. A failure is ignored here; the real load tries
+// again when it's used and reports the error there.
+export async function preload(
+  ...loads: (() => Promise<object>)[]
+): Promise<void> {
+  await Promise.allSettled(loads.map(async (load) => await load()))
+}
