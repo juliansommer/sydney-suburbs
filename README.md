@@ -4,12 +4,12 @@
 ![Heatmap of Sydney's Suburbs](.github/assets/screenshot2.png)
 ![NRL Map of Sydney's Suburbs](.github/assets/screenshot3.png)
 
-- A pannable, zoomable map of Greater Sydney's 648 suburbs, from Penrith to Berowra to Campbelltown
-- See each suburb's photo, summary, postcode, population and census details
-- Colour the map with heatmaps of household income, rent, housing commission, violent crime, tree canopy, density and median age
-- See which NRL club's territory each suburb falls in
-- See your progress, e.g. "142 / 648 suburbs", with a breakdown by council
-- Sign in with Google or GitHub to track your visits across devices
+- Interactive map of Greater Sydney's 648 suburbs
+- Photo, summary and census stats for each suburb
+- Heatmaps for income, rent, crime, tree canopy and more
+- NRL club territories
+- Visit progress by council
+- Sign in with Google or GitHub to sync across devices
 
 ## Tech Stack
 
