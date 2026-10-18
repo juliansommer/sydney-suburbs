@@ -1,4 +1,4 @@
-import { queryOptions } from "@tanstack/react-query"
+import { queryOptions } from "@tanstack/solid-query"
 
 // Vite gives the file a hashed name under /assets/, cached for a year, so a
 // rebuild can never serve stale facts.

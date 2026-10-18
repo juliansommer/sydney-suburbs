@@ -1,6 +1,6 @@
-import { SearchIcon } from "lucide-react"
-import { useRef, useState } from "react"
+import { createMemo, createSignal, Show } from "solid-js"
 
+import { SearchIcon } from "@/components/icons"
 import {
   Combobox,
   ComboboxContent,
@@ -23,73 +23,65 @@ interface SuburbSearchProps {
 }
 
 // Finds suburbs by name. "/" focuses it from anywhere outside a text field.
-export function SuburbSearch({
-  suburbs,
-  visitedIds,
-  onPick,
-}: SuburbSearchProps) {
-  const [query, setQuery] = useState("")
-  const [open, setOpen] = useState(false)
-  const input = useRef<HTMLInputElement>(null)
-  const index = buildIndex(suburbs, (s) => s.name)
-  const results = search(index, query)
+export function SuburbSearch(props: SuburbSearchProps) {
+  const [query, setQuery] = createSignal("")
+  const [open, setOpen] = createSignal(false)
+  let input: HTMLInputElement | undefined
+  const index = createMemo(() => buildIndex(props.suburbs, (s) => s.name))
+  const results = createMemo(() => search(index(), query()))
 
   useShortcut("/", (event) => {
     event.preventDefault()
-    input.current?.focus()
+    input?.focus()
   })
 
   return (
-    <div className="rounded-lg bg-background shadow-sm">
+    <div class="rounded-lg bg-background shadow-sm">
       <Combobox<Suburb | null>
         filter={null}
-        inputRef={input}
-        inputValue={query}
+        inputRef={(element) => {
+          input = element
+        }}
+        inputValue={query()}
         itemToStringLabel={(s) => s?.name ?? ""}
-        items={results}
+        items={results()}
         onInputValueChange={setQuery}
         onOpenChange={setOpen}
         onValueChange={(suburb) => {
           if (suburb) {
             setQuery("")
-            onPick(suburb.id)
+            props.onPick(suburb.id)
           }
         }}
         // Nothing to show until there's something to search for.
-        open={open && normalise(query) !== ""}
+        open={open() && normalise(query()) !== ""}
         value={null}
       >
-        <ComboboxInput
-          aria-label="Search suburbs"
-          placeholder="Search suburbs"
-          showTrigger={false}
-        >
+        <ComboboxInput aria-label="Search suburbs" placeholder="Search suburbs">
           <InputGroupAddon>
             <SearchIcon />
           </InputGroupAddon>
         </ComboboxInput>
         <ComboboxContent>
           <ComboboxEmpty>
-            No suburb called &ldquo;{query.trim()}&rdquo; in the map area.
+            No suburb called &ldquo;{query().trim()}&rdquo; in the map area.
           </ComboboxEmpty>
-          <ComboboxList>
-            {(suburb: Suburb) => (
-              <ComboboxItem key={suburb.id} value={suburb}>
-                <span className="flex min-w-0 flex-1 flex-col">
-                  <span className="truncate">{suburb.name}</span>
-                  <span className="truncate text-xs text-muted-foreground">
-                    {suburb.lga}
+          <ComboboxList<Suburb>>
+            {(suburb) => (
+              <ComboboxItem value={suburb()}>
+                <span class="flex min-w-0 flex-1 flex-col">
+                  <span class="truncate">{suburb().name}</span>
+                  <span class="truncate text-xs text-muted-foreground">
+                    {suburb().lga}
                   </span>
                 </span>
-                {visitedIds.has(suburb.id) ? (
-                  <>
-                    <span
-                      aria-hidden
-                      className="size-2 rounded-full bg-map-visited"
-                    />
-                    <span className="sr-only">, visited</span>
-                  </>
-                ) : null}
+                <Show when={props.visitedIds.has(suburb().id)}>
+                  <span
+                    aria-hidden="true"
+                    class="size-2 rounded-full bg-map-visited"
+                  />
+                  <span class="sr-only">, visited</span>
+                </Show>
               </ComboboxItem>
             )}
           </ComboboxList>

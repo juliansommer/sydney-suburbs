@@ -1,4 +1,4 @@
-import { queryOptions } from "@tanstack/react-query"
+import { queryOptions } from "@tanstack/solid-query"
 
 import { heatmap } from "@/lib/heatmap"
 import type { HeatmapStat } from "@/lib/stats"
@@ -10,7 +10,7 @@ export function heatmapQuery(stat: HeatmapStat) {
   return queryOptions({
     queryKey: ["heatmap", stat],
     queryFn: async ({ client }) =>
-      heatmap(stat, await client.query(suburbFactsQuery)),
+      heatmap(stat, await client.fetchQuery(suburbFactsQuery)),
     staleTime: Infinity,
   })
 }

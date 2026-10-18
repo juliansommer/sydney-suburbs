@@ -1,4 +1,5 @@
 import type { ZoomTransform } from "d3-zoom"
+import { For } from "solid-js"
 
 import { labelVisible, placeLabels, type Rect } from "@/lib/labels"
 
@@ -19,36 +20,37 @@ interface SuburbLabelsProps {
 // Drawn in screen space, outside the zoomed group, so text is never scaled
 // and stays sharp. Labels off screen are skipped, and overlapping ones give
 // way to higher priority neighbours.
-export function SuburbLabels({
-  suburbs,
-  transform,
-  width,
-  height,
-  obstacles,
-}: SuburbLabelsProps) {
-  const candidates = suburbs.flatMap((s) => {
-    if (!s.label || !labelVisible(s, transform.k, FONT_SIZE)) {
-      return []
-    }
-    const [x, y] = transform.apply(s.label)
-    const offScreen = x < 0 || x > width || y < 0 || y > height
-    return offScreen ? [] : [{ ...s, x, y }]
-  })
+export function SuburbLabels(props: SuburbLabelsProps) {
+  const placed = () => {
+    const { transform, width, height } = props
+    const candidates = props.suburbs.flatMap((s) => {
+      if (!s.label || !labelVisible(s, transform.k, FONT_SIZE)) {
+        return []
+      }
+      const [x, y] = transform.apply(s.label)
+      const offScreen = x < 0 || x > width || y < 0 || y > height
+      return offScreen ? [] : [{ ...s, x, y }]
+    })
+    return placeLabels(candidates, FONT_SIZE, props.obstacles)
+  }
 
   return (
     <g
-      className="pointer-events-none fill-map-label stroke-map-halo [paint-order:stroke]"
-      dominantBaseline="central"
-      fontSize={FONT_SIZE}
-      strokeLinejoin="round"
-      strokeWidth={HALO_WIDTH}
-      textAnchor="middle"
+      class="pointer-events-none fill-map-label stroke-map-halo [paint-order:stroke]"
+      dominant-baseline="central"
+      font-size={FONT_SIZE}
+      stroke-linejoin="round"
+      stroke-width={HALO_WIDTH}
+      text-anchor="middle"
     >
-      {placeLabels(candidates, FONT_SIZE, obstacles).map((c) => (
-        <text key={c.id} x={c.x} y={c.y}>
-          {c.name}
-        </text>
-      ))}
+      {/* Keyed by suburb, so a zoom frame moves existing labels. */}
+      <For each={placed()} keyed={(c) => c.id}>
+        {(c) => (
+          <text x={c().x} y={c().y}>
+            {c().name}
+          </text>
+        )}
+      </For>
     </g>
   )
 }

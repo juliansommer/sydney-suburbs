@@ -1,19 +1,17 @@
-import { vi } from "vitest"
+import type { Session } from "@/lib/auth"
 
-import { authClient } from "@/lib/auth-client"
+// What the mocked /api/auth/get-session returns. Signed out unless a test
+// signs in.
+let session: Session = null
 
-// Tests that use these must also vi.mock("@/lib/auth-client").
-function setSession(data: { user: { email: string } } | null) {
-  vi.mocked(authClient.useSession).mockReturnValue({
-    data,
-    isPending: false,
-  } as ReturnType<typeof authClient.useSession>)
+export function currentSession(): Session {
+  return session
 }
 
 export function signIn() {
-  setSession({ user: { email: "someone@example.com" } })
+  session = { user: { email: "someone@example.com" } }
 }
 
 export function signOut() {
-  setSession(null)
+  session = null
 }

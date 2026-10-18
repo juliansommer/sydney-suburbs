@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react"
+import { render, screen } from "@solidjs/testing-library"
 import { describe, expect, it } from "vitest"
 
 import { toSuburbMap } from "@/queries/suburbs-topo"
@@ -7,15 +7,15 @@ import { suburbsTopology } from "@/test/fixtures"
 import { SuburbMap } from "./suburb-map"
 
 function renderMap(props: Partial<Parameters<typeof SuburbMap>[0]> = {}) {
-  return render(
+  return render(() => (
     <SuburbMap
       data={toSuburbMap(suburbsTopology)}
       onSelect={() => {}}
       selectedId={null}
       layers={{ fills: [], outlines: [], markers: [] }}
       {...props}
-    />,
-  )
+    />
+  ))
 }
 
 describe("SuburbMap", () => {

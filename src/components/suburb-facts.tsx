@@ -1,7 +1,8 @@
-import { Collapsible } from "@base-ui/react/collapsible"
-import { useQuery } from "@tanstack/react-query"
-import { ChevronRightIcon, InfoIcon } from "lucide-react"
+import { useQuery } from "@tanstack/solid-query"
+import { Collapsible } from "base-ui-solid/collapsible"
+import { type Accessor, For, Match, Show, Switch } from "solid-js"
 
+import { ChevronRightIcon, InfoIcon } from "@/components/icons"
 import {
   Popover,
   PopoverContent,
@@ -26,64 +27,72 @@ type FactsState =
 
 // A failed load hides the facts, so the rest of the panel keeps working.
 // Nothing is fetched until a suburb is selected; the map page prefetches.
-export function useSuburbFacts(suburbId: string | undefined): FactsState {
-  const { data, status } = useQuery({
+export function useSuburbFacts(
+  suburbId: Accessor<string | undefined>,
+): Accessor<FactsState> {
+  const query = useQuery(() => ({
     ...suburbFactsQuery,
-    enabled: suburbId !== undefined,
-  })
-  if (status === "success" && suburbId !== undefined) {
-    return { status, facts: data[suburbId] }
+    enabled: suburbId() !== undefined,
+  }))
+  return () => {
+    const id = suburbId()
+    if (query.isSuccess && id !== undefined) {
+      return { status: "success", facts: query.data[id] }
+    }
+    return query.isError ? { status: "error" } : { status: "pending" }
   }
-  return status === "error" ? { status } : { status: "pending" }
+}
+
+function factsOf(state: FactsState): SuburbFacts | undefined {
+  return state.status === "success" ? state.facts : undefined
 }
 
 interface SuburbMediaProps {
   state: FactsState
   name: string
-  className?: string
+  class?: string
 }
 
 // The photo at the top of the panel, or a skeleton of the same size while the
 // facts load. Suburbs without a photo skip it entirely.
-export function SuburbMedia({ state, name, className }: SuburbMediaProps) {
-  if (state.status === "error") {
-    return null
-  }
-  if (state.status === "pending") {
-    return (
-      <div
-        aria-hidden
-        className={cn("aspect-3/2 animate-pulse bg-muted", className)}
-        data-testid="photo-skeleton"
-      />
-    )
-  }
-  const photo = state.facts?.photo
-  if (!photo) {
-    return null
-  }
-  return <Photo className={className} name={name} photo={photo} />
+export function SuburbMedia(props: SuburbMediaProps) {
+  return (
+    <Switch>
+      <Match when={props.state.status === "pending"}>
+        <div
+          aria-hidden="true"
+          class={cn("aspect-3/2 animate-pulse bg-muted", props.class)}
+          data-testid="photo-skeleton"
+        />
+      </Match>
+      <Match when={factsOf(props.state)?.photo}>
+        {(photo) => (
+          <Photo class={props.class} name={props.name} photo={photo()} />
+        )}
+      </Match>
+    </Switch>
+  )
 }
 
 interface PhotoProps {
   photo: SuburbPhoto
   name: string
-  className?: string
+  class?: string
 }
 
-function Photo({ photo, name, className }: PhotoProps) {
+function Photo(props: PhotoProps) {
   return (
-    <div className={cn("relative", className)}>
+    <div class={cn("relative", props.class)}>
       {/* Grey until it loads; transparent text keeps the alt from flashing up. */}
       <img
-        alt={name}
-        className="aspect-3/2 w-full bg-muted object-cover text-transparent"
+        alt={props.name}
+        class="aspect-3/2 w-full bg-muted object-cover text-transparent"
         decoding="async"
-        height={photo.height}
-        src={photo.url}
-        width={photo.width}
+        height={props.photo.height}
+        src={props.photo.url}
+        width={props.photo.width}
       />
-      <PhotoCredit photo={photo} />
+      <PhotoCredit photo={props.photo} />
     </div>
   )
 }
@@ -93,34 +102,34 @@ interface PhotoCreditProps {
 }
 
 // Opens on hover with a mouse and on tap with touch.
-function PhotoCredit({ photo }: PhotoCreditProps) {
+function PhotoCredit(props: PhotoCreditProps) {
   return (
     <Popover>
       <PopoverTrigger
         aria-label="Photo credit"
-        className="absolute right-2 bottom-2 grid size-7 place-items-center"
+        class="absolute right-2 bottom-2 grid size-7 place-items-center"
         openOnHover
       >
-        <InfoIcon className="size-4 text-black" />
+        <InfoIcon class="size-4 text-black" />
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-64" side="left">
-        <div className="flex flex-col gap-1 text-xs">
+      <PopoverContent align="end" class="w-64" side="left">
+        <div class="flex flex-col gap-1 text-xs">
           <p>
-            Photo by <span className="font-medium">{photo.artist}</span>
+            Photo by <span class="font-medium">{props.photo.artist}</span>
           </p>
-          <p className="text-muted-foreground">
+          <p class="text-muted-foreground">
             <a
-              className="hover:underline"
-              href={photo.licenceUrl}
+              class="hover:underline"
+              href={props.photo.licenceUrl}
               rel="noreferrer"
               target="_blank"
             >
-              {photo.licence}
+              {props.photo.licence}
             </a>
             {" · "}
             <a
-              className="hover:underline"
-              href={photo.sourceUrl}
+              class="hover:underline"
+              href={props.photo.sourceUrl}
               rel="noreferrer"
               target="_blank"
             >
@@ -139,39 +148,42 @@ interface FactsRowProps {
 
 // "Postcode 2042 · 15,301 people". Places with nobody living there, like
 // industrial areas, leave the population out rather than saying "0 people".
-export function FactsRow({ state }: FactsRowProps) {
-  if (state.status === "pending") {
-    return (
-      <div
-        aria-hidden
-        className="mt-1 h-4 w-40 animate-pulse rounded bg-muted"
-        data-testid="facts-skeleton"
-      />
-    )
+export function FactsRow(props: FactsRowProps) {
+  const parts = () => {
+    const facts = factsOf(props.state)
+    return [
+      facts?.postcode ? `Postcode ${facts.postcode}` : null,
+      facts?.population
+        ? `${populationFormat.format(facts.population)} people`
+        : null,
+    ].filter((part) => part !== null)
   }
-  const facts = state.status === "success" ? state.facts : undefined
-  const parts = [
-    facts?.postcode ? `Postcode ${facts.postcode}` : null,
-    facts?.population
-      ? `${populationFormat.format(facts.population)} people`
-      : null,
-  ].filter((part) => part !== null)
-  if (parts.length === 0) {
-    return null
-  }
-  return <p className="text-sm text-muted-foreground">{parts.join(" · ")}</p>
+  return (
+    <Switch>
+      <Match when={props.state.status === "pending"}>
+        <div
+          aria-hidden="true"
+          class="mt-1 h-4 w-40 animate-pulse rounded bg-muted"
+          data-testid="facts-skeleton"
+        />
+      </Match>
+      <Match when={parts().length > 0}>
+        <p class="text-sm text-muted-foreground">{parts().join(" · ")}</p>
+      </Match>
+    </Switch>
+  )
 }
 
 interface SummaryProps {
   state: FactsState
 }
 
-export function Summary({ state }: SummaryProps) {
-  const facts = state.status === "success" ? state.facts : undefined
-  if (!facts?.summary) {
-    return null
-  }
-  return <p className="text-sm">{facts.summary}</p>
+export function Summary(props: SummaryProps) {
+  return (
+    <Show when={factsOf(props.state)?.summary}>
+      {(summary) => <p class="text-sm">{summary()}</p>}
+    </Show>
+  )
 }
 
 interface Detail {
@@ -227,34 +239,34 @@ interface MoreDetailsProps {
 // Closed by default, so the panel stays short until someone wants the numbers.
 // Details with a map overlay show it when clicked, and hide it when clicked
 // again.
-export function MoreDetails({
-  state,
-  overlay,
-  onToggleOverlay,
-}: MoreDetailsProps) {
-  if (state.status !== "success" || !state.facts) {
-    return null
-  }
-  const details = toDetails(state.facts.stats, state.facts.topBirthplace)
+export function MoreDetails(props: MoreDetailsProps) {
   return (
-    <Collapsible.Root>
-      <Collapsible.Trigger className="group flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground">
-        <ChevronRightIcon className="size-4 transition-transform group-data-panel-open:rotate-90" />
-        More details
-      </Collapsible.Trigger>
-      <Collapsible.Panel>
-        <dl className="grid grid-cols-2 gap-x-2 gap-y-1 pt-3">
-          {details.map((detail) => (
-            <DetailCell
-              detail={detail}
-              key={detail.key}
-              onToggleOverlay={onToggleOverlay}
-              shown={detail.overlay !== undefined && detail.overlay === overlay}
-            />
-          ))}
-        </dl>
-      </Collapsible.Panel>
-    </Collapsible.Root>
+    <Show when={factsOf(props.state)}>
+      {(facts) => (
+        <Collapsible.Root>
+          <Collapsible.Trigger class="group flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground">
+            <ChevronRightIcon class="size-4 transition-transform group-data-panel-open:rotate-90" />
+            More details
+          </Collapsible.Trigger>
+          <Collapsible.Panel>
+            <dl class="grid grid-cols-2 gap-x-2 gap-y-1 pt-3">
+              <For each={toDetails(facts().stats, facts().topBirthplace)}>
+                {(detail) => (
+                  <DetailCell
+                    detail={detail}
+                    onToggleOverlay={props.onToggleOverlay}
+                    shown={
+                      detail.overlay !== undefined &&
+                      detail.overlay === props.overlay
+                    }
+                  />
+                )}
+              </For>
+            </dl>
+          </Collapsible.Panel>
+        </Collapsible.Root>
+      )}
+    </Show>
   )
 }
 
@@ -266,34 +278,32 @@ interface DetailCellProps {
 
 // The label's button stretches over the whole cell, so the value is part of
 // the click target too.
-function DetailCell({ detail, shown, onToggleOverlay }: DetailCellProps) {
-  const { overlay } = detail
+function DetailCell(props: DetailCellProps) {
   return (
     <div
-      className={cn(
+      class={[
         "relative rounded-md px-2 py-1",
-        overlay && "hover:bg-muted",
-        shown && "bg-muted",
-      )}
+        { "hover:bg-muted": !!props.detail.overlay, "bg-muted": props.shown },
+      ]}
     >
-      <dt className="text-xs text-muted-foreground">
-        {overlay ? (
-          <button
-            aria-label={`Show ${detail.overlayName}`}
-            aria-pressed={shown}
-            className="outline-none after:absolute after:inset-0 after:rounded-md focus-visible:after:ring-2 focus-visible:after:ring-ring"
-            onClick={() => {
-              onToggleOverlay(overlay)
-            }}
-            type="button"
-          >
-            {detail.label}
-          </button>
-        ) : (
-          detail.label
-        )}
+      <dt class="text-xs text-muted-foreground">
+        <Show fallback={props.detail.label} when={props.detail.overlay}>
+          {(overlay) => (
+            <button
+              aria-label={`Show ${props.detail.overlayName}`}
+              aria-pressed={props.shown ? "true" : "false"}
+              class="outline-none after:absolute after:inset-0 after:rounded-md focus-visible:after:ring-2 focus-visible:after:ring-ring"
+              onClick={() => {
+                props.onToggleOverlay(overlay())
+              }}
+              type="button"
+            >
+              {props.detail.label}
+            </button>
+          )}
+        </Show>
       </dt>
-      <dd className="text-sm font-medium">{detail.value}</dd>
+      <dd class="text-sm font-medium">{props.detail.value}</dd>
     </div>
   )
 }

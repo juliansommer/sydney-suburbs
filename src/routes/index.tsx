@@ -1,13 +1,7 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { createFileRoute, Link } from "@tanstack/react-router"
-import {
-  lazy,
-  type ReactNode,
-  type RefObject,
-  Suspense,
-  useEffect,
-  useRef,
-} from "react"
+import type { JSX } from "@solidjs/web"
+import { useQuery, useQueryClient } from "@tanstack/solid-query"
+import { createFileRoute, Link } from "@tanstack/solid-router"
+import { createMemo, For, lazy, Loading, onSettled, Show } from "solid-js"
 import { z } from "zod/mini"
 
 import { HeatmapLegend } from "@/components/heatmap-legend"
@@ -16,7 +10,7 @@ import { SearchPlaceholder } from "@/components/map/search-placeholder"
 import { SuburbMap, type SuburbMapHandle } from "@/components/map/suburb-map"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { useShortcut } from "@/hooks/use-shortcut"
-import { authClient } from "@/lib/auth-client"
+import { sessionQuery, signOut } from "@/lib/auth"
 import { whenIdle } from "@/lib/idle"
 import {
   DEFAULT_HEATMAP_STAT,
@@ -108,63 +102,79 @@ export const Route = createFileRoute("/")({
 type Rows = ReadonlyMap<string, UserSuburb>
 
 function MapPage() {
-  const { mode } = Route.useSearch()
-  const { data, isError } = useQuery(suburbsTopoQuery)
-  const { data: session, isPending } = authClient.useSession()
-  const { data: rows } = useQuery({ ...mySuburbsQuery, enabled: !!session })
-  const map = useRef<SuburbMapHandle>(null)
-  const suburbs = data?.suburbs.map((s) => s.properties) ?? []
-  const visitedIds = new Set(
-    [...(rows?.values() ?? [])]
-      .filter((row) => row.visited)
-      .map((row) => row.suburbId),
+  const search = Route.useSearch()
+  const topo = useQuery(() => suburbsTopoQuery)
+  const session = useQuery(() => sessionQuery)
+  const signedIn = () => session.isSuccess && !!session.data
+  const rowsQuery = useQuery(() => ({
+    ...mySuburbsQuery,
+    enabled: signedIn(),
+  }))
+  // Checked first, as reading data before it's there would suspend.
+  const data = () => (topo.isSuccess ? topo.data : undefined)
+  const rows = () => (rowsQuery.isSuccess ? rowsQuery.data : undefined)
+  let map: SuburbMapHandle | undefined
+  const suburbs = createMemo(
+    () => data()?.suburbs.map((s) => s.properties) ?? [],
+  )
+  const visitedIds = createMemo(
+    () =>
+      new Set(
+        [...(rows()?.values() ?? [])]
+          .filter((row) => row.visited)
+          .map((row) => row.suburbId),
+      ),
   )
 
   return (
-    <main className="relative h-dvh overflow-hidden bg-map-water">
-      {isError ? (
-        <p className="grid h-full place-items-center text-muted-foreground">
+    <main class="relative h-dvh overflow-hidden bg-map-water">
+      <Show when={topo.isError}>
+        <p class="grid h-full place-items-center text-muted-foreground">
           The map couldn&rsquo;t load. Try refreshing.
         </p>
-      ) : null}
-      {data ? (
-        <MapView
-          data={data}
-          map={map}
-          rows={rows}
-          signedIn={!!session}
-          suburbs={suburbs}
-          visitedIds={visitedIds}
-        />
-      ) : null}
-      <h1 className="pointer-events-none absolute top-4 left-4 text-lg font-semibold">
+      </Show>
+      <Show when={data()}>
+        {(loaded) => (
+          <MapView
+            data={loaded()}
+            mapRef={(handle) => {
+              map = handle
+            }}
+            rows={rows()}
+            signedIn={signedIn()}
+            suburbs={suburbs()}
+            visitedIds={visitedIds()}
+          />
+        )}
+      </Show>
+      <h1 class="pointer-events-none absolute top-4 left-4 text-lg font-semibold">
         Sydney Suburbs
       </h1>
-      <header className="absolute top-4 right-4 flex items-center gap-2">
+      <header class="absolute top-4 right-4 flex items-center gap-2">
         <a
           aria-label="Source on GitHub"
-          className={buttonVariants({ size: "icon", variant: "ghost" })}
+          class={buttonVariants({ size: "icon", variant: "ghost" })}
           href="https://github.com/juliansommer/sydney-suburbs"
           rel="noreferrer"
           target="_blank"
         >
           <GitHubLogo />
         </a>
-        {isPending ? null : (
-          <Account signedIn={!!session}>
-            <Suspense>
-              {rows && data && mode === undefined ? (
+        <Show when={!session.isPending}>
+          <Account signedIn={signedIn()}>
+            <Loading>
+              <Show when={rows() && data() && search().mode === undefined}>
                 <CouncilProgressButton
                   onZoom={(lga) => {
-                    map.current?.zoomToCouncil(lga)
+                    map?.zoomToCouncil(lga)
                   }}
-                  suburbs={suburbs}
-                  visitedIds={visitedIds}
+                  suburbs={suburbs()}
+                  visitedIds={visitedIds()}
                 />
-              ) : null}
-            </Suspense>
+              </Show>
+            </Loading>
           </Account>
-        )}
+        </Show>
       </header>
     </main>
   )
@@ -172,78 +182,82 @@ function MapPage() {
 
 interface MapViewProps {
   data: SuburbMapData
-  map: RefObject<SuburbMapHandle | null>
+  mapRef: (handle: SuburbMapHandle) => void
   suburbs: SuburbProperties[]
   visitedIds: ReadonlySet<string>
   signedIn: boolean
   rows: Rows | undefined
 }
 
-function MapView({
-  data,
-  map,
-  suburbs,
-  visitedIds,
-  signedIn,
-  rows,
-}: MapViewProps) {
-  const {
-    suburb: selectedId,
-    mode = "visited",
-    stat = DEFAULT_HEATMAP_STAT,
-  } = Route.useSearch()
+function MapView(props: MapViewProps) {
+  const search = Route.useSearch()
   const navigate = Route.useNavigate()
-  const { data: nrlLayers } = useQuery({
-    ...nrlLayersQuery,
-    enabled: mode === "nrl",
-  })
-  const { data: heatmap } = useQuery({
-    ...heatmapQuery(stat),
-    enabled: mode === "heatmap",
-  })
-  const { data: birthplace } = useQuery({
-    ...birthplaceQuery,
-    enabled: mode === "birthplace",
-  })
-  const visitedLayers: MapLayers = {
-    fills: [{ key: "visited", ids: visitedIds, className: "fill-map-visited" }],
-    outlines: [],
-    markers: [],
-  }
-  const layersByMode: Record<MapMode, MapLayers> = {
-    visited: visitedLayers,
-    nrl: nrlLayers ?? NO_LAYERS,
-    heatmap: heatmap?.layers ?? NO_LAYERS,
-    birthplace: birthplace ?? NO_LAYERS,
-  }
-  const layers = layersByMode[mode]
-  const overlayByMode: Record<MapMode, Overlay | undefined> = {
-    visited: undefined,
-    nrl: undefined,
-    heatmap: stat,
-    birthplace: "birthplace",
-  }
-  const overlay = overlayByMode[mode]
+  const mode = (): MapMode => search().mode ?? "visited"
+  const stat = (): HeatmapStat => search().stat ?? DEFAULT_HEATMAP_STAT
+  let map: SuburbMapHandle | undefined
 
-  const byId = new Map(suburbs.map((s) => [s.id, s]))
+  const nrlQuery = useQuery(() => ({
+    ...nrlLayersQuery,
+    enabled: mode() === "nrl",
+  }))
+  const heatmap = useQuery(() => ({
+    ...heatmapQuery(stat()),
+    enabled: mode() === "heatmap",
+  }))
+  const birthplace = useQuery(() => ({
+    ...birthplaceQuery,
+    enabled: mode() === "birthplace",
+  }))
+  const heatmapData = () => (heatmap.isSuccess ? heatmap.data : undefined)
+
+  // Functions, so only the current mode's query is read.
+  const layersByMode: Record<MapMode, () => MapLayers> = {
+    visited: () => ({
+      fills: [
+        {
+          key: "visited",
+          ids: props.visitedIds,
+          className: "fill-map-visited",
+        },
+      ],
+      outlines: [],
+      markers: [],
+    }),
+    nrl: () => (nrlQuery.isSuccess ? nrlQuery.data : NO_LAYERS),
+    heatmap: () => heatmapData()?.layers ?? NO_LAYERS,
+    birthplace: () => (birthplace.isSuccess ? birthplace.data : NO_LAYERS),
+  }
+  const layers = () => layersByMode[mode()]()
+  const overlayByMode: Record<MapMode, () => Overlay | undefined> = {
+    visited: () => undefined,
+    nrl: () => undefined,
+    heatmap: stat,
+    birthplace: () => "birthplace",
+  }
+  const overlay = () => overlayByMode[mode()]()
+
+  const byId = createMemo(() => new Map(props.suburbs.map((s) => [s.id, s])))
   // An id the map doesn't draw is no selection at all.
-  const selected =
-    selectedId === undefined ? undefined : byId.get(String(selectedId))
+  const selected = () => {
+    const id = search().suburb
+    return id === undefined ? undefined : byId().get(String(id))
+  }
 
   function select(id: string | null) {
-    if (id === (selected?.id ?? null)) {
+    const current = selected()
+    if (id === (current?.id ?? null)) {
       return
     }
     // Switching suburbs replaces the entry, so Back leaves the map rather
     // than stepping through every suburb looked at.
-    navigate({
+    void navigate({
       search: (prev) => ({ ...prev, suburb: id ? Number(id) : undefined }),
-      replace: !!selected && !!id,
+      replace: !!current && !!id,
     })
   }
 
   function switchMode(next: MapMode) {
-    navigate({
+    void navigate({
       search: (prev) => ({
         ...prev,
         mode: next === "visited" ? undefined : next,
@@ -253,7 +267,7 @@ function MapView({
   }
 
   function showHeatmap(next: HeatmapStat) {
-    navigate({
+    void navigate({
       search: (prev) => ({ ...prev, mode: "heatmap", stat: next }),
       replace: true,
     })
@@ -261,7 +275,7 @@ function MapView({
 
   // Picking what's already on the map goes back to the visited mode.
   function toggleOverlay(next: Overlay) {
-    if (next === overlay) {
+    if (next === overlay()) {
       switchMode("visited")
     } else if (next === "birthplace") {
       switchMode("birthplace")
@@ -277,68 +291,75 @@ function MapView({
   // The map has rendered by now, so fetch facts when the browser is idle and
   // they never compete with it. A deep link's panel fetches them right away.
   const queryClient = useQueryClient()
-  useEffect(
-    () =>
-      whenIdle(async () => {
-        try {
-          await queryClient.query(suburbFactsQuery)
-        } catch {
-          // The query keeps the error, and the panel handles it.
-        }
-      }),
-    [queryClient],
+  onSettled(() =>
+    whenIdle(async () => {
+      try {
+        await queryClient.fetchQuery(suburbFactsQuery)
+      } catch {
+        // The query keeps the error, and the panel handles it.
+      }
+    }),
   )
 
   return (
     <>
       <SuburbMap
-        data={data}
-        layers={layers}
+        data={props.data}
+        layers={layers()}
         onSelect={select}
-        ref={map}
-        selectedId={selected?.id ?? null}
+        ref={(handle) => {
+          map = handle
+          props.mapRef(handle)
+        }}
+        selectedId={selected()?.id ?? null}
       />
-      <div className="absolute bottom-4 left-4 flex flex-col items-start gap-2">
-        <Suspense>{mode === "nrl" ? <NrlLegend /> : null}</Suspense>
-        {mode === "heatmap" ? (
+      <div class="absolute bottom-4 left-4 flex flex-col items-start gap-2">
+        <Loading>
+          <Show when={mode() === "nrl"}>
+            <NrlLegend />
+          </Show>
+        </Loading>
+        <Show when={mode() === "heatmap"}>
           <HeatmapLegend
-            heatmap={heatmap}
+            heatmap={heatmapData()}
             onStatChange={showHeatmap}
-            stat={stat}
+            stat={stat()}
           />
-        ) : null}
-        <Suspense>
-          {mode === "birthplace" ? <BirthplaceLegend /> : null}
-        </Suspense>
-        <ModeSwitch mode={mode} onSwitch={switchMode} />
+        </Show>
+        <Loading>
+          <Show when={mode() === "birthplace"}>
+            <BirthplaceLegend />
+          </Show>
+        </Loading>
+        <ModeSwitch mode={mode()} onSwitch={switchMode} />
       </div>
-      <div className="absolute inset-x-4 top-14 md:right-auto md:w-72">
-        <Suspense fallback={<SearchPlaceholder />}>
+      <div class="absolute inset-x-4 top-14 md:right-auto md:w-72">
+        <Loading fallback={<SearchPlaceholder />}>
           <SuburbSearch
             onPick={(id) => {
               select(id)
-              map.current?.zoomTo(id)
+              map?.zoomTo(id)
             }}
-            suburbs={suburbs}
-            visitedIds={visitedIds}
+            suburbs={props.suburbs}
+            visitedIds={props.visitedIds}
           />
-        </Suspense>
+        </Loading>
       </div>
-      <Suspense>
+      <Loading>
         <SuburbPanel
-          overlay={overlay}
           onClose={() => {
             select(null)
           }}
           onToggleOverlay={toggleOverlay}
           onZoomToCouncil={(lga) => {
-            map.current?.zoomToCouncil(lga)
+            map?.zoomToCouncil(lga)
           }}
-          rows={rows}
-          signedIn={signedIn}
-          suburb={selected}
+          overlay={overlay()}
+          rows={props.rows}
+          signedIn={props.signedIn}
+          suburb={selected()}
         />
-      </Suspense>
+      </Loading>
     </>
   )
 }
@@ -348,23 +369,24 @@ interface ModeSwitchProps {
   onSwitch: (mode: MapMode) => void
 }
 
-function ModeSwitch({ mode, onSwitch }: ModeSwitchProps) {
+function ModeSwitch(props: ModeSwitchProps) {
   return (
-    <fieldset className="flex gap-1 rounded-lg border bg-background p-0.5 shadow-sm">
-      <legend className="sr-only">Map mode</legend>
-      {MAP_MODES.map((m) => (
-        <Button
-          aria-pressed={m === mode}
-          key={m}
-          onClick={() => {
-            onSwitch(m)
-          }}
-          size="sm"
-          variant={m === mode ? "secondary" : "ghost"}
-        >
-          {MODE_LABELS[m]}
-        </Button>
-      ))}
+    <fieldset class="flex gap-1 rounded-lg border bg-background p-0.5 shadow-sm">
+      <legend class="sr-only">Map mode</legend>
+      <For each={MAP_MODES}>
+        {(m) => (
+          <Button
+            aria-pressed={m === props.mode ? "true" : "false"}
+            onClick={() => {
+              props.onSwitch(m)
+            }}
+            size="sm"
+            variant={m === props.mode ? "secondary" : "ghost"}
+          >
+            {MODE_LABELS[m]}
+          </Button>
+        )}
+      </For>
     </fieldset>
   )
 }
@@ -372,32 +394,33 @@ function ModeSwitch({ mode, onSwitch }: ModeSwitchProps) {
 interface AccountProps {
   signedIn: boolean
   // Shown beside Sign out, e.g. the progress counter.
-  children?: ReactNode
+  children?: JSX.Element
 }
 
-function Account({ signedIn, children }: AccountProps) {
-  if (!signedIn) {
-    return (
-      <Link className={buttonVariants()} to="/login">
-        Sign in
-      </Link>
-    )
-  }
-
+function Account(props: AccountProps) {
   return (
-    <div className="flex items-center gap-2 text-sm">
-      {children}
-      <Button
-        onClick={async () => {
-          await authClient.signOut()
-          // A full load wipes the query cache, so the next person on this
-          // browser can't see these visits, and nothing refetches into a 401.
-          window.location.assign("/")
-        }}
-        variant="outline"
-      >
-        Sign out
-      </Button>
-    </div>
+    <Show
+      fallback={
+        <Link class={buttonVariants()} to="/login">
+          Sign in
+        </Link>
+      }
+      when={props.signedIn}
+    >
+      <div class="flex items-center gap-2 text-sm">
+        {props.children}
+        <Button
+          onClick={async () => {
+            await signOut()
+            // A full load wipes the query cache, so the next person on this
+            // browser can't see these visits, and nothing refetches into a 401.
+            window.location.assign("/")
+          }}
+          variant="outline"
+        >
+          Sign out
+        </Button>
+      </div>
+    </Show>
   )
 }

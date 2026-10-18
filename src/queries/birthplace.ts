@@ -1,4 +1,4 @@
-import { queryOptions } from "@tanstack/react-query"
+import { queryOptions } from "@tanstack/solid-query"
 
 import { rasterise } from "@/lib/raster"
 
@@ -12,8 +12,8 @@ export const birthplaceQuery = queryOptions({
   queryFn: async ({ client }) => {
     const [{ birthplaceLayers }, facts, data] = await Promise.all([
       import("@/lib/birthplace"),
-      client.query(suburbFactsQuery),
-      client.query(suburbsTopoQuery),
+      client.fetchQuery(suburbFactsQuery),
+      client.fetchQuery(suburbsTopoQuery),
     ])
     const layers = birthplaceLayers(facts, data)
     const fills = await Promise.all(

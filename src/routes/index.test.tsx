@@ -6,23 +6,41 @@ import {
   screen,
   waitFor,
   within,
-} from "@testing-library/react"
+} from "@solidjs/testing-library"
 import userEvent from "@testing-library/user-event"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest"
 
-import { authClient } from "@/lib/auth-client"
+import { signOut as signOutRequest } from "@/lib/auth"
 import { signIn, signOut } from "@/test/auth"
 import { isFactsRequest, mockFetch } from "@/test/mock-fetch"
 import { renderRoute } from "@/test/utils"
 import type { UserSuburb } from "@/types/user-suburb"
 
-vi.mock("@/lib/auth-client", () => ({
-  authClient: {
-    useSession: vi.fn(),
-    signIn: { social: vi.fn() },
-    signOut: vi.fn(),
-  },
+vi.mock(import("@/lib/auth"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  signOut: vi.fn(),
 }))
+
+// base-ui-solid is transformed from source, which takes seconds cold, longer
+// than a findBy waits, so the lazy chunks load up front.
+const WARM_UP_TIMEOUT_MS = 30_000
+async function loadLazyChunks() {
+  await Promise.all([
+    import("@/components/suburb-panel"),
+    import("@/components/map/suburb-search"),
+    import("@/components/council-progress"),
+    import("@/components/birthplace-legend"),
+    import("@/components/nrl-legend"),
+  ])
+}
 
 function visitedRow(suburbId: string): UserSuburb {
   return {
@@ -39,6 +57,8 @@ function visitedFill() {
 }
 
 describe("map page", () => {
+  beforeAll(loadLazyChunks, WARM_UP_TIMEOUT_MS)
+
   beforeEach(() => {
     mockFetch()
     signOut()
@@ -71,7 +91,7 @@ describe("map page", () => {
       await screen.findByRole("button", { name: "Sign out" }),
     )
 
-    expect(authClient.signOut).toHaveBeenCalledWith()
+    expect(signOutRequest).toHaveBeenCalledWith()
     expect(assign).toHaveBeenCalledWith("/")
     assign.mockRestore()
   })
@@ -379,6 +399,8 @@ function factsRequests() {
 }
 
 describe("map page suburb facts", () => {
+  beforeAll(loadLazyChunks, WARM_UP_TIMEOUT_MS)
+
   // Idle callbacks are held here, so each test decides when the browser is idle.
   let idleCallbacks: (() => void)[] = []
 

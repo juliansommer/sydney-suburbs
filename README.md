@@ -14,7 +14,7 @@
 
 ## Tech Stack
 
-- **Frontend:** Vite, React, TypeScript, TanStack Router and Query, Tailwind CSS
+- **Frontend:** Vite, Solid, TypeScript, TanStack Router and Query, Tailwind CSS
 - **Map:** SVG drawn with d3-geo and d3-zoom from a TopoJSON file
 - **API:** Hono in a Vercel Function
 - **Auth:** Better Auth with Google and GitHub sign-in

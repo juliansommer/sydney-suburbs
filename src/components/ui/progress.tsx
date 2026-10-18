@@ -1,42 +1,9 @@
-import { Progress as ProgressPrimitive } from "@base-ui/react/progress"
+import type { JSX } from "@solidjs/web"
+import { Progress as ProgressPrimitive } from "base-ui-solid/progress"
 import { cva, type VariantProps } from "class-variance-authority"
+import { omit } from "solid-js"
 
 import { cn } from "@/lib/utils"
-
-function Progress({
-  className,
-  children,
-  value,
-  variant,
-  ...props
-}: ProgressPrimitive.Root.Props & ProgressIndicatorVariants) {
-  return (
-    <ProgressPrimitive.Root
-      value={value}
-      data-slot="progress"
-      className={cn("flex flex-wrap gap-3", className)}
-      {...props}
-    >
-      {children}
-      <ProgressTrack>
-        <ProgressIndicator variant={variant} />
-      </ProgressTrack>
-    </ProgressPrimitive.Root>
-  )
-}
-
-function ProgressTrack({ className, ...props }: ProgressPrimitive.Track.Props) {
-  return (
-    <ProgressPrimitive.Track
-      className={cn(
-        "relative flex h-1 w-full items-center overflow-x-hidden rounded-full bg-muted",
-        className,
-      )}
-      data-slot="progress-track"
-      {...props}
-    />
-  )
-}
 
 const progressIndicatorVariants = cva("h-full transition-all", {
   variants: {
@@ -50,49 +17,29 @@ const progressIndicatorVariants = cva("h-full transition-all", {
   },
 })
 
-type ProgressIndicatorVariants = VariantProps<typeof progressIndicatorVariants>
+type ProgressProps = Omit<ProgressPrimitive.Root.Props, "class"> &
+  VariantProps<typeof progressIndicatorVariants> & { class?: JSX.ClassValue }
 
-function ProgressIndicator({
-  className,
-  variant,
-  ...props
-}: ProgressPrimitive.Indicator.Props & ProgressIndicatorVariants) {
+function Progress(props: ProgressProps) {
+  const rest = omit(props, "class", "children", "variant")
   return (
-    <ProgressPrimitive.Indicator
-      data-slot="progress-indicator"
-      className={cn(progressIndicatorVariants({ variant }), className)}
-      {...props}
-    />
+    <ProgressPrimitive.Root
+      data-slot="progress"
+      class={cn("flex flex-wrap gap-3", props.class)}
+      {...rest}
+    >
+      {props.children}
+      <ProgressPrimitive.Track
+        class="relative flex h-1 w-full items-center overflow-x-hidden rounded-full bg-muted"
+        data-slot="progress-track"
+      >
+        <ProgressPrimitive.Indicator
+          data-slot="progress-indicator"
+          class={progressIndicatorVariants({ variant: props.variant })}
+        />
+      </ProgressPrimitive.Track>
+    </ProgressPrimitive.Root>
   )
 }
 
-function ProgressLabel({ className, ...props }: ProgressPrimitive.Label.Props) {
-  return (
-    <ProgressPrimitive.Label
-      className={cn("text-sm font-medium", className)}
-      data-slot="progress-label"
-      {...props}
-    />
-  )
-}
-
-function ProgressValue({ className, ...props }: ProgressPrimitive.Value.Props) {
-  return (
-    <ProgressPrimitive.Value
-      className={cn(
-        "ml-auto text-sm text-muted-foreground tabular-nums",
-        className,
-      )}
-      data-slot="progress-value"
-      {...props}
-    />
-  )
-}
-
-export {
-  Progress,
-  ProgressTrack,
-  ProgressIndicator,
-  ProgressLabel,
-  ProgressValue,
-}
+export { Progress }

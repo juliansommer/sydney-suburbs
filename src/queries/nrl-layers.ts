@@ -1,4 +1,4 @@
-import { queryOptions } from "@tanstack/react-query"
+import { queryOptions } from "@tanstack/solid-query"
 
 import { suburbsTopoQuery } from "./suburbs-topo"
 
@@ -9,7 +9,7 @@ export const nrlLayersQuery = queryOptions({
   queryFn: async ({ client }) => {
     const [{ nrlLayers }, data] = await Promise.all([
       import("@/lib/nrl"),
-      client.query(suburbsTopoQuery),
+      client.fetchQuery(suburbsTopoQuery),
     ])
     return nrlLayers(data)
   },

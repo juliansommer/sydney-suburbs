@@ -4,6 +4,7 @@ import { applyPatch } from "@/mutations/use-update-suburb"
 import type { SuburbFactsFile } from "@/types/suburb-facts"
 import type { UserSuburb, UserSuburbPatch } from "@/types/user-suburb"
 
+import { currentSession } from "./auth"
 import { suburbFacts, suburbsTopology } from "./fixtures"
 
 interface MockFetchOptions {
@@ -22,7 +23,7 @@ export function isFactsRequest(input: string) {
   return input.endsWith("suburb-facts.json")
 }
 
-// Stubs `fetch` with the map file, the facts file and a stateful
+// Stubs `fetch` with the map file, the facts file, the session and a stateful
 // /api/me/suburbs. Returns the PATCHes it has seen as [path, body] pairs.
 export function mockFetch({
   suburbs = [],
@@ -43,6 +44,9 @@ export function mockFetch({
       return facts instanceof Response || facts instanceof Promise
         ? await facts
         : Response.json(facts)
+    }
+    if (pathname === "/api/auth/get-session") {
+      return Response.json(currentSession())
     }
     if (pathname === "/api/me/suburbs" && request.method === "GET") {
       return Response.json(rows)

@@ -1,4 +1,5 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { MutationObserver, useQueryClient } from "@tanstack/solid-query"
+import { createSignal, onCleanup } from "solid-js"
 import { z } from "zod/mini"
 
 import { apiFetch } from "@/lib/api"
@@ -36,7 +37,10 @@ export function applyPatch(
 // order, so a notes save can't overtake the toggle before it.
 export function useUpdateSuburb(suburbId: string) {
   const queryClient = useQueryClient()
-  return useMutation({
+  // Solid Query's useMutation runs as a transition, which would hold the
+  // optimistic change back until the save finishes, so this observes the
+  // mutation directly.
+  const observer = new MutationObserver(queryClient, {
     mutationKey: [...mySuburbsKey, suburbId],
     scope: { id: `me/suburbs/${suburbId}` },
     mutationFn: async (patch: UserSuburbPatch) =>
@@ -74,4 +78,25 @@ export function useUpdateSuburb(suburbId: string) {
       }
     },
   })
+  const [result, setResult] = createSignal(observer.getCurrentResult())
+  onCleanup(observer.subscribe(setResult))
+
+  return {
+    mutate: async (patch: UserSuburbPatch) => {
+      try {
+        await observer.mutate(patch)
+      } catch {
+        // Failures land in isError, and onError rolls back.
+      }
+    },
+    get isPending() {
+      return result().isPending
+    },
+    get isSuccess() {
+      return result().isSuccess
+    },
+    get isError() {
+      return result().isError
+    },
+  }
 }

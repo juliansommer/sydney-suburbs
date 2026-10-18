@@ -1,14 +1,15 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { render, screen, waitFor } from "@solidjs/testing-library"
+import { QueryClientProvider } from "@tanstack/solid-query"
 import {
   createMemoryHistory,
   createRootRoute,
   createRouter,
   RouterProvider,
-} from "@tanstack/react-router"
-import { act, render, screen, waitFor } from "@testing-library/react"
+} from "@tanstack/solid-router"
 import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import { createQueryClient } from "@/lib/query-client"
 import type { Overlay } from "@/lib/stats"
 import { mockFetch } from "@/test/mock-fetch"
 
@@ -33,9 +34,7 @@ async function renderPanel({
   overlay,
   onToggleOverlay = () => {},
 }: RenderPanelOptions = {}) {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
-  })
+  const queryClient = createQueryClient({ retry: false })
   queryClient.setQueryData(["me", "suburbs"], [])
   const router = createRouter({
     routeTree: createRootRoute({
@@ -53,14 +52,12 @@ async function renderPanel({
     }),
     history: createMemoryHistory(),
   })
-  const result = render(
+  const result = render(() => (
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
-    </QueryClientProvider>,
-  )
-  await act(async () => {
-    await router.load()
-  })
+    </QueryClientProvider>
+  ))
+  await router.load()
   return result
 }
 
@@ -82,9 +79,7 @@ describe("SuburbPanel notes", () => {
     expect(patches).toStrictEqual([])
     expect(screen.getByText("Saving…")).toBeInTheDocument()
 
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(600)
-    })
+    await vi.advanceTimersByTimeAsync(600)
 
     expect(patches).toStrictEqual([
       ["/api/me/suburbs/1", { notes: "Good pies" }],
