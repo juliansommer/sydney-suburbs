@@ -1,15 +1,21 @@
 import bangladeshFlag from "flag-icons/flags/4x3/bd.svg"
 import chinaFlag from "flag-icons/flags/4x3/cn.svg"
+import fijiFlag from "flag-icons/flags/4x3/fj.svg"
 import englandFlag from "flag-icons/flags/4x3/gb-eng.svg"
 import greeceFlag from "flag-icons/flags/4x3/gr.svg"
+import indonesiaFlag from "flag-icons/flags/4x3/id.svg"
 import indiaFlag from "flag-icons/flags/4x3/in.svg"
 import iraqFlag from "flag-icons/flags/4x3/iq.svg"
 import italyFlag from "flag-icons/flags/4x3/it.svg"
+import southKoreaFlag from "flag-icons/flags/4x3/kr.svg"
 import lebanonFlag from "flag-icons/flags/4x3/lb.svg"
+import northMacedoniaFlag from "flag-icons/flags/4x3/mk.svg"
 import maltaFlag from "flag-icons/flags/4x3/mt.svg"
+import nepalFlag from "flag-icons/flags/4x3/np.svg"
 import newZealandFlag from "flag-icons/flags/4x3/nz.svg"
 import philippinesFlag from "flag-icons/flags/4x3/ph.svg"
 import vietnamFlag from "flag-icons/flags/4x3/vn.svg"
+import southAfricaFlag from "flag-icons/flags/4x3/za.svg"
 
 export interface CountryColour {
   key: string
@@ -25,7 +31,7 @@ export interface Country {
   flag: string
 }
 
-// The countries that top enough suburbs to get a flag, most suburbs first.
+// Every country that tops at least one suburb, most suburbs first.
 export const COUNTRIES: readonly Country[] = [
   {
     key: "england",
@@ -86,6 +92,36 @@ export const COUNTRIES: readonly Country[] = [
     key: "malta",
     label: "Malta",
     flag: maltaFlag,
+  },
+  {
+    key: "nepal",
+    label: "Nepal",
+    flag: nepalFlag,
+  },
+  {
+    key: "fiji",
+    label: "Fiji",
+    flag: fijiFlag,
+  },
+  {
+    key: "south-africa",
+    label: "South Africa",
+    flag: southAfricaFlag,
+  },
+  {
+    key: "south-korea",
+    label: "South Korea",
+    flag: southKoreaFlag,
+  },
+  {
+    key: "north-macedonia",
+    label: "North Macedonia",
+    flag: northMacedoniaFlag,
+  },
+  {
+    key: "indonesia",
+    label: "Indonesia",
+    flag: indonesiaFlag,
   },
 ]
 export const OTHER_COUNTRY: CountryColour = {

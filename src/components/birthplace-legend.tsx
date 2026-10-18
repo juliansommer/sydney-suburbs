@@ -4,7 +4,6 @@ import {
   COUNTRIES,
   type CountryColour,
   NO_BIRTHPLACE,
-  OTHER_COUNTRY,
 } from "@/data/birthplace-countries"
 import { cn } from "@/lib/utils"
 
@@ -31,7 +30,6 @@ export function BirthplaceLegend() {
             </li>
           )}
         </For>
-        <SwatchItem colour={OTHER_COUNTRY} />
         <SwatchItem colour={NO_BIRTHPLACE} />
       </ul>
       <p class="text-xs text-muted-foreground">
