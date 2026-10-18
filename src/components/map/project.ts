@@ -1,4 +1,10 @@
-import { type GeoProjection, geoMercator, geoPath } from "d3-geo"
+import {
+  type GeoPermissibleObjects,
+  type GeoProjection,
+  geoMercator,
+  geoPath,
+  geoTransform,
+} from "d3-geo"
 
 import type { Bounds } from "@/lib/zoom"
 import type { MapLayers } from "@/types/map-layers"
@@ -62,6 +68,39 @@ export interface ProjectedLayers {
   markers: ProjectedMarker[]
 }
 
+// d3's default scale, which fitting multiplies up from.
+const BASE_SCALE = 150
+
+// Runs points straight through the projection maths. The map never crosses
+// the antimeridian and its edges are too short to curve, so d3's clipping and
+// resampling change nothing and only cost time. The paths come out identical.
+function planarPath(projection: GeoProjection) {
+  return geoPath(
+    geoTransform({
+      point(lon: number, lat: number) {
+        const point = projection([lon, lat])
+        if (point) {
+          this.stream.point(point[0], point[1])
+        }
+      },
+    }),
+  )
+}
+
+// The same maths as d3's fitSize, measured with the planar path.
+function fitMercator(
+  object: GeoPermissibleObjects,
+  width: number,
+  height: number,
+): GeoProjection {
+  const projection = geoMercator().scale(BASE_SCALE).translate([0, 0])
+  const [[x0, y0], [x1, y1]] = planarPath(projection).bounds(object)
+  const k = Math.min(width / (x1 - x0), height / (y1 - y0))
+  return projection
+    .scale(BASE_SCALE * k)
+    .translate([(width - k * (x1 + x0)) / 2, (height - k * (y1 + y0)) / 2])
+}
+
 // Fits the suburbs to the viewport and projects the base map to SVG path
 // strings, bounding box sizes and label positions, all in unzoomed pixels.
 export function projectBase(
@@ -69,11 +108,12 @@ export function projectBase(
   width: number,
   height: number,
 ): ProjectedBase {
-  const projection = geoMercator().fitSize([width, height], {
-    type: "FeatureCollection",
-    features: suburbs,
-  })
-  const path = geoPath(projection)
+  const projection = fitMercator(
+    { type: "FeatureCollection", features: suburbs },
+    width,
+    height,
+  )
+  const path = planarPath(projection)
   const projectedSuburbs = suburbs.map((s) => {
     const bounds = path.bounds(s)
     const [[x0, y0], [x1, y1]] = bounds
@@ -110,7 +150,7 @@ export function projectLayers(
   { fills, outlines, markers }: MapLayers,
   { suburbs, projection }: ProjectedBase,
 ): ProjectedLayers {
-  const path = geoPath(projection)
+  const path = planarPath(projection)
   return {
     fills: fills.map((f) => {
       const parts = suburbs
