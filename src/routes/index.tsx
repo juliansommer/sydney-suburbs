@@ -10,11 +10,10 @@ import {
 } from "react"
 import { z } from "zod/mini"
 
-import { CouncilProgressButton } from "@/components/council-progress"
 import { GitHubLogo } from "@/components/github-logo"
 import { HeatmapLegend } from "@/components/heatmap-legend"
+import { SearchPlaceholder } from "@/components/map/search-placeholder"
 import { SuburbMap, type SuburbMapHandle } from "@/components/map/suburb-map"
-import { SuburbSearch } from "@/components/map/suburb-search"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { useShortcut } from "@/hooks/use-shortcut"
 import { authClient } from "@/lib/auth-client"
@@ -39,6 +38,19 @@ import type { UserSuburb } from "@/types/user-suburb"
 // chunk once the map renders.
 const SuburbPanel = lazy(async () => {
   const { SuburbPanel: component } = await import("@/components/suburb-panel")
+  return { default: component }
+})
+
+// The search box's combobox and the signed-in progress popover are most of
+// the map chunk, so they load after it rather than delaying the first draw.
+const SuburbSearch = lazy(async () => {
+  const { SuburbSearch: component } =
+    await import("@/components/map/suburb-search")
+  return { default: component }
+})
+const CouncilProgressButton = lazy(async () => {
+  const { CouncilProgressButton: component } =
+    await import("@/components/council-progress")
   return { default: component }
 })
 
@@ -140,15 +152,17 @@ function MapPage() {
         </a>
         {isPending ? null : (
           <Account signedIn={!!session}>
-            {rows && data && mode === undefined ? (
-              <CouncilProgressButton
-                onZoom={(lga) => {
-                  map.current?.zoomToCouncil(lga)
-                }}
-                suburbs={suburbs}
-                visitedIds={visitedIds}
-              />
-            ) : null}
+            <Suspense>
+              {rows && data && mode === undefined ? (
+                <CouncilProgressButton
+                  onZoom={(lga) => {
+                    map.current?.zoomToCouncil(lga)
+                  }}
+                  suburbs={suburbs}
+                  visitedIds={visitedIds}
+                />
+              ) : null}
+            </Suspense>
           </Account>
         )}
       </header>
@@ -299,14 +313,16 @@ function MapView({
         <ModeSwitch mode={mode} onSwitch={switchMode} />
       </div>
       <div className="absolute inset-x-4 top-14 md:right-auto md:w-72">
-        <SuburbSearch
-          onPick={(id) => {
-            select(id)
-            map.current?.zoomTo(id)
-          }}
-          suburbs={suburbs}
-          visitedIds={visitedIds}
-        />
+        <Suspense fallback={<SearchPlaceholder />}>
+          <SuburbSearch
+            onPick={(id) => {
+              select(id)
+              map.current?.zoomTo(id)
+            }}
+            suburbs={suburbs}
+            visitedIds={visitedIds}
+          />
+        </Suspense>
       </div>
       <Suspense>
         <SuburbPanel
