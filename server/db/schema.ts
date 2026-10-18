@@ -92,9 +92,10 @@ export const userSuburbs = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
+    // Cascades so a seed that drops a suburb from the map can delete it.
     suburbId: text("suburb_id")
       .notNull()
-      .references(() => suburbs.id),
+      .references(() => suburbs.id, { onDelete: "cascade" }),
     visited: boolean("visited").notNull().default(false),
     // YYYY-MM-DD, user-entered.
     visitedOn: text("visited_on"),

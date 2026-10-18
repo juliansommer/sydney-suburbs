@@ -15,6 +15,13 @@
       "when": 1792294767929,
       "tag": "0001_seed_suburbs",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792309325073,
+      "tag": "0002_cascade_suburb_deletes",
+      "breakpoints": true
     }
   ]
 }
