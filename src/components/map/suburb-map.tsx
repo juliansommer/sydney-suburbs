@@ -12,6 +12,7 @@ import {
   type Accessor,
   createEffect,
   createMemo,
+  createProjection,
   createSignal,
   createUniqueId,
   For,
@@ -220,16 +221,17 @@ function ZoomableMap(props: ZoomableMapProps) {
               {(l) => <path class={LANDUSE_FILL[l.kind]} d={l.d} />}
             </For>
             {/* Over the parks and water, so a filled suburb is filled edge to edge. */}
-            <For each={layers().fills.filter((f) => f.d)}>
-              {(f) => <FillPath fill={f} />}
+            {/* Keyed by layer, so a re-projection updates paths in place. */}
+            <For each={layers().fills.filter((f) => f.d)} keyed={(f) => f.key}>
+              {(f) => <FillPath fill={f()} />}
             </For>
             <SuburbPaths
               onSelect={pick}
               selectedId={props.selectedId}
               suburbs={props.projected.suburbs}
             />
-            <For each={layers().outlines}>
-              {(o) => <Outline d={o.d} strokeWidth={1.5} />}
+            <For each={layers().outlines} keyed={(o) => o.key}>
+              {(o) => <Outline d={o().d} strokeWidth={1.5} />}
             </For>
             <Outline
               d={
@@ -364,24 +366,37 @@ interface SuburbPathsProps {
 // Hover is an outline rather than a fill so it still reads on visited green.
 // Clicks reach the SVG's handler through `data-suburb-id`.
 function SuburbPaths(props: SuburbPathsProps) {
+  // Only the old and new selection's paths update, not all of them.
+  let previous: string | null = null
+  const pressed = createProjection<Record<string, boolean>>((draft) => {
+    if (previous !== null) {
+      draft[previous] = false
+    }
+    previous = props.selectedId
+    if (previous !== null) {
+      draft[previous] = true
+    }
+  }, {})
+
   return (
     <g
       class="fill-transparent stroke-map-border"
       stroke-linejoin="round"
       stroke-width={0.75}
     >
-      <For each={props.suburbs}>
+      {/* Keyed by id, so a re-projection updates `d` rather than remounting. */}
+      <For each={props.suburbs} keyed={(s) => s.id}>
         {(s) => (
           <path
-            aria-label={s.name}
-            aria-pressed={s.id === props.selectedId ? "true" : "false"}
+            aria-label={s().name}
+            aria-pressed={pressed[s().id] ? "true" : "false"}
             class="cursor-pointer outline-none hover:stroke-map-label hover:stroke-2 focus-visible:stroke-ring focus-visible:stroke-2"
-            d={s.d}
-            data-suburb-id={s.id}
+            d={s().d}
+            data-suburb-id={s().id}
             onKeyDown={(event) => {
               if (event.key === "Enter" || event.key === " ") {
                 event.preventDefault()
-                props.onSelect(s.id)
+                props.onSelect(s().id)
               }
             }}
             // A <button> can't live inside an SVG, so the path takes its role.

@@ -6,6 +6,8 @@ import { z } from "zod/mini"
 const session = z.nullable(z.object({ user: z.object({ email: z.string() }) }))
 const redirect = z.object({ url: z.string() })
 
+const SESSION_STALE_MS = 5 * 60 * 1000
+
 export type Session = z.infer<typeof session>
 
 async function post(
@@ -32,6 +34,10 @@ export const sessionQuery = queryOptions({
     }
     return session.parse(await res.json())
   },
+  // Failing fast shows Sign in rather than holding the header back through
+  // retries, and the session rarely changes under a tab.
+  retry: false,
+  staleTime: SESSION_STALE_MS,
 })
 
 // Leaves for the provider's sign-in page, which comes back to `callbackURL`.

@@ -96,6 +96,23 @@ describe("map page", () => {
     assign.mockRestore()
   })
 
+  it("reloads even when signing out fails", async () => {
+    signIn()
+    vi.mocked(signOutRequest).mockRejectedValueOnce(new Error("500"))
+    const assign = vi.spyOn(window.location, "assign").mockReturnValue()
+
+    await renderRoute("/")
+
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Sign out" }),
+    )
+
+    await waitFor(() => {
+      expect(assign).toHaveBeenCalledWith("/")
+    })
+    assign.mockRestore()
+  })
+
   it("counts visited suburbs in the header", async () => {
     signIn()
     mockFetch({ suburbs: [visitedRow("1"), visitedRow("2")] })

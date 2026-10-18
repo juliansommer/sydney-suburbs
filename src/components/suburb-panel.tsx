@@ -246,9 +246,7 @@ function CloseButton(props: CloseButtonProps) {
   return (
     <Button
       aria-label="Close"
-      onClick={() => {
-        props.onClose()
-      }}
+      onClick={props.onClose}
       size="icon-sm"
       variant="ghost"
     >
@@ -266,7 +264,9 @@ interface PanelBodyProps {
 // Keyed on the suburb, so the form and its unsaved notes start fresh for each.
 function PanelBody(props: PanelBodyProps) {
   return (
-    <Switch>
+    <Switch
+      fallback={<p class="text-sm text-muted-foreground">Loading&hellip;</p>}
+    >
       <Match when={!props.signedIn}>
         <Link
           class={buttonVariants({ variant: "outline" })}
@@ -284,9 +284,6 @@ function PanelBody(props: PanelBodyProps) {
             )}
           </Show>
         )}
-      </Match>
-      <Match when={!props.rows}>
-        <p class="text-sm text-muted-foreground">Loading&hellip;</p>
       </Match>
     </Switch>
   )

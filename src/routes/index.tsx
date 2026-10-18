@@ -101,6 +101,15 @@ export const Route = createFileRoute("/")({
 
 type Rows = ReadonlyMap<string, UserSuburb>
 
+// Filled in by the map once it's drawn, for the header and panel to zoom it.
+interface MapHandleRef {
+  current?: SuburbMapHandle
+}
+
+function sameIds(a: ReadonlySet<string>, b: ReadonlySet<string>): boolean {
+  return a.size === b.size && [...a].every((id) => b.has(id))
+}
+
 function MapPage() {
   const search = Route.useSearch()
   const topo = useQuery(() => suburbsTopoQuery)
@@ -113,7 +122,7 @@ function MapPage() {
   // Checked first, as reading data before it's there would suspend.
   const data = () => (topo.isSuccess ? topo.data : undefined)
   const rows = () => (rowsQuery.isSuccess ? rowsQuery.data : undefined)
-  let map: SuburbMapHandle | undefined
+  const map: MapHandleRef = {}
   const suburbs = createMemo(
     () => data()?.suburbs.map((s) => s.properties) ?? [],
   )
@@ -124,6 +133,8 @@ function MapPage() {
           .filter((row) => row.visited)
           .map((row) => row.suburbId),
       ),
+    // A notes save changes the rows but not what's visited.
+    { equals: sameIds },
   )
 
   return (
@@ -137,9 +148,7 @@ function MapPage() {
         {(loaded) => (
           <MapView
             data={loaded()}
-            mapRef={(handle) => {
-              map = handle
-            }}
+            map={map}
             rows={rows()}
             signedIn={signedIn()}
             suburbs={suburbs()}
@@ -166,7 +175,7 @@ function MapPage() {
               <Show when={rows() && data() && search().mode === undefined}>
                 <CouncilProgressButton
                   onZoom={(lga) => {
-                    map?.zoomToCouncil(lga)
+                    map.current?.zoomToCouncil(lga)
                   }}
                   suburbs={suburbs()}
                   visitedIds={visitedIds()}
@@ -182,7 +191,7 @@ function MapPage() {
 
 interface MapViewProps {
   data: SuburbMapData
-  mapRef: (handle: SuburbMapHandle) => void
+  map: MapHandleRef
   suburbs: SuburbProperties[]
   visitedIds: ReadonlySet<string>
   signedIn: boolean
@@ -194,7 +203,6 @@ function MapView(props: MapViewProps) {
   const navigate = Route.useNavigate()
   const mode = (): MapMode => search().mode ?? "visited"
   const stat = (): HeatmapStat => search().stat ?? DEFAULT_HEATMAP_STAT
-  let map: SuburbMapHandle | undefined
 
   const nrlQuery = useQuery(() => ({
     ...nrlLayersQuery,
@@ -210,9 +218,19 @@ function MapView(props: MapViewProps) {
   }))
   const heatmapData = () => (heatmap.isSuccess ? heatmap.data : undefined)
 
-  // Functions, so only the current mode's query is read.
-  const layersByMode: Record<MapMode, () => MapLayers> = {
-    visited: () => ({
+  // Only the current mode's query is read.
+  const layers = createMemo((): MapLayers => {
+    const current = mode()
+    if (current === "nrl") {
+      return nrlQuery.isSuccess ? nrlQuery.data : NO_LAYERS
+    }
+    if (current === "heatmap") {
+      return heatmapData()?.layers ?? NO_LAYERS
+    }
+    if (current === "birthplace") {
+      return birthplace.isSuccess ? birthplace.data : NO_LAYERS
+    }
+    return {
       fills: [
         {
           key: "visited",
@@ -222,19 +240,14 @@ function MapView(props: MapViewProps) {
       ],
       outlines: [],
       markers: [],
-    }),
-    nrl: () => (nrlQuery.isSuccess ? nrlQuery.data : NO_LAYERS),
-    heatmap: () => heatmapData()?.layers ?? NO_LAYERS,
-    birthplace: () => (birthplace.isSuccess ? birthplace.data : NO_LAYERS),
+    }
+  })
+  const overlay = (): Overlay | undefined => {
+    if (mode() === "heatmap") {
+      return stat()
+    }
+    return mode() === "birthplace" ? "birthplace" : undefined
   }
-  const layers = () => layersByMode[mode()]()
-  const overlayByMode: Record<MapMode, () => Overlay | undefined> = {
-    visited: () => undefined,
-    nrl: () => undefined,
-    heatmap: stat,
-    birthplace: () => "birthplace",
-  }
-  const overlay = () => overlayByMode[mode()]()
 
   const byId = createMemo(() => new Map(props.suburbs.map((s) => [s.id, s])))
   // An id the map doesn't draw is no selection at all.
@@ -308,8 +321,7 @@ function MapView(props: MapViewProps) {
         layers={layers()}
         onSelect={select}
         ref={(handle) => {
-          map = handle
-          props.mapRef(handle)
+          props.map.current = handle
         }}
         selectedId={selected()?.id ?? null}
       />
@@ -338,7 +350,7 @@ function MapView(props: MapViewProps) {
           <SuburbSearch
             onPick={(id) => {
               select(id)
-              map?.zoomTo(id)
+              props.map.current?.zoomTo(id)
             }}
             suburbs={props.suburbs}
             visitedIds={props.visitedIds}
@@ -352,7 +364,7 @@ function MapView(props: MapViewProps) {
           }}
           onToggleOverlay={toggleOverlay}
           onZoomToCouncil={(lga) => {
-            map?.zoomToCouncil(lga)
+            props.map.current?.zoomToCouncil(lga)
           }}
           overlay={overlay()}
           rows={props.rows}
@@ -411,7 +423,11 @@ function Account(props: AccountProps) {
         {props.children}
         <Button
           onClick={async () => {
-            await signOut()
+            try {
+              await signOut()
+            } catch {
+              // Still reloads: a live session shows up again, signed in.
+            }
             // A full load wipes the query cache, so the next person on this
             // browser can't see these visits, and nothing refetches into a 401.
             window.location.assign("/")

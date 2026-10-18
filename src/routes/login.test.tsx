@@ -28,6 +28,19 @@ describe("login page", () => {
     expect(signInWith).toHaveBeenCalledWith("google", "/")
   })
 
+  it("says so when sign-in can't start", async () => {
+    vi.mocked(signInWith).mockRejectedValueOnce(new Error("500"))
+    await renderRoute("/login")
+
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Sign in with Google" }),
+    )
+
+    await expect(screen.findByRole("alert")).resolves.toHaveTextContent(
+      "Couldn’t start sign-in. Try again.",
+    )
+  })
+
   it("offers GitHub sign-in", async () => {
     await renderRoute("/login")
 

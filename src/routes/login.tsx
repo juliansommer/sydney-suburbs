@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute, Navigate } from "@tanstack/solid-router"
-import { Match, Switch } from "solid-js"
+import { createSignal, Match, Show, Switch } from "solid-js"
 import { z } from "zod/mini"
 
 import { GitHubLogo, GoogleLogo } from "@/components/logos"
@@ -27,6 +27,16 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const session = useQuery(() => sessionQuery)
   const redirect = Route.useSearch({ select: (s) => s.redirect ?? "/" })
+  const [failed, setFailed] = createSignal(false)
+
+  async function signIn(provider: "google" | "github") {
+    setFailed(false)
+    try {
+      await signInWith(provider, redirect())
+    } catch {
+      setFailed(true)
+    }
+  }
 
   return (
     <Switch>
@@ -43,7 +53,7 @@ function LoginPage() {
           <div class="flex flex-col gap-2">
             <Button
               onClick={async () => {
-                await signInWith("google", redirect())
+                await signIn("google")
               }}
               size="lg"
               variant="outline"
@@ -53,7 +63,7 @@ function LoginPage() {
             </Button>
             <Button
               onClick={async () => {
-                await signInWith("github", redirect())
+                await signIn("github")
               }}
               size="lg"
               variant="outline"
@@ -62,6 +72,11 @@ function LoginPage() {
               Sign in with GitHub
             </Button>
           </div>
+          <Show when={failed()}>
+            <p class="text-sm text-destructive" role="alert">
+              Couldn&rsquo;t start sign-in. Try again.
+            </p>
+          </Show>
         </main>
       </Match>
     </Switch>

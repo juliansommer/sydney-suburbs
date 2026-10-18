@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/solid-query"
 import { Collapsible } from "base-ui-solid/collapsible"
-import { type Accessor, For, Match, Show, Switch } from "solid-js"
+import { type Accessor, createMemo, For, Match, Show, Switch } from "solid-js"
 
 import { ChevronRightIcon, InfoIcon } from "@/components/icons"
 import {
@@ -34,13 +34,13 @@ export function useSuburbFacts(
     ...suburbFactsQuery,
     enabled: suburbId() !== undefined,
   }))
-  return () => {
+  return createMemo((): FactsState => {
     const id = suburbId()
     if (query.isSuccess && id !== undefined) {
       return { status: "success", facts: query.data[id] }
     }
     return query.isError ? { status: "error" } : { status: "pending" }
-  }
+  })
 }
 
 function factsOf(state: FactsState): SuburbFacts | undefined {

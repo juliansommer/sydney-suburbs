@@ -1,5 +1,5 @@
 import type { ZoomTransform } from "d3-zoom"
-import { For } from "solid-js"
+import { createMemo, For } from "solid-js"
 
 import { labelVisible, placeLabels, type Rect } from "@/lib/labels"
 
@@ -21,7 +21,7 @@ interface SuburbLabelsProps {
 // and stays sharp. Labels off screen are skipped, and overlapping ones give
 // way to higher priority neighbours.
 export function SuburbLabels(props: SuburbLabelsProps) {
-  const placed = () => {
+  const placed = createMemo(() => {
     const { transform, width, height } = props
     const candidates = props.suburbs.flatMap((s) => {
       if (!s.label || !labelVisible(s, transform.k, FONT_SIZE)) {
@@ -32,7 +32,7 @@ export function SuburbLabels(props: SuburbLabelsProps) {
       return offScreen ? [] : [{ ...s, x, y }]
     })
     return placeLabels(candidates, FONT_SIZE, props.obstacles)
-  }
+  })
 
   return (
     <g
