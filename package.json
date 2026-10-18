@@ -20,6 +20,7 @@
     "@fontsource-variable/geist": "^5.3.0",
     "@hono/vercel": "^1.0.1",
     "@hono/zod-validator": "^0.9.1",
+    "@lucide/solid": "^1.57.0",
     "@neondatabase/serverless": "^1.2.0",
     "@solidjs/web": "2.0.0-rc.15",
     "@tanstack/solid-query": "6.0.0-rc.5",

@@ -1,6 +1,6 @@
+import SearchIcon from "@lucide/solid/icons/search"
 import { createMemo, createSignal, Show } from "solid-js"
 
-import { SearchIcon } from "@/components/icons"
 import {
   Combobox,
   ComboboxContent,

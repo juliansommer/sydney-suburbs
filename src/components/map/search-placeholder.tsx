@@ -1,4 +1,5 @@
-import { SearchIcon } from "@/components/icons"
+import SearchIcon from "@lucide/solid/icons/search"
+
 import {
   InputGroup,
   InputGroupAddon,

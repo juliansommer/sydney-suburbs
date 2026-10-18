@@ -1,8 +1,8 @@
+import CheckIcon from "@lucide/solid/icons/check"
 import type { JSX } from "@solidjs/web"
 import { Combobox as ComboboxPrimitive } from "base-ui-solid/combobox"
 import { omit } from "solid-js"
 
-import { CheckIcon } from "@/components/icons"
 import {
   InputGroup,
   InputGroupAddon,

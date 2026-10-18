@@ -1,3 +1,4 @@
+import XIcon from "@lucide/solid/icons/x"
 import { Link } from "@tanstack/solid-router"
 import { Drawer, type DrawerRoot } from "base-ui-solid/drawer"
 import {
@@ -11,7 +12,6 @@ import {
   untrack,
 } from "solid-js"
 
-import { XIcon } from "@/components/icons"
 import {
   FactsRow,
   MoreDetails,

@@ -1,8 +1,9 @@
+import ChevronRightIcon from "@lucide/solid/icons/chevron-right"
+import InfoIcon from "@lucide/solid/icons/info"
 import { useQuery } from "@tanstack/solid-query"
 import { Collapsible } from "base-ui-solid/collapsible"
 import { type Accessor, createMemo, For, Match, Show, Switch } from "solid-js"
 
-import { ChevronRightIcon, InfoIcon } from "@/components/icons"
 import {
   Popover,
   PopoverContent,

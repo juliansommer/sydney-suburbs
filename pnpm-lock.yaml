@@ -175,6 +175,9 @@ importers:
       '@hono/zod-validator':
         specifier: ^0.9.1
         version: 0.9.1(hono@4.13.13)(zod@4.6.5)
+      '@lucide/solid':
+        specifier: ^1.57.0
+        version: 1.57.0(solid-js@2.0.0-rc.15)
       '@neondatabase/serverless':
         specifier: ^1.2.0
         version: 1.2.0
@@ -1422,6 +1425,11 @@ packages:
 
   '@keyv/serialize@1.1.1':
     resolution: {integrity: sha512-dXn3FZhPv0US+7dtJsIi2R+c7qWYiReoEh5zUntWCf4oSpMNib8FDhSoed6m3QyZdx5hK7iLFkYk3rNxwt8vTA==}
+
+  '@lucide/solid@1.57.0':
+    resolution: {integrity: sha512-1g2VnWuekj0cz/gcNZ5zz7XRYMB8IVRhV7h5jTs3PHZ4VLciqQqktGvXjMsmEAY+9WM7u/sziKBpwXQ1S4uejQ==}
+    peerDependencies:
+      solid-js: ^2.0.0-rc.0
 
   '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.4':
     resolution: {integrity: sha512-LCkGo6JDfaBhgST7UpPWgNgLINpcpabaHfyz5OBx75nUYxBsaEPxjnyNjWpeb/xBup/682QnBfRBy2/LvPutZQ==}
@@ -5866,6 +5874,10 @@ snapshots:
       keyv: 5.6.0
 
   '@keyv/serialize@1.1.1': {}
+
+  '@lucide/solid@1.57.0(solid-js@2.0.0-rc.15)':
+    dependencies:
+      solid-js: 2.0.0-rc.15
 
   '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.4':
     optional: true
