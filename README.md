@@ -5,7 +5,7 @@
 ![Birthplace Map of Sydney's Suburbs](.github/assets/screenshot3.png)
 ![NRL Map of Sydney's Suburbs](.github/assets/screenshot4.png)
 
-- Interactive map of Greater Sydney's 648 suburbs
+- Interactive map of Greater Sydney's 650 suburbs
 - Photo, summary and census stats for each suburb
 - Heatmaps for income, rent, crime, tree canopy and more
 - NRL club territories
