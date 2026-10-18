@@ -1,5 +1,7 @@
 import { queryOptions } from "@tanstack/react-query"
 
+import { rasterise } from "@/lib/raster"
+
 import { suburbFactsQuery } from "./suburb-facts"
 import { suburbsTopoQuery } from "./suburbs-topo"
 
@@ -13,7 +15,13 @@ export const birthplaceQuery = queryOptions({
       client.query(suburbFactsQuery),
       client.query(suburbsTopoQuery),
     ])
-    return birthplaceLayers(facts, data)
+    const layers = birthplaceLayers(facts, data)
+    const fills = await Promise.all(
+      layers.fills.map(async (f) =>
+        f.image ? { ...f, image: await rasterise(f.image) } : f,
+      ),
+    )
+    return { ...layers, fills }
   },
   staleTime: Infinity,
 })
