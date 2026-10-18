@@ -1,12 +1,11 @@
-import { query } from "@solidjs/router"
-
+import { once } from "@/lib/load"
 import { rasterise } from "@/lib/raster"
 
 import { getSuburbFacts } from "./suburb-facts"
 import { getSuburbsTopo } from "./suburbs-topo"
 
 // Loads in its own chunk once someone switches to the birthplace mode.
-export const getBirthplace = query(async () => {
+export const getBirthplace = once(async () => {
   const [{ birthplaceLayers }, facts, data] = await Promise.all([
     import("@/lib/birthplace"),
     getSuburbFacts(),
@@ -19,4 +18,4 @@ export const getBirthplace = query(async () => {
     ),
   )
   return { ...layers, fills }
-}, "birthplace")
+})

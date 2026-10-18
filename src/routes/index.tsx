@@ -296,7 +296,7 @@ function MapView(props: MapViewProps) {
       try {
         await getSuburbFacts()
       } catch {
-        // The query keeps the error, and the panel handles it.
+        // The panel tries again when it opens, and handles the error.
       }
     }),
   )
