@@ -21,7 +21,7 @@ import {
 import { signOut as signOutRequest } from "@/lib/auth"
 import { signIn, signOut } from "@/test/auth"
 import { isFactsRequest, mockFetch } from "@/test/mock-fetch"
-import { renderRoute } from "@/test/utils"
+import { renderRoute, WARM_UP_TIMEOUT_MS, warmUpMap } from "@/test/utils"
 import type { UserSuburb } from "@/types/user-suburb"
 
 vi.mock(import("@/lib/auth"), async (importOriginal) => ({
@@ -30,18 +30,17 @@ vi.mock(import("@/lib/auth"), async (importOriginal) => ({
 }))
 
 // base-ui-solid is transformed from source, which takes seconds cold, longer
-// than a findBy waits, so the lazy chunks load up front.
-const WARM_UP_TIMEOUT_MS = 30_000
-
+// than a findBy waits, so the page and its lazy chunks load up front.
 async function loadLazyChunks() {
   await Promise.all([
-    import("@/routes/index"),
     import("@/components/suburb-panel"),
+    import("@/components/suburb-sheet"),
     import("@/components/map/suburb-search"),
     import("@/components/council-progress"),
     import("@/components/birthplace-legend"),
     import("@/components/nrl-legend"),
   ])
+  await warmUpMap()
 }
 
 function visitedRow(suburbId: string): UserSuburb {

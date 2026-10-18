@@ -5,21 +5,16 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest"
 import { signInWith } from "@/lib/auth"
 import { signIn, signOut } from "@/test/auth"
 import { mockFetch } from "@/test/mock-fetch"
-import { renderRoute } from "@/test/utils"
+import { renderRoute, WARM_UP_TIMEOUT_MS, warmUpMap } from "@/test/utils"
 
 vi.mock(import("@/lib/auth"), async (importOriginal) => ({
   ...(await importOriginal()),
   signInWith: vi.fn(),
 }))
 
-// A redirect lands once the map page's chunk loads, which takes seconds cold,
-// longer than a waitFor waits, so it loads up front.
-const WARM_UP_TIMEOUT_MS = 30_000
-
 describe("login page", () => {
-  beforeAll(async () => {
-    await import("@/routes/index")
-  }, WARM_UP_TIMEOUT_MS)
+  // A redirect lands on the map page, which is slow to load cold.
+  beforeAll(warmUpMap, WARM_UP_TIMEOUT_MS)
 
   beforeEach(() => {
     mockFetch()
