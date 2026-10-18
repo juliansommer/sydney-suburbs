@@ -1,8 +1,15 @@
+import { useSearchParams } from "@solidjs/router"
 import type { JSX } from "@solidjs/web"
-import { useQuery, useQueryClient } from "@tanstack/solid-query"
-import { createFileRoute, Link } from "@tanstack/solid-router"
-import { createMemo, For, lazy, Loading, onSettled, Show } from "solid-js"
-import { z } from "zod/mini"
+import {
+  createEffect,
+  createMemo,
+  Errored,
+  For,
+  lazy,
+  Loading,
+  onSettled,
+  Show,
+} from "solid-js"
 
 import { HeatmapLegend } from "@/components/heatmap-legend"
 import { GitHubLogo } from "@/components/logos"
@@ -10,7 +17,8 @@ import { SearchPlaceholder } from "@/components/map/search-placeholder"
 import { SuburbMap, type SuburbMapHandle } from "@/components/map/suburb-map"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { useShortcut } from "@/hooks/use-shortcut"
-import { sessionQuery, signOut } from "@/lib/auth"
+import { getSession, signOut } from "@/lib/auth"
+import type { Heatmap } from "@/lib/heatmap"
 import { whenIdle } from "@/lib/idle"
 import {
   DEFAULT_HEATMAP_STAT,
@@ -18,12 +26,12 @@ import {
   type HeatmapStat,
   type Overlay,
 } from "@/lib/stats"
-import { birthplaceQuery } from "@/queries/birthplace"
-import { heatmapQuery } from "@/queries/heatmap"
-import { mySuburbsQuery } from "@/queries/my-suburbs"
-import { nrlLayersQuery } from "@/queries/nrl-layers"
-import { suburbFactsQuery } from "@/queries/suburb-facts"
-import { suburbsTopoQuery } from "@/queries/suburbs-topo"
+import { getBirthplace } from "@/queries/birthplace"
+import { getHeatmap } from "@/queries/heatmap"
+import { createMySuburbs, MySuburbsContext } from "@/queries/my-suburbs"
+import { getNrlLayers } from "@/queries/nrl-layers"
+import { getSuburbFacts } from "@/queries/suburb-facts"
+import { getSuburbsTopo } from "@/queries/suburbs-topo"
 import type { MapLayers } from "@/types/map-layers"
 import type { SuburbMapData, SuburbProperties } from "@/types/suburb"
 import type { UserSuburb } from "@/types/user-suburb"
@@ -59,16 +67,64 @@ const NrlLegend = lazy(async () => {
   return { default: component }
 })
 
-// Suburb ids are ABS SAL codes, all 5-digit numbers, so the URL carries a
-// number. A malformed one is just no selection.
-const suburbParam = z.int()
-
 const MAP_MODES = ["visited", "heatmap", "birthplace", "nrl"] as const
 type MapMode = (typeof MAP_MODES)[number]
-// Visited is the default, so it stays out of the URL.
-const modeParam = z.enum(MAP_MODES)
-// Only the heatmap mode has a stat, and the default one stays out of the URL.
-const statParam = z.enum(HEATMAP_STATS)
+
+type SearchValue = string | string[] | undefined
+
+// The URL is only read through these, so anything unknown in it is just the
+// default.
+function parseMode(value: SearchValue): MapMode {
+  return MAP_MODES.find((m) => m === value) ?? "visited"
+}
+
+function parseStat(value: SearchValue): HeatmapStat {
+  return HEATMAP_STATS.find((s) => s === value) ?? DEFAULT_HEATMAP_STAT
+}
+
+// Suburb ids are ABS SAL codes, all 5-digit numbers. A malformed one is just
+// no selection.
+function parseSuburbId(value: SearchValue): string | undefined {
+  const single = Array.isArray(value) ? undefined : value
+  return single !== undefined && /^\d+$/.test(single) ? single : undefined
+}
+
+// The map's search params. Visited is the default mode and only the heatmap
+// has a stat, so neither the default mode nor the default stat goes in the URL.
+function useMapSearch() {
+  const [search, setSearch] = useSearchParams()
+  const mode = () => parseMode(search.mode)
+  const stat = () => parseStat(search.stat)
+  const suburbId = () => parseSuburbId(search.suburb)
+
+  // Tidies the URL down to what's on the map.
+  createEffect(
+    () => {
+      const tidy = {
+        suburb: suburbId(),
+        mode: mode() === "visited" ? undefined : mode(),
+        stat:
+          mode() === "heatmap" && stat() !== DEFAULT_HEATMAP_STAT
+            ? stat()
+            : undefined,
+      }
+      const untidy =
+        search.suburb !== tidy.suburb ||
+        search.mode !== tidy.mode ||
+        search.stat !== tidy.stat
+      return untidy ? tidy : undefined
+    },
+    (tidy) => {
+      if (tidy) {
+        setSearch(tidy, { replace: true })
+      }
+    },
+  )
+
+  return { mode, stat, suburbId, setSearch }
+}
+
+type MapSearch = ReturnType<typeof useMapSearch>
 
 const MODE_LABELS: Record<MapMode, string> = {
   visited: "Visited",
@@ -78,28 +134,7 @@ const MODE_LABELS: Record<MapMode, string> = {
 }
 
 const NO_LAYERS: MapLayers = { fills: [], outlines: [], markers: [] }
-
-interface MapSearch {
-  suburb?: number
-  mode?: MapMode
-  stat?: HeatmapStat
-}
-
-export const Route = createFileRoute("/")({
-  validateSearch: (search): MapSearch => {
-    const mode = modeParam.safeParse(search.mode).data
-    const stat = statParam.safeParse(search.stat).data
-    return {
-      suburb: suburbParam.safeParse(search.suburb).data,
-      mode: mode === "visited" ? undefined : mode,
-      stat:
-        mode === "heatmap" && stat !== DEFAULT_HEATMAP_STAT ? stat : undefined,
-    }
-  },
-  component: MapPage,
-})
-
-type Rows = ReadonlyMap<string, UserSuburb>
+const NO_IDS: ReadonlySet<string> = new Set()
 
 // Filled in by the map once it's drawn, for the header and panel to zoom it.
 interface MapHandleRef {
@@ -110,125 +145,127 @@ function sameIds(a: ReadonlySet<string>, b: ReadonlySet<string>): boolean {
   return a.size === b.size && [...a].every((id) => b.has(id))
 }
 
-function MapPage() {
-  const search = Route.useSearch()
-  const topo = useQuery(() => suburbsTopoQuery)
-  const session = useQuery(() => sessionQuery)
-  const signedIn = () => session.isSuccess && !!session.data
-  const rowsQuery = useQuery(() => ({
-    ...mySuburbsQuery,
-    enabled: signedIn(),
-  }))
-  // Checked first, as reading data before it's there would suspend.
-  const data = () => (topo.isSuccess ? topo.data : undefined)
-  const rows = () => (rowsQuery.isSuccess ? rowsQuery.data : undefined)
+function visitedIdsOf(rows: readonly UserSuburb[]): ReadonlySet<string> {
+  return new Set(rows.filter((row) => row.visited).map((row) => row.suburbId))
+}
+
+// An overlay that can't load leaves the map plain instead of taking it down.
+async function unlessFailed<T>(work: Promise<T>): Promise<T | undefined> {
+  try {
+    return await work
+  } catch {
+    return undefined
+  }
+}
+
+export default function MapPage() {
+  const search = useMapSearch()
+  const session = createMemo(async () => await getSession())
+  const signedIn = () => !!session()
+  const mySuburbs = createMySuburbs(signedIn)
+  const [rows] = mySuburbs
+  const topo = createMemo(async () => await getSuburbsTopo())
   const map: MapHandleRef = {}
-  const suburbs = createMemo(
-    () => data()?.suburbs.map((s) => s.properties) ?? [],
-  )
-  const visitedIds = createMemo(
-    () =>
-      new Set(
-        [...(rows()?.values() ?? [])]
-          .filter((row) => row.visited)
-          .map((row) => row.suburbId),
-      ),
-    // A notes save changes the rows but not what's visited.
-    { equals: sameIds },
-  )
+  const suburbs = createMemo(() => topo().suburbs.map((s) => s.properties))
+  // Waits for the rows, for the counter. A notes save changes the rows but not
+  // what's visited.
+  const visitedIds = createMemo(() => visitedIdsOf(rows), { equals: sameIds })
+  // The map draws without waiting, and fills in visits once they load.
+  const mapVisitedIds = createMemo(() => visitedIds(), {
+    loadingValue: NO_IDS,
+  })
 
   return (
-    <main class="relative h-dvh overflow-hidden bg-map-water">
-      <Show when={topo.isError}>
-        <p class="grid h-full place-items-center text-muted-foreground">
-          The map couldn&rsquo;t load. Try refreshing.
-        </p>
-      </Show>
-      <Show when={data()}>
-        {(loaded) => (
-          <MapView
-            data={loaded()}
-            map={map}
-            rows={rows()}
-            signedIn={signedIn()}
-            suburbs={suburbs()}
-            visitedIds={visitedIds()}
-          />
-        )}
-      </Show>
-      <h1 class="pointer-events-none absolute top-4 left-4 text-lg font-semibold">
-        Sydney Suburbs
-      </h1>
-      <header class="absolute top-4 right-4 flex items-center gap-2">
-        <a
-          aria-label="Source on GitHub"
-          class={buttonVariants({ size: "icon", variant: "ghost" })}
-          href="https://github.com/juliansommer/sydney-suburbs"
-          rel="noreferrer"
-          target="_blank"
+    <MySuburbsContext value={mySuburbs}>
+      <main class="relative h-dvh overflow-hidden bg-map-water">
+        <Errored
+          fallback={
+            <p class="grid h-full place-items-center text-muted-foreground">
+              The map couldn&rsquo;t load. Try refreshing.
+            </p>
+          }
         >
-          <GitHubLogo />
-        </a>
-        <Show when={!session.isPending}>
-          <Account signedIn={signedIn()}>
-            <Loading>
-              <Show when={rows() && data() && search().mode === undefined}>
-                <CouncilProgressButton
-                  onZoom={(lga) => {
-                    map.current?.zoomToCouncil(lga)
-                  }}
-                  suburbs={suburbs()}
-                  visitedIds={visitedIds()}
-                />
-              </Show>
-            </Loading>
-          </Account>
-        </Show>
-      </header>
-    </main>
+          <Loading>
+            <MapView
+              data={topo()}
+              map={map}
+              search={search}
+              signedIn={signedIn()}
+              suburbs={suburbs()}
+              visitedIds={mapVisitedIds()}
+            />
+          </Loading>
+        </Errored>
+        <h1 class="pointer-events-none absolute top-4 left-4 text-lg font-semibold">
+          Sydney Suburbs
+        </h1>
+        <header class="absolute top-4 right-4 flex items-center gap-2">
+          <a
+            aria-label="Source on GitHub"
+            class={buttonVariants({ size: "icon", variant: "ghost" })}
+            href="https://github.com/juliansommer/sydney-suburbs"
+            rel="noreferrer"
+            target="_blank"
+          >
+            <GitHubLogo />
+          </a>
+          <Loading>
+            <Account signedIn={signedIn()}>
+              <Errored fallback={null}>
+                <Loading>
+                  <Show when={search.mode() === "visited"}>
+                    <CouncilProgressButton
+                      onZoom={(lga) => {
+                        map.current?.zoomToCouncil(lga)
+                      }}
+                      suburbs={suburbs()}
+                      visitedIds={visitedIds()}
+                    />
+                  </Show>
+                </Loading>
+              </Errored>
+            </Account>
+          </Loading>
+        </header>
+      </main>
+    </MySuburbsContext>
   )
 }
 
 interface MapViewProps {
   data: SuburbMapData
   map: MapHandleRef
+  search: MapSearch
   suburbs: SuburbProperties[]
   visitedIds: ReadonlySet<string>
   signedIn: boolean
-  rows: Rows | undefined
 }
 
 function MapView(props: MapViewProps) {
-  const search = Route.useSearch()
-  const navigate = Route.useNavigate()
-  const mode = (): MapMode => search().mode ?? "visited"
-  const stat = (): HeatmapStat => search().stat ?? DEFAULT_HEATMAP_STAT
+  const { mode, stat, suburbId, setSearch } = props.search
 
-  const nrlQuery = useQuery(() => ({
-    ...nrlLayersQuery,
-    enabled: mode() === "nrl",
-  }))
-  const heatmap = useQuery(() => ({
-    ...heatmapQuery(stat()),
-    enabled: mode() === "heatmap",
-  }))
-  const birthplace = useQuery(() => ({
-    ...birthplaceQuery,
-    enabled: mode() === "birthplace",
-  }))
-  const heatmapData = () => (heatmap.isSuccess ? heatmap.data : undefined)
-
-  // Only the current mode's query is read.
+  // Only the current mode's layers load, and the map keeps what it has until
+  // they're ready.
+  const heatmap = createMemo(
+    (): Promise<Heatmap | undefined> | undefined =>
+      mode() === "heatmap" ? unlessFailed(getHeatmap(stat())) : undefined,
+    { loadingValue: undefined },
+  )
+  const overlayLayers = createMemo(
+    (): Promise<MapLayers | undefined> | MapLayers | undefined => {
+      if (mode() === "nrl") {
+        return unlessFailed(getNrlLayers())
+      }
+      if (mode() === "birthplace") {
+        return unlessFailed(getBirthplace())
+      }
+      return heatmap()?.layers
+    },
+    { loadingValue: undefined },
+  )
   const layers = createMemo((): MapLayers => {
-    const current = mode()
-    if (current === "nrl") {
-      return nrlQuery.isSuccess ? nrlQuery.data : NO_LAYERS
-    }
-    if (current === "heatmap") {
-      return heatmapData()?.layers ?? NO_LAYERS
-    }
-    if (current === "birthplace") {
-      return birthplace.isSuccess ? birthplace.data : NO_LAYERS
+    if (mode() !== "visited") {
+      return overlayLayers() ?? NO_LAYERS
     }
     return {
       fills: [
@@ -252,8 +289,8 @@ function MapView(props: MapViewProps) {
   const byId = createMemo(() => new Map(props.suburbs.map((s) => [s.id, s])))
   // An id the map doesn't draw is no selection at all.
   const selected = () => {
-    const id = search().suburb
-    return id === undefined ? undefined : byId().get(String(id))
+    const id = suburbId()
+    return id === undefined ? undefined : byId().get(id)
   }
 
   function select(id: string | null) {
@@ -263,27 +300,24 @@ function MapView(props: MapViewProps) {
     }
     // Switching suburbs replaces the entry, so Back leaves the map rather
     // than stepping through every suburb looked at.
-    void navigate({
-      search: (prev) => ({ ...prev, suburb: id ? Number(id) : undefined }),
-      replace: !!current && !!id,
-    })
+    setSearch({ suburb: id }, { replace: !!current && !!id })
   }
 
   function switchMode(next: MapMode) {
-    void navigate({
-      search: (prev) => ({
-        ...prev,
-        mode: next === "visited" ? undefined : next,
-      }),
-      replace: true,
-    })
+    setSearch(
+      { mode: next === "visited" ? undefined : next, stat: undefined },
+      { replace: true },
+    )
   }
 
   function showHeatmap(next: HeatmapStat) {
-    void navigate({
-      search: (prev) => ({ ...prev, mode: "heatmap", stat: next }),
-      replace: true,
-    })
+    setSearch(
+      {
+        mode: "heatmap",
+        stat: next === DEFAULT_HEATMAP_STAT ? undefined : next,
+      },
+      { replace: true },
+    )
   }
 
   // Picking what's already on the map goes back to the visited mode.
@@ -303,11 +337,10 @@ function MapView(props: MapViewProps) {
 
   // The map has rendered by now, so fetch facts when the browser is idle and
   // they never compete with it. A deep link's panel fetches them right away.
-  const queryClient = useQueryClient()
   onSettled(() =>
     whenIdle(async () => {
       try {
-        await queryClient.fetchQuery(suburbFactsQuery)
+        await getSuburbFacts()
       } catch {
         // The query keeps the error, and the panel handles it.
       }
@@ -333,7 +366,7 @@ function MapView(props: MapViewProps) {
         </Loading>
         <Show when={mode() === "heatmap"}>
           <HeatmapLegend
-            heatmap={heatmapData()}
+            heatmap={heatmap()}
             onStatChange={showHeatmap}
             stat={stat()}
           />
@@ -367,7 +400,6 @@ function MapView(props: MapViewProps) {
             props.map.current?.zoomToCouncil(lga)
           }}
           overlay={overlay()}
-          rows={props.rows}
           signedIn={props.signedIn}
           suburb={selected()}
         />
@@ -413,9 +445,9 @@ function Account(props: AccountProps) {
   return (
     <Show
       fallback={
-        <Link class={buttonVariants()} to="/login">
+        <a class={buttonVariants()} href="/login">
           Sign in
-        </Link>
+        </a>
       }
       when={props.signedIn}
     >
@@ -428,7 +460,7 @@ function Account(props: AccountProps) {
             } catch {
               // Still reloads: a live session shows up again, signed in.
             }
-            // A full load wipes the query cache, so the next person on this
+            // A full load wipes the cached queries, so the next person on this
             // browser can't see these visits, and nothing refetches into a 401.
             window.location.assign("/")
           }}

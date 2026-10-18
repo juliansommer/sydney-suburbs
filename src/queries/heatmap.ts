@@ -1,16 +1,12 @@
-import { queryOptions } from "@tanstack/solid-query"
+import { query } from "@solidjs/router"
 
 import { heatmap } from "@/lib/heatmap"
 import type { HeatmapStat } from "@/lib/stats"
 
-import { suburbFactsQuery } from "./suburb-facts"
+import { getSuburbFacts } from "./suburb-facts"
 
-// One per stat, built from the facts file, which never changes.
-export function heatmapQuery(stat: HeatmapStat) {
-  return queryOptions({
-    queryKey: ["heatmap", stat],
-    queryFn: async ({ client }) =>
-      heatmap(stat, await client.fetchQuery(suburbFactsQuery)),
-    staleTime: Infinity,
-  })
-}
+// One per stat, built from the facts file.
+export const getHeatmap = query(
+  async (stat: HeatmapStat) => heatmap(stat, await getSuburbFacts()),
+  "heatmap",
+)

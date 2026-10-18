@@ -1,30 +1,20 @@
+import { memoryHistory } from "@solidjs/router"
 import { render } from "@solidjs/testing-library"
-import { QueryClientProvider } from "@tanstack/solid-query"
-import {
-  createMemoryHistory,
-  createRouter,
-  RouterProvider,
-} from "@tanstack/solid-router"
 
-import { createQueryClient } from "@/lib/query-client"
-import { routeTree } from "@/routeTree.gen"
+import { AppShell, createAppRouter } from "@/router"
 
-// Renders the real route tree at `path`, with a fresh query client per test so
-// cached data never leaks between tests. Retries are off so a failing query
-// fails the test immediately instead of after the default backoff.
-export async function renderRoute(path: string) {
-  const queryClient = createQueryClient({ retry: false })
-  const router = createRouter({
-    routeTree,
-    context: { queryClient },
-    history: createMemoryHistory({ initialEntries: [path] }),
-  })
-
+// Renders the real routes at `path`, in memory. `pathname` and `search` read
+// where the app has navigated to since.
+export function renderRoute(path: string) {
+  const history = memoryHistory(path)
+  const Router = createAppRouter(history)
   const result = render(() => (
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
+    <Router>{(props) => <AppShell>{props.children}</AppShell>}</Router>
   ))
-  await router.load()
-  return { ...result, router, queryClient }
+  const url = () => new URL(history.get(), "http://localhost")
+  return {
+    ...result,
+    pathname: () => url().pathname,
+    search: () => Object.fromEntries(url().searchParams),
+  }
 }

@@ -1,16 +1,11 @@
+import { createRouter, memoryHistory } from "@solidjs/router"
 import { render, screen, waitFor } from "@solidjs/testing-library"
-import { QueryClientProvider } from "@tanstack/solid-query"
-import {
-  createMemoryHistory,
-  createRootRoute,
-  createRouter,
-  RouterProvider,
-} from "@tanstack/solid-router"
 import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { createQueryClient } from "@/lib/query-client"
 import type { Overlay } from "@/lib/stats"
+import { createMySuburbs, MySuburbsContext } from "@/queries/my-suburbs"
+import { signIn, signOut } from "@/test/auth"
 import { mockFetch } from "@/test/mock-fetch"
 
 import { SuburbPanel } from "./suburb-panel"
@@ -26,39 +21,41 @@ interface RenderPanelOptions {
   onToggleOverlay?: (overlay: Overlay) => void
 }
 
-// The panel links to /login, so it needs a router around it.
-async function renderPanel({
+// Queries read the router, and the visit form reads the user's rows, so the
+// panel renders inside both.
+function renderPanel({
   suburb = alpha,
   signedIn = true,
   onZoomToCouncil = () => {},
   overlay,
   onToggleOverlay = () => {},
 }: RenderPanelOptions = {}) {
-  const queryClient = createQueryClient({ retry: false })
-  queryClient.setQueryData(["me", "suburbs"], [])
-  const router = createRouter({
-    routeTree: createRootRoute({
-      component: () => (
-        <SuburbPanel
-          overlay={overlay}
-          onClose={() => {}}
-          onToggleOverlay={onToggleOverlay}
-          onZoomToCouncil={onZoomToCouncil}
-          rows={new Map()}
-          signedIn={signedIn}
-          suburb={suburb}
-        />
-      ),
-    }),
-    history: createMemoryHistory(),
+  if (signedIn) {
+    signIn()
+  } else {
+    signOut()
+  }
+  const Router = createRouter({
+    routes: [
+      {
+        path: "/",
+        component: () => (
+          <MySuburbsContext value={createMySuburbs(() => signedIn)}>
+            <SuburbPanel
+              onClose={() => {}}
+              onToggleOverlay={onToggleOverlay}
+              onZoomToCouncil={onZoomToCouncil}
+              overlay={overlay}
+              signedIn={signedIn}
+              suburb={suburb}
+            />
+          </MySuburbsContext>
+        ),
+      },
+    ],
+    history: memoryHistory("/"),
   })
-  const result = render(() => (
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
-  ))
-  await router.load()
-  return result
+  return render(() => <Router>{(props) => props.children}</Router>)
 }
 
 describe("SuburbPanel notes", () => {
@@ -73,9 +70,9 @@ describe("SuburbPanel notes", () => {
   it("saves once, after typing stops", async () => {
     const { patches } = mockFetch()
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
-    await renderPanel()
+    renderPanel()
 
-    await user.type(screen.getByRole("textbox"), "Good pies")
+    await user.type(await screen.findByRole("textbox"), "Good pies")
     expect(patches).toStrictEqual([])
     expect(screen.getByText("Saving…")).toBeInTheDocument()
 
@@ -90,9 +87,9 @@ describe("SuburbPanel notes", () => {
   it("saves unsaved notes when it closes", async () => {
     const { patches } = mockFetch()
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
-    const { unmount } = await renderPanel()
+    const { unmount } = renderPanel()
 
-    await user.type(screen.getByRole("textbox"), "Ferry")
+    await user.type(await screen.findByRole("textbox"), "Ferry")
     unmount()
 
     await waitFor(() => {
@@ -106,9 +103,11 @@ describe("SuburbPanel council", () => {
     mockFetch()
     const onZoomToCouncil = vi.fn<(lga: string) => void>()
     const user = userEvent.setup()
-    await renderPanel({ onZoomToCouncil })
+    renderPanel({ onZoomToCouncil })
 
-    await user.click(screen.getByRole("button", { name: "Sydney Council" }))
+    await user.click(
+      await screen.findByRole("button", { name: "Sydney Council" }),
+    )
 
     expect(onZoomToCouncil).toHaveBeenCalledWith("Sydney")
   })
@@ -118,7 +117,7 @@ describe("SuburbPanel facts", () => {
   it("shows census details when expanded", async () => {
     mockFetch()
     const user = userEvent.setup()
-    await renderPanel()
+    renderPanel()
 
     await user.click(
       await screen.findByRole("button", { name: "More details" }),
@@ -147,7 +146,7 @@ describe("SuburbPanel facts", () => {
     mockFetch()
     const onToggleOverlay = vi.fn<(overlay: Overlay) => void>()
     const user = userEvent.setup()
-    await renderPanel({ onToggleOverlay })
+    renderPanel({ onToggleOverlay })
 
     await user.click(
       await screen.findByRole("button", { name: "More details" }),
@@ -166,7 +165,7 @@ describe("SuburbPanel facts", () => {
     mockFetch()
     const onToggleOverlay = vi.fn<(overlay: Overlay) => void>()
     const user = userEvent.setup()
-    await renderPanel({ onToggleOverlay })
+    renderPanel({ onToggleOverlay })
 
     await user.click(
       await screen.findByRole("button", { name: "More details" }),
@@ -181,7 +180,7 @@ describe("SuburbPanel facts", () => {
   it("marks the stat the map is showing", async () => {
     mockFetch()
     const user = userEvent.setup()
-    await renderPanel({ overlay: "medianRent" })
+    renderPanel({ overlay: "medianRent" })
 
     await user.click(
       await screen.findByRole("button", { name: "More details" }),
@@ -198,7 +197,7 @@ describe("SuburbPanel facts", () => {
   it("skips census details the ABS didn't publish", async () => {
     mockFetch()
     const user = userEvent.setup()
-    await renderPanel({ suburb: beta })
+    renderPanel({ suburb: beta })
 
     await user.click(
       await screen.findByRole("button", { name: "More details" }),
@@ -212,7 +211,7 @@ describe("SuburbPanel facts", () => {
 
   it("shows the photo, facts and summary", async () => {
     mockFetch()
-    await renderPanel()
+    renderPanel()
 
     const photo = await screen.findByRole("img", { name: "Alpha" })
     expect(photo).toHaveAttribute(
@@ -233,7 +232,7 @@ describe("SuburbPanel facts", () => {
   it("credits the photo from its info button", async () => {
     mockFetch()
     const user = userEvent.setup()
-    await renderPanel()
+    renderPanel()
 
     await user.click(
       await screen.findByRole("button", { name: "Photo credit" }),
@@ -254,7 +253,7 @@ describe("SuburbPanel facts", () => {
 
   it("leaves out the photo, summary and a population of zero", async () => {
     mockFetch()
-    await renderPanel({ suburb: beta })
+    renderPanel({ suburb: beta })
 
     await expect(screen.findByText("Postcode 2000")).resolves.toBeVisible()
     expect(screen.getByText("Inner West Council")).toBeVisible()
@@ -269,27 +268,31 @@ describe("SuburbPanel facts", () => {
     // A response that never arrives keeps the facts loading.
     // oxlint-disable-next-line promise/avoid-new
     mockFetch({ facts: new Promise<Response>(() => {}) })
-    await renderPanel()
+    renderPanel()
 
-    expect(screen.getByTestId("photo-skeleton")).toBeInTheDocument()
+    await expect(
+      screen.findByTestId("photo-skeleton"),
+    ).resolves.toBeInTheDocument()
     expect(screen.getByTestId("facts-skeleton")).toBeInTheDocument()
     expect(screen.queryByRole("img")).not.toBeInTheDocument()
   })
 
   it("keeps the visit controls when the facts fail to load", async () => {
     mockFetch({ facts: new Response(null, { status: 500 }) })
-    await renderPanel()
+    renderPanel()
 
     await waitFor(() => {
       expect(screen.queryByTestId("photo-skeleton")).not.toBeInTheDocument()
     })
     expect(screen.queryByRole("img")).not.toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "Mark Visited" })).toBeVisible()
+    await expect(
+      screen.findByRole("button", { name: "Mark Visited" }),
+    ).resolves.toBeVisible()
   })
 
   it("shows facts to signed-out users too", async () => {
     mockFetch()
-    await renderPanel({ signedIn: false })
+    renderPanel({ signedIn: false })
 
     await expect(
       screen.findByRole("img", { name: "Alpha" }),

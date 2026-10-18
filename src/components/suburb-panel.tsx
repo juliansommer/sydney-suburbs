@@ -1,14 +1,12 @@
 import XIcon from "@lucide/solid/icons/x"
-import { Link } from "@tanstack/solid-router"
 import { Drawer, type DrawerRoot } from "base-ui-solid/drawer"
 import {
   createMemo,
   createSignal,
-  Match,
+  Loading,
   onCleanup,
   onSettled,
   Show,
-  Switch,
   untrack,
 } from "solid-js"
 
@@ -25,6 +23,7 @@ import { councilName } from "@/lib/council"
 import { sydneyToday } from "@/lib/dates"
 import type { Overlay } from "@/lib/stats"
 import { useUpdateSuburb } from "@/mutations/use-update-suburb"
+import { useMySuburbs } from "@/queries/my-suburbs"
 import type { SuburbProperties } from "@/types/suburb"
 import type { UserSuburb } from "@/types/user-suburb"
 
@@ -37,8 +36,6 @@ interface SuburbPanelProps {
   // Undefined when nothing is selected.
   suburb: Suburb | undefined
   signedIn: boolean
-  // The user's rows, or undefined while they load.
-  rows: ReadonlyMap<string, UserSuburb> | undefined
   onClose: () => void
   // Outlines the council on the map, like the progress list does.
   onZoomToCouncil: (lga: string) => void
@@ -76,7 +73,7 @@ function SuburbCard(props: SuburbPanelProps) {
             <CloseButton onClose={props.onClose} />
           </div>
           <div class="overflow-y-auto">
-            <SuburbMedia name={suburb().name} state={facts()} />
+            <SuburbMedia name={suburb().name} facts={facts()} />
             <div class="flex flex-col gap-4 p-4">
               <div class="flex flex-col gap-2">
                 <header class="pr-8">
@@ -87,20 +84,16 @@ function SuburbCard(props: SuburbPanelProps) {
                       onZoom={props.onZoomToCouncil}
                     />
                   </p>
-                  <FactsRow state={facts()} />
+                  <FactsRow facts={facts()} />
                 </header>
-                <Summary state={facts()} />
+                <Summary facts={facts()} />
                 <MoreDetails
                   onToggleOverlay={props.onToggleOverlay}
                   overlay={props.overlay}
-                  state={facts()}
+                  facts={facts()}
                 />
               </div>
-              <PanelBody
-                rows={props.rows}
-                signedIn={props.signedIn}
-                suburbId={suburb().id}
-              />
+              <PanelBody signedIn={props.signedIn} suburbId={suburb().id} />
             </div>
           </div>
         </section>
@@ -148,7 +141,6 @@ function SuburbSheet(props: SuburbPanelProps) {
                 props.onZoomToCouncil(lga)
               }}
               overlay={props.overlay}
-              rows={props.rows}
               signedIn={props.signedIn}
               suburb={suburb()}
             />
@@ -192,23 +184,19 @@ function SheetPopup(props: SheetPopupProps) {
           </header>
           <Drawer.Content class="min-h-0 flex-1 touch-auto overflow-y-auto overscroll-contain px-4 pb-safe-bottom">
             <div class="flex flex-col gap-4 pb-4">
-              <PanelBody
-                rows={props.rows}
-                signedIn={props.signedIn}
-                suburbId={props.suburb.id}
-              />
+              <PanelBody signedIn={props.signedIn} suburbId={props.suburb.id} />
               <SuburbMedia
                 class="mx-auto w-full overflow-hidden rounded-lg border"
                 name={props.suburb.name}
-                state={facts()}
+                facts={facts()}
               />
               <div class="flex flex-col gap-2">
-                <FactsRow state={facts()} />
-                <Summary state={facts()} />
+                <FactsRow facts={facts()} />
+                <Summary facts={facts()} />
                 <MoreDetails
                   onToggleOverlay={props.onToggleOverlay}
                   overlay={props.overlay}
-                  state={facts()}
+                  facts={facts()}
                 />
               </div>
             </div>
@@ -258,34 +246,35 @@ function CloseButton(props: CloseButtonProps) {
 interface PanelBodyProps {
   suburbId: string
   signedIn: boolean
-  rows: ReadonlyMap<string, UserSuburb> | undefined
 }
 
 // Keyed on the suburb, so the form and its unsaved notes start fresh for each.
 function PanelBody(props: PanelBodyProps) {
+  const [rows] = useMySuburbs()
+  const login = () =>
+    `/login?redirect=${encodeURIComponent(`/?suburb=${props.suburbId}`)}`
   return (
-    <Switch
+    <Loading
       fallback={<p class="text-sm text-muted-foreground">Loading&hellip;</p>}
     >
-      <Match when={!props.signedIn}>
-        <Link
-          class={buttonVariants({ variant: "outline" })}
-          search={{ redirect: `/?suburb=${props.suburbId}` }}
-          to="/login"
-        >
-          Sign in to track your visits
-        </Link>
-      </Match>
-      <Match when={props.rows}>
-        {(rows) => (
-          <Show keyed when={props.suburbId}>
-            {(suburbId) => (
-              <VisitForm row={rows().get(suburbId)} suburbId={suburbId} />
-            )}
-          </Show>
-        )}
-      </Match>
-    </Switch>
+      <Show
+        fallback={
+          <a class={buttonVariants({ variant: "outline" })} href={login()}>
+            Sign in to track your visits
+          </a>
+        }
+        when={props.signedIn}
+      >
+        <Show keyed when={props.suburbId}>
+          {(suburbId) => (
+            <VisitForm
+              row={rows.find((row) => row.suburbId === suburbId)}
+              suburbId={suburbId}
+            />
+          )}
+        </Show>
+      </Show>
+    </Loading>
   )
 }
 

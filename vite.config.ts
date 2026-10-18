@@ -5,8 +5,9 @@ import { fileURLToPath, URL } from "node:url"
 import devServer from "@hono/vite-dev-server"
 import solid from "@solidjs/vite-plugin"
 import tailwindcss from "@tailwindcss/vite"
-import { tanstackRouter } from "@tanstack/router-plugin/vite"
 import { cn as cnTables } from "cn/vite"
+import { routePathFromFile } from "filesystem-routing"
+import { fileRoutes } from "filesystem-routing/vite"
 import { defineConfig } from "vite"
 
 // The dev API reads process.env like the deployed function does.
@@ -19,10 +20,10 @@ export default defineConfig(({ mode }) => ({
     target: "es2023",
   },
   plugins: [
-    tanstackRouter({
-      target: "solid",
-      autoCodeSplitting: true,
-      routeFileIgnorePattern: "\\.test\\.(ts|tsx)$",
+    // Tests sit beside their routes without becoming pages.
+    fileRoutes({
+      toPath: (file) =>
+        file.endsWith(".test") ? undefined : routePathFromFile(file),
     }),
     solid(),
     tailwindcss(),

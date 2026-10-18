@@ -1,17 +1,13 @@
-import { queryOptions } from "@tanstack/solid-query"
+import { query } from "@solidjs/router"
 
-import { suburbsTopoQuery } from "./suburbs-topo"
+import { getSuburbsTopo } from "./suburbs-topo"
 
 // The territories and their maths load in their own chunk, only once someone
-// switches to the NRL mode. The map data never changes, so neither do these.
-export const nrlLayersQuery = queryOptions({
-  queryKey: ["nrl-layers"],
-  queryFn: async ({ client }) => {
-    const [{ nrlLayers }, data] = await Promise.all([
-      import("@/lib/nrl"),
-      client.fetchQuery(suburbsTopoQuery),
-    ])
-    return nrlLayers(data)
-  },
-  staleTime: Infinity,
-})
+// switches to the NRL mode.
+export const getNrlLayers = query(async () => {
+  const [{ nrlLayers }, data] = await Promise.all([
+    import("@/lib/nrl"),
+    getSuburbsTopo(),
+  ])
+  return nrlLayers(data)
+}, "nrl-layers")
