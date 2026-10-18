@@ -28,6 +28,7 @@ export function buildIndex<T>(
   return items
     .map((item) => {
       const words = normalise(name(item))
+
       return { item, words, compact: words.replaceAll(" ", "") }
     })
     .toSorted((a, b) => a.words.localeCompare(b.words))
@@ -40,11 +41,14 @@ export function search<T>(
   limit = SEARCH_LIMIT,
 ): T[] {
   const words = normalise(query)
+
   if (!words) {
     return []
   }
+
   const compact = words.replaceAll(" ", "")
   const ranks: T[][] = [[], [], []]
+
   for (const entry of index) {
     if (entry.words.startsWith(words)) {
       ranks[0]?.push(entry.item)
@@ -54,5 +58,6 @@ export function search<T>(
       ranks[2]?.push(entry.item)
     }
   }
+
   return ranks.flat().slice(0, limit)
 }

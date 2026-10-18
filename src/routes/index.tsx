@@ -37,6 +37,7 @@ import type { SuburbMapData, SuburbProperties } from "@/types/suburb"
 // chunk once the map renders.
 const SuburbPanel = lazy(async () => {
   const { SuburbPanel: component } = await import("@/components/suburb-panel")
+
   return { default: component }
 })
 
@@ -45,11 +46,14 @@ const SuburbPanel = lazy(async () => {
 const SuburbSearch = lazy(async () => {
   const { SuburbSearch: component } =
     await import("@/components/map/suburb-search")
+
   return { default: component }
 })
+
 const CouncilProgressButton = lazy(async () => {
   const { CouncilProgressButton: component } =
     await import("@/components/council-progress")
+
   return { default: component }
 })
 
@@ -57,14 +61,18 @@ const CouncilProgressButton = lazy(async () => {
 const BirthplaceLegend = lazy(async () => {
   const { BirthplaceLegend: component } =
     await import("@/components/birthplace-legend")
+
   return { default: component }
 })
+
 const NrlLegend = lazy(async () => {
   const { NrlLegend: component } = await import("@/components/nrl-legend")
+
   return { default: component }
 })
 
 const MAP_MODES = ["visited", "heatmap", "birthplace", "nrl"] as const
+
 type MapMode = (typeof MAP_MODES)[number]
 
 const MODE_LABELS: Record<MapMode, string> = {
@@ -108,6 +116,7 @@ export default function MapPage() {
   const topo = createMemo(async () => await getSuburbsTopo())
   const map: MapHandleRef = {}
   const suburbs = createMemo(() => topo().suburbs.map((s) => s.properties))
+
   // Waits for the rows, for the counter. A notes save changes the rows but not
   // what's visited.
   const visitedIds = createMemo(
@@ -115,6 +124,7 @@ export default function MapPage() {
       new Set(rows.filter((row) => row.visited).map((row) => row.suburbId)),
     { equals: (a, b) => a.size === b.size && [...a].every((id) => b.has(id)) },
   )
+
   // The map draws without waiting, and fills in visits once they load.
   const mapVisitedIds = createMemo(() => visitedIds(), {
     loadingValue: NO_IDS,
@@ -183,6 +193,7 @@ export default function MapPage() {
                     } catch {
                       // Still reloads: a live session shows up again, signed in.
                     }
+
                     // A full load wipes the cached queries, so the next person
                     // on this browser can't see these visits.
                     window.location.assign("/")
@@ -220,22 +231,27 @@ function MapView(props: MapViewProps) {
       mode() === "heatmap" ? unlessFailed(getHeatmap(stat())) : undefined,
     { loadingValue: undefined },
   )
+
   const overlayLayers = createMemo(
     (): Promise<MapLayers | undefined> | MapLayers | undefined => {
       if (mode() === "nrl") {
         return unlessFailed(getNrlLayers())
       }
+
       if (mode() === "birthplace") {
         return unlessFailed(getBirthplace())
       }
+
       return heatmap()?.layers
     },
     { loadingValue: undefined },
   )
+
   const layers = createMemo((): MapLayers => {
     if (mode() !== "visited") {
       return overlayLayers() ?? NO_LAYERS
     }
+
     return {
       fills: [
         {
@@ -248,10 +264,12 @@ function MapView(props: MapViewProps) {
       markers: [],
     }
   })
+
   const overlay = (): Overlay | undefined => {
     if (mode() === "heatmap") {
       return stat()
     }
+
     return mode() === "birthplace" ? "birthplace" : undefined
   }
 
@@ -261,9 +279,11 @@ function MapView(props: MapViewProps) {
 
   function select(id: string | null) {
     const current = selected()
+
     if (id === (current?.id ?? null)) {
       return
     }
+
     // Switching suburbs replaces the entry, so Back leaves the map rather
     // than stepping through every suburb looked at.
     setSearch({ suburb: id }, { replace: !!current && !!id })

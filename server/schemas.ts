@@ -25,6 +25,7 @@ function sydneyToday() {
 // still runs this after isoDate fails, so malformed input must not throw.
 function isRealDate(date: string) {
   const parsed = new Date(`${date}T00:00:00Z`)
+
   return (
     !Number.isNaN(parsed.getTime()) && parsed.toISOString().startsWith(date)
   )

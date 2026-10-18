@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 
 function InputGroup(props: ComponentProps<"div">) {
   const rest = omit(props, "class")
+
   return (
     <div
       data-slot="input-group"
@@ -47,6 +48,7 @@ function InputGroupAddon(
   props: ComponentProps<"div"> & VariantProps<typeof inputGroupAddonVariants>,
 ) {
   const rest = omit(props, "class", "align")
+
   return (
     // Clicking the addon focuses the input; keyboard users reach it directly.
     // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
@@ -60,6 +62,7 @@ function InputGroupAddon(
         if (e.target instanceof Element && e.target.closest("button")) {
           return
         }
+
         e.currentTarget.parentElement?.querySelector("input")?.focus()
       }}
       {...rest}
@@ -69,6 +72,7 @@ function InputGroupAddon(
 
 function InputGroupInput(props: InputProps) {
   const rest = omit(props, "class")
+
   return (
     <Input
       data-slot="input-group-control"

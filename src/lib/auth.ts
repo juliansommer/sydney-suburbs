@@ -17,9 +17,11 @@ async function post(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   })
+
   if (!res.ok) {
     throw new Error(`${res.status} ${res.statusText}`)
   }
+
   return res
 }
 
@@ -28,9 +30,11 @@ async function post(
 export const getSession = query(async (): Promise<Session> => {
   try {
     const res = await fetch("/api/auth/get-session")
+
     if (!res.ok) {
       return null
     }
+
     return parse(session, await res.json())
   } catch {
     return null

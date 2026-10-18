@@ -47,6 +47,7 @@ type ButtonProps = Omit<ButtonPrimitive.Props, "class"> &
 
 function Button(props: ButtonProps) {
   const rest = omit(props, "class", "variant", "size")
+
   return (
     <ButtonPrimitive
       data-slot="button"

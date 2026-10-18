@@ -18,6 +18,7 @@ type ComboboxInputProps = Omit<ComboboxPrimitive.Input.Props, "class"> & {
 
 function ComboboxInput(props: ComboboxInputProps) {
   const rest = omit(props, "class", "children")
+
   return (
     <InputGroup class={cn("w-auto", props.class)}>
       <ComboboxPrimitive.Input
@@ -45,6 +46,7 @@ function ComboboxContent(props: ComboboxContentProps) {
     "sideOffset",
     "alignOffset",
   )
+
   return (
     <ComboboxPrimitive.Portal>
       <ComboboxPrimitive.Positioner
@@ -79,6 +81,7 @@ function ComboboxList<Item>(props: ComboboxPrimitive.List.Props<Item>) {
 
 function ComboboxItem(props: ComboboxPrimitive.Item.Props) {
   const rest = omit(props, "children")
+
   return (
     <ComboboxPrimitive.Item
       data-slot="combobox-item"

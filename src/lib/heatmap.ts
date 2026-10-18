@@ -17,6 +17,7 @@ const RED_LEVELS: readonly HeatLevel[] = [
   { fill: "fill-heat-6", swatch: "bg-heat-6" },
   { fill: "fill-heat-7", swatch: "bg-heat-7" },
 ]
+
 // White to green, for stats where more is greener.
 const GREEN_LEVELS: readonly HeatLevel[] = [
   { fill: "fill-canopy-1", swatch: "bg-canopy-1" },
@@ -27,9 +28,11 @@ const GREEN_LEVELS: readonly HeatLevel[] = [
   { fill: "fill-canopy-6", swatch: "bg-canopy-6" },
   { fill: "fill-canopy-7", swatch: "bg-canopy-7" },
 ]
+
 const PALETTES: Partial<Record<HeatmapStat, readonly HeatLevel[]>> = {
   treeCanopy: GREEN_LEVELS,
 }
+
 export const NO_DATA: HeatLevel = {
   fill: "fill-heat-none",
   swatch: "bg-heat-none",
@@ -62,6 +65,7 @@ function levelFor(
 ): HeatLevel {
   const top = levels.length - 1
   const index = count > 1 ? Math.round((bucket * top) / (count - 1)) : top
+
   return levels[index] ?? NO_DATA
 }
 
@@ -72,14 +76,17 @@ export function heatmap(stat: HeatmapStat, facts: SuburbFactsFile): Heatmap {
   const count = breaks.length + 1
   const members = Array.from({ length: count }, () => new Set<string>())
   const noData = new Set<string>()
+
   for (const [id, { stats }] of Object.entries(facts)) {
     const value = stats[stat]
+
     if (value === null || value === undefined) {
       noData.add(id)
     } else {
       members[bucketOf(value, breaks)]?.add(id)
     }
   }
+
   const palette = PALETTES[stat] ?? RED_LEVELS
   const levels = members.map((_, i) => levelFor(i, count, palette))
 

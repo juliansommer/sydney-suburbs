@@ -7,13 +7,17 @@ export function whenIdle(task: () => Promise<void>): () => void {
   const start = () => {
     void task()
   }
+
   if ("requestIdleCallback" in globalThis) {
     const handle = requestIdleCallback(start)
+
     return () => {
       cancelIdleCallback(handle)
     }
   }
+
   const handle = setTimeout(start, FALLBACK_DELAY_MS)
+
   return () => {
     clearTimeout(handle)
   }

@@ -12,5 +12,6 @@ let db: Db | undefined
 // between invocations.
 export function getDb(): Db {
   db ??= drizzle({ client: neon(getEnv().DATABASE_URL), schema })
+
   return db
 }

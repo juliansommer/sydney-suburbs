@@ -6,8 +6,10 @@ import { type CacheOptions, fetchJson } from "../download.ts"
 import { chunk, resolveTitles, titleMappings } from "./titles.ts"
 
 const COMMONS_API = "https://commons.wikimedia.org/w/api.php"
+
 // The API takes at most 50 titles per request.
 const TITLES_PER_REQUEST = 50
+
 // Downloaded at this width, then resized for the app.
 const SOURCE_WIDTH = 1600
 
@@ -21,6 +23,7 @@ export interface PhotoSource {
 }
 
 const metadataValue = optional(object({ value: string() }))
+
 const imageInfo = object({
   query: optional(
     object({
@@ -73,6 +76,7 @@ const NAMED_ENTITIES = new Map([
   ["apos", "'"],
   ["nbsp", " "],
 ])
+
 const HEX = 16
 const DECIMAL = 10
 
@@ -114,6 +118,7 @@ function stripTracking(url: string) {
   parsed.search = new URLSearchParams(
     [...parsed.searchParams].filter(([key]) => !key.startsWith("utm_")),
   ).toString()
+
   return parsed.toString()
 }
 
@@ -132,9 +137,11 @@ export function toPhotoSource(
   const artist = cleanArtist(meta?.Artist?.value ?? "")
   const nonFree = meta?.NonFree?.value === "true"
   const raster = info?.mime === "image/jpeg" || info?.mime === "image/png"
+
   if (!info || !licence || !artist || nonFree || !raster) {
     return null
   }
+
   return {
     file,
     thumbUrl: stripTracking(info.thumburl),
@@ -153,6 +160,7 @@ export async function readPhotoSources(
   options: CacheOptions,
 ): Promise<Map<string, PhotoSource>> {
   const sources = new Map<string, PhotoSource>()
+
   for (const batch of chunk(files.toSorted(), TITLES_PER_REQUEST)) {
     const params = new URLSearchParams({
       action: "query",
@@ -164,6 +172,7 @@ export async function readPhotoSources(
       iiextmetadatafilter: "Artist|LicenseShortName|LicenseUrl|NonFree",
       titles: batch.map((f) => `File:${f}`).join("|"),
     })
+
     // Batches run one at a time to keep requests polite.
     // oxlint-disable-next-line eslint/no-await-in-loop
     const { query } = await fetchJson(
@@ -171,15 +180,19 @@ export async function readPhotoSources(
       imageInfo,
       options,
     )
+
     const pages = new Map(query?.pages.map((p) => [p.title, p]))
+
     for (const file of batch) {
       const title = resolveTitles(`File:${file}`, query)
       const page = pages.get(title)
       const source = page ? toPhotoSource(file, page) : null
+
       if (source) {
         sources.set(file, source)
       }
     }
   }
+
   return sources
 }

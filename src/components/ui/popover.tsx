@@ -25,6 +25,7 @@ function PopoverContent(props: PopoverContentProps) {
     "side",
     "sideOffset",
   )
+
   return (
     <PopoverPrimitive.Portal>
       <PopoverPrimitive.Positioner

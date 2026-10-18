@@ -24,6 +24,7 @@ const app = new Hono()
   )
   .get("/healthz", async (c) => {
     await getDb().execute(sql`SELECT 1`)
+
     return c.json({ ok: true })
   })
   .route("/me", me)
@@ -37,6 +38,7 @@ app.onError((thrown, c) => {
   if (thrown instanceof HTTPException) {
     return c.json({ error: thrown.message }, thrown.status)
   }
+
   throw thrown
 })
 

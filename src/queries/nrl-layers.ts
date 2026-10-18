@@ -9,5 +9,6 @@ export const getNrlLayers = once(async () => {
     import("@/lib/nrl"),
     getSuburbsTopo(),
   ])
+
   return nrlLayers(data)
 })

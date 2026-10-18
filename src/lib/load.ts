@@ -21,7 +21,9 @@ export async function retry<T>(
     if (attempt >= RETRIES) {
       throw error
     }
+
     await sleep(Math.min(FIRST_DELAY_MS * 2 ** attempt, MAX_DELAY_MS))
+
     return await retry(load, attempt + 1)
   }
 }
@@ -35,19 +37,23 @@ export function once<A extends string[], T>(
 ): (...args: A) => Promise<T> {
   const loads = new Map<string, Promise<T>>()
   caches.add(loads)
+
   return async (...args) => {
     const key = args.join(",")
     let pending = loads.get(key)
+
     if (!pending) {
       pending = retry(async () => await load(...args))
       loads.set(key, pending)
     }
+
     try {
       return await pending
     } catch (error) {
       if (loads.get(key) === pending) {
         loads.delete(key)
       }
+
       throw error
     }
   }

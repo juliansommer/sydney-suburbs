@@ -8,10 +8,13 @@ import { AppShell, createAppRouter } from "@/router"
 export function renderRoute(path: string) {
   const history = memoryHistory(path)
   const Router = createAppRouter(history)
+
   const result = render(() => (
     <Router>{(props) => <AppShell>{props.children}</AppShell>}</Router>
   ))
+
   const url = () => new URL(history.get(), "http://localhost")
+
   return {
     ...result,
     pathname: () => url().pathname,

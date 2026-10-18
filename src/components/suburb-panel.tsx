@@ -23,14 +23,17 @@ const DESKTOP = "(min-width: 768px)"
 // soon as the panel loads rather than when it first opens.
 const SuburbSheet = lazy(async () => {
   const { SuburbSheet: component } = await import("@/components/suburb-sheet")
+
   return { default: component }
 })
+
 if (!window.matchMedia(DESKTOP).matches) {
   void preload(SuburbSheet.preload)
 }
 
 export function SuburbPanel(props: SuburbPanelProps) {
   const desktop = useMediaQuery(DESKTOP)
+
   return (
     <Show fallback={<SuburbSheet {...props} />} when={desktop()}>
       <SuburbCard {...props} />
@@ -41,6 +44,7 @@ export function SuburbPanel(props: SuburbPanelProps) {
 // The photo runs edge to edge across the top, with the close button over it.
 function SuburbCard(props: SuburbPanelProps) {
   const facts = useSuburbFacts(() => props.suburb?.id)
+
   return (
     <Show when={props.suburb}>
       {(suburb) => (

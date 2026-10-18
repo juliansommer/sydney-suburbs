@@ -62,6 +62,7 @@ export type CountryColumn = (typeof COUNTRIES)[number][0]
 export const COUNTRY_COLUMNS: CountryColumn[] = COUNTRIES.map(
   ([column]) => column,
 )
+
 const COUNTRY_NAMES = new Map<string, string>(COUNTRIES)
 
 // Below this, one family can make a country the most common.
@@ -76,18 +77,23 @@ export function topBirthplace(
   if (population < MIN_POPULATION) {
     return null
   }
+
   let column: CountryColumn | null = null
   let count = 0
+
   for (const c of COUNTRY_COLUMNS) {
     const people = counts[c] ?? 0
+
     if (people > count) {
       column = c
       count = people
     }
   }
+
   if (!column) {
     return null
   }
+
   return {
     country: COUNTRY_NAMES.get(column) ?? column,
     percent:

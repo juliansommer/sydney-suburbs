@@ -19,9 +19,11 @@ interface CouncilProgressProps {
 // council zooms the map to it.
 export function CouncilProgressButton(props: CouncilProgressProps) {
   const [open, setOpen] = createSignal(false)
+
   const councils = createMemo(() =>
     councilProgress(props.suburbs, props.visitedIds),
   )
+
   const visited = () => councils().reduce((sum, c) => sum + c.visited, 0)
 
   return (

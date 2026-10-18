@@ -9,10 +9,12 @@ import { projectBase } from "./project"
 describe("projectBase", () => {
   it("draws the same paths and bounds as d3's own projection", () => {
     const data = toSuburbMap(suburbsTopology)
+
     const projection = geoMercator().fitSize([800, 600], {
       type: "FeatureCollection",
       features: data.suburbs,
     })
+
     const path = geoPath(projection)
 
     const projected = projectBase(data, 800, 600)

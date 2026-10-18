@@ -10,6 +10,7 @@ type InputProps = Omit<InputPrimitive.Props, "class"> & {
 
 function Input(props: InputProps) {
   const rest = omit(props, "class")
+
   return (
     <InputPrimitive
       data-slot="input"

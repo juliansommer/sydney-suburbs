@@ -10,17 +10,22 @@ export function councilProgress(
   visitedIds: ReadonlySet<string>,
 ): CouncilProgress[] {
   const councils = new Map<string, CouncilProgress>()
+
   for (const { id, lga } of suburbs) {
     let council = councils.get(lga)
+
     if (!council) {
       council = { lga, visited: 0, total: 0 }
       councils.set(lga, council)
     }
+
     council.total += 1
+
     if (visitedIds.has(id)) {
       council.visited += 1
     }
   }
+
   return [...councils.values()].toSorted(
     (a, b) =>
       b.visited / b.total - a.visited / a.total || a.lga.localeCompare(b.lga),

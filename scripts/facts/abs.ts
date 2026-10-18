@@ -28,11 +28,13 @@ const G01_FIELDS = [
   CENSUS.fields.bornInAustralia,
   CENSUS.fields.bornElsewhere,
 ] as const
+
 const G02_FIELDS = [
   CENSUS.fields.medianAge,
   CENSUS.fields.medianRent,
   CENSUS.fields.medianHouseholdIncome,
 ] as const
+
 const G37_FIELDS = [
   CENSUS.fields.stateHousing,
   CENSUS.fields.tenureNotStated,
@@ -50,26 +52,34 @@ export function parseTable<F extends string>(
 ): Map<string, Row<F>> {
   const [header = "", ...rows] = csv.trim().split(/\r?\n/)
   const columns = header.split(",")
+
   const missing = [CENSUS.fields.salCode, ...fields].filter(
     (field) => !columns.includes(field),
   )
+
   if (missing.length > 0) {
     throw new Error(`Census table is missing ${missing.join(", ")}`)
   }
+
   const codeIndex = columns.indexOf(CENSUS.fields.salCode)
   const table = new Map<string, Row<F>>()
+
   for (const line of rows) {
     const cells = line.split(",")
     const code = cells[codeIndex]
     const values = fields.map((field) => Number(cells[columns.indexOf(field)]))
+
     if (code && values.every(Number.isFinite)) {
       const row: Row<F> = {}
+
       for (const [i, field] of fields.entries()) {
         row[field] = values[i]
       }
+
       table.set(stripSalPrefix(code), row)
     }
   }
+
   return table
 }
 
@@ -98,12 +108,16 @@ function publicHousingShare(
   g37: Row<(typeof G37_FIELDS)[number]> | undefined,
 ): number | null {
   const f = CENSUS.fields
+
   const stated =
     (g37?.[f.totalDwellings] ?? 0) - (g37?.[f.tenureNotStated] ?? 0)
+
   if (stated <= 0) {
     return null
   }
+
   const share = ((g37?.[f.stateHousing] ?? 0) / stated) * PERCENT
+
   return Math.round(share * ONE_DECIMAL) / ONE_DECIMAL
 }
 
@@ -119,6 +133,7 @@ export function toCensusFacts({ g01, g02, g09, g37 }: CensusRows): CensusFacts {
   const bornElsewhere = g01[f.bornElsewhere] ?? 0
   const stated = (g01[f.bornInAustralia] ?? 0) + bornElsewhere
   const population = g01[f.totalPersons] ?? 0
+
   return {
     population,
     medianAge: median(g02?.[f.medianAge]),
@@ -133,9 +148,11 @@ export function toCensusFacts({ g01, g02, g09, g37 }: CensusRows): CensusFacts {
 
 function readEntry(files: Record<string, Uint8Array>, name: string): string {
   const entry = files[name]
+
   if (!entry) {
     throw new Error(`DataPack has no ${name}`)
   }
+
   return new TextDecoder().decode(entry)
 }
 
@@ -145,32 +162,39 @@ function readBirthplaces(
   files: Record<string, Uint8Array>,
 ): Map<string, Row<CountryColumn>> {
   const joined = new Map<string, Row<CountryColumn>>()
+
   for (const name of CENSUS.g09) {
     const csv = readEntry(files, name)
     const header = csv.slice(0, csv.indexOf("\n")).trim().split(",")
     const fields = COUNTRY_COLUMNS.filter((c) => header.includes(c))
+
     for (const [id, row] of parseTable(csv, fields)) {
       joined.set(id, { ...joined.get(id), ...row })
     }
   }
+
   return joined
 }
 
 export async function readCensus(): Promise<Map<string, CensusFacts>> {
   const path = await download(CENSUS.file, CENSUS.url)
+
   const wanted = new Set<string>([
     CENSUS.g01,
     CENSUS.g02,
     CENSUS.g37,
     ...CENSUS.g09,
   ])
+
   const files = unzipSync(new Uint8Array(await readFile(path)), {
     filter: (file) => wanted.has(file.name),
   })
+
   const g01 = parseTable(readEntry(files, CENSUS.g01), G01_FIELDS)
   const g02 = parseTable(readEntry(files, CENSUS.g02), G02_FIELDS)
   const g09 = readBirthplaces(files)
   const g37 = parseTable(readEntry(files, CENSUS.g37), G37_FIELDS)
+
   return new Map(
     [...g01].map(([id, row]) => [
       id,
@@ -198,6 +222,7 @@ export async function readPostcodes(
     download(SOURCE.poa, boundaryUrl(SOURCE.poa)),
   ])
   const f = SOURCE.fields
+
   const out = await geo.applyCommands(
     [
       `-i "${absCacheDir}${SOURCE.sal}" "${absCacheDir}${SOURCE.poa}" combine-files`,
@@ -210,13 +235,16 @@ export async function readPostcodes(
       "-o postcodes.json format=json",
     ].join(" "),
   )
+
   const rows = parse(postcodeRows, JSON.parse(out["postcodes.json"] ?? "null"))
   const postcodes = new Map<string, string>()
+
   for (const row of rows) {
     if (row.postcode) {
       postcodes.set(row.id, row.postcode)
     }
   }
+
   return postcodes
 }
 
@@ -237,6 +265,7 @@ export async function readGeography(
 ): Promise<Map<string, Geography>> {
   await download(SOURCE.sal, boundaryUrl(SOURCE.sal))
   const f = SOURCE.fields
+
   const out = await geo.applyCommands(
     [
       `-i "${absCacheDir}${SOURCE.sal}"`,
@@ -246,6 +275,8 @@ export async function readGeography(
       "-o geography.json format=json",
     ].join(" "),
   )
+
   const rows = parse(geographyRows, JSON.parse(out["geography.json"] ?? "null"))
+
   return new Map(rows.map((row) => [row.id, { areaKm2: row.area }]))
 }

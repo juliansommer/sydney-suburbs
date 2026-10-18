@@ -10,6 +10,7 @@ vi.mock("../auth.js", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../auth.js")>()),
   getSessionUser: async (c: Context) => {
     const id = c.req.header("x-test-user")
+
     return id ? { id } : null
   },
 }))
@@ -18,6 +19,7 @@ vi.mock("../auth.js", async (importOriginal) => ({
 vi.mock("../db/client.js", async () => {
   const { createTestDb } = await import("./db.js")
   const db = await createTestDb()
+
   return { getDb: () => db }
 })
 
@@ -36,12 +38,15 @@ async function call(
   { user = "alice", body }: CallOptions = {},
 ) {
   const headers = new Headers()
+
   if (user) {
     headers.set("x-test-user", user)
   }
+
   if (body !== undefined) {
     headers.set("content-type", "application/json")
   }
+
   return await app.request(`/api/me${path}`, {
     method,
     headers,
@@ -55,6 +60,7 @@ async function patch(body: unknown, suburb = SUBURB, user = "alice") {
 
 async function list(user = "alice"): Promise<unknown> {
   const res = await call("GET", "/suburbs", { user })
+
   return await res.json()
 }
 

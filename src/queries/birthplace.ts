@@ -10,5 +10,6 @@ export const getBirthplace = once(async () => {
     getSuburbFacts(),
     getSuburbsTopo(),
   ])
+
   return birthplaceLayers(facts, data)
 })

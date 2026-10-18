@@ -32,6 +32,7 @@ vi.mock(import("@/lib/auth"), async (importOriginal) => ({
 // base-ui-solid is transformed from source, which takes seconds cold, longer
 // than a findBy waits, so the lazy chunks load up front.
 const WARM_UP_TIMEOUT_MS = 30_000
+
 async function loadLazyChunks() {
   await Promise.all([
     import("@/routes/index"),
@@ -194,9 +195,11 @@ describe("map page", () => {
     await expect(
       screen.findByRole("combobox", { name: "Statistic" }),
     ).resolves.toHaveValue("medianHouseholdIncome")
+
     const key = await screen.findByRole("list", {
       name: "Household income key",
     })
+
     expect(key).toHaveTextContent("$2,000 – $2,500/wk")
     expect(key).toHaveTextContent("No data")
     expect(document.querySelector('[data-layer="heat-3"]')).toHaveAttribute(
@@ -303,6 +306,7 @@ describe("map page", () => {
     const link = await screen.findByRole("link", {
       name: "Sign in to track your visits",
     })
+
     const href = new URL(link.getAttribute("href") ?? "", "http://localhost")
     expect(href.pathname).toBe("/login")
     expect(href.searchParams.get("redirect")).toBe("/?suburb=1")
@@ -315,6 +319,7 @@ describe("map page", () => {
       onPatch: async () => {
         await sleep(500)
         responded = true
+
         return Response.json(visitedRow("1"))
       },
     })
@@ -424,6 +429,7 @@ describe("map page suburb facts", () => {
     idleCallbacks = []
     vi.stubGlobal("requestIdleCallback", (callback: () => void) => {
       idleCallbacks.push(callback)
+
       return idleCallbacks.length
     })
     vi.stubGlobal("cancelIdleCallback", () => {})

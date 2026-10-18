@@ -13,6 +13,7 @@ import type { MapLayers, MapMarker } from "@/types/map-layers"
 import type { SuburbMapData, SuburbProperties } from "@/types/suburb"
 
 const EARTH_RADIUS_KM = 6371
+
 // Pieces of a territory smaller than this get no logo of their own.
 export const MIN_LOGO_AREA_KM2 = 20
 
@@ -23,12 +24,17 @@ function logoPoint(
   suburbs: SuburbProperties[],
 ): [number, number] | undefined {
   const centre = geoCentroid(polygon)
+
   if (geoContains(polygon, centre)) {
     return centre
   }
-  const labels = suburbs
-    .map((s): [number, number] => [s.lx, s.ly])
-    .filter((point) => geoContains(polygon, point))
+
+  const labels = suburbs.flatMap((s): [number, number][] => {
+    const point: [number, number] = [s.lx, s.ly]
+
+    return geoContains(polygon, point) ? [point] : []
+  })
+
   return labels.toSorted(
     (a, b) => geoDistance(a, centre) - geoDistance(b, centre),
   )[0]
@@ -42,8 +48,10 @@ function logoMarkers(
   return coordinates.flatMap((rings, i) => {
     const polygon: Polygon = { type: "Polygon", coordinates: rings }
     const areaKm2 = geoArea(polygon) * EARTH_RADIUS_KM ** 2
+
     const point =
       areaKm2 < MIN_LOGO_AREA_KM2 ? undefined : logoPoint(polygon, suburbs)
+
     return point
       ? [
           {
@@ -62,14 +70,18 @@ function logoMarkers(
 export function nrlLayers({ suburbs, topology }: SuburbMapData): MapLayers {
   const territories = mergeSuburbs(topology, clubFor)
   const layers: MapLayers = { fills: [], outlines: [], markers: [] }
+
   for (const club of CLUB_IDS) {
     const geometry = territories.get(club)
+
     if (!geometry) {
       continue
     }
+
     const members = suburbs
       .map((s) => s.properties)
       .filter((s) => clubFor(s) === club)
+
     layers.fills.push({
       key: club,
       ids: new Set(members.map((s) => s.id)),
@@ -81,5 +93,6 @@ export function nrlLayers({ suburbs, topology }: SuburbMapData): MapLayers {
     })
     layers.markers.push(...logoMarkers(club, geometry.coordinates, members))
   }
+
   return layers
 }

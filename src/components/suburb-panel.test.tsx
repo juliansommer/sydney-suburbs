@@ -35,6 +35,7 @@ function renderPanel({
   } else {
     signOut()
   }
+
   const Router = createRouter({
     routes: [
       {
@@ -55,6 +56,7 @@ function renderPanel({
     ],
     history: memoryHistory("/"),
   })
+
   return render(() => <Router>{(props) => props.children}</Router>)
 }
 
@@ -135,6 +137,7 @@ describe("SuburbPanel facts", () => {
       ["Area", "2.1 km²"],
       ["Density", "7,286/km²"],
     ]
+
     for (const [label, value] of details) {
       expect(screen.getByText(label ?? "").closest("div")).toHaveTextContent(
         value ?? "",

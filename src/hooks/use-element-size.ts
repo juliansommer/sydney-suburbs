@@ -15,7 +15,9 @@ export function useElementSize(): [
     // A new object for the same size would re-project the whole map.
     equals: (a, b) => a?.width === b?.width && a?.height === b?.height,
   })
+
   let observer: ResizeObserver | undefined
+
   const ref = (element: Element) => {
     observer?.disconnect()
     observer = new ResizeObserver(([entry]) => {
@@ -26,6 +28,8 @@ export function useElementSize(): [
     })
     observer.observe(element)
   }
+
   onSettled(() => () => observer?.disconnect())
+
   return [ref, size]
 }

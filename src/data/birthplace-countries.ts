@@ -124,12 +124,14 @@ export const COUNTRIES: readonly Country[] = [
     flag: indonesiaFlag,
   },
 ]
+
 export const OTHER_COUNTRY: CountryColour = {
   key: "other",
   label: "Other",
   fill: "fill-country-other",
   swatch: "bg-country-other",
 }
+
 export const NO_BIRTHPLACE: CountryColour = {
   key: "none",
   label: "No data",

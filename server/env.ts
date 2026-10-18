@@ -25,5 +25,6 @@ let parsed: Env | undefined
 // request that needs it with a clear message instead of crashing the function.
 export function getEnv(): Env {
   parsed ??= parse(envSchema, process.env)
+
   return parsed
 }

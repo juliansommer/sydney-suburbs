@@ -8,16 +8,20 @@ import { getSession, signInWith } from "@/lib/auth"
 export default function LoginPage() {
   const [search] = useSearchParams<{ redirect?: string }>()
   const session = createMemo(async () => await getSession())
+
   // Only same-origin paths, so the login page can't bounce someone off-site.
   // `//host` and `/\host` are protocol-relative to browsers.
   const redirect = () => {
     const to = search.redirect ?? "/"
+
     return /^\/(?![/\\])/.test(to) ? to : "/"
   }
+
   const [failed, setFailed] = createSignal(false)
 
   async function signIn(provider: "google" | "github") {
     setFailed(false)
+
     try {
       await signInWith(provider, redirect())
     } catch {
@@ -77,5 +81,6 @@ function Redirect(props: RedirectProps) {
     untrack(() => props.to),
     { replace: true },
   )
+
   return null
 }

@@ -34,10 +34,13 @@ export function useSuburbFacts(
 ): Accessor<SuburbFacts | undefined> {
   return createMemo(async (): Promise<SuburbFacts | undefined> => {
     const id = suburbId()
+
     if (id === undefined) {
       return undefined
     }
+
     const facts = await getSuburbFacts()
+
     return facts[id]
   })
 }
@@ -150,6 +153,7 @@ interface FactsRowProps {
 export function FactsRow(props: FactsRowProps) {
   const parts = () => {
     const { facts } = props
+
     return [
       facts?.postcode ? `Postcode ${facts.postcode}` : null,
       facts?.population
@@ -157,6 +161,7 @@ export function FactsRow(props: FactsRowProps) {
         : null,
     ].filter((part) => part !== null)
   }
+
   return (
     <Errored fallback={null}>
       <Loading
@@ -212,17 +217,22 @@ function toDetails(
 ): Detail[] {
   const details: Detail[] = DETAIL_STATS.flatMap((key) => {
     const value = stats[key]
+
     if (value === null) {
       return []
     }
+
     const { label, format } = STATS[key]
     const detail: Detail = { key, label, value: format(value) }
+
     if (isHeatmapStat(key)) {
       detail.overlay = key
       detail.overlayName = `${label} heatmap`
     }
+
     return [detail]
   })
+
   if (topBirthplace) {
     details.push({
       key: "birthplace",
@@ -232,6 +242,7 @@ function toDetails(
       overlayName: "birthplace map",
     })
   }
+
   return details
 }
 

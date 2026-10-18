@@ -33,6 +33,7 @@ const MONTHS = [
 function row(suburb: string, category: string, subcategory: string) {
   // 100 a month in the older year, then 1 to 12 in the latest one.
   const counts = MONTHS.map((_, i) => (i < 12 ? 100 : i - 11))
+
   return [suburb, category, subcategory, ...counts]
     .map((cell) => `"${cell}"`)
     .join(",")

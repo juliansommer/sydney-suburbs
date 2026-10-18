@@ -16,8 +16,10 @@ export const VIOLENT_CATEGORIES: ReadonlySet<string> = new Set([
   "Robbery",
   "Abduction and kidnapping",
 ])
+
 const RECENT_MONTHS = 12
 const PER_PEOPLE = 100_000
+
 // Below this a single incident swings the rate too far to compare.
 export const MIN_POPULATION = 500
 
@@ -35,15 +37,19 @@ export function tallyViolent(
 ): Map<string, number> {
   const width = splitRow(header).length
   const tallies = new Map<string, number>()
+
   for (const line of lines) {
     const [suburb, category, , ...months] = splitRow(line)
+
     if (suburb && category && VIOLENT_CATEGORIES.has(category)) {
       const recent = months
         .slice(width - 3 - RECENT_MONTHS)
         .reduce((sum, cell) => sum + (Number(cell) || 0), 0)
+
       tallies.set(suburb, (tallies.get(suburb) ?? 0) + recent)
     }
   }
+
   return tallies
 }
 
@@ -60,12 +66,15 @@ export function matchSuburbs(
   tallies: ReadonlyMap<string, number>,
 ): Map<string, number> {
   const matched = new Map<string, number>()
+
   for (const s of suburbs) {
     const incidents = tallies.get(`${s.name} (${s.lga})`) ?? tallies.get(s.name)
+
     if (incidents !== undefined) {
       matched.set(s.id, incidents)
     }
   }
+
   return matched
 }
 
@@ -77,6 +86,7 @@ export function crimeRate(
   if (incidents === undefined || !population || population < MIN_POPULATION) {
     return null
   }
+
   return Math.round((incidents / population) * PER_PEOPLE)
 }
 
@@ -89,6 +99,7 @@ async function readViolentRows(
   const rows: string[] = []
   let header = ""
   let partial = ""
+
   function addLine(line: string) {
     if (!header) {
       header = line
@@ -96,34 +107,45 @@ async function readViolentRows(
       rows.push(line)
     }
   }
+
   const unzip = new Unzip((file) => {
     if (file.name !== BOCSAR.csv) {
       return
     }
+
     file.ondata = (error, chunk, final) => {
       if (error) {
         throw error
       }
+
       const lines = (partial + decoder.decode(chunk, { stream: !final })).split(
         /\r?\n/,
       )
+
       partial = final ? "" : (lines.pop() ?? "")
+
       for (const line of lines.filter(Boolean)) {
         addLine(line)
       }
     }
+
     file.start()
   })
+
   unzip.register(UnzipInflate)
+
   for await (const chunk of createReadStream(path)) {
     if (chunk instanceof Uint8Array) {
       unzip.push(chunk)
     }
   }
+
   unzip.push(new Uint8Array(0), true)
+
   if (!header) {
     throw new Error(`${BOCSAR.file} has no ${BOCSAR.csv}`)
   }
+
   return { header, rows }
 }
 
@@ -134,5 +156,6 @@ export async function readViolentCrime(
 ): Promise<Map<string, number>> {
   const path = await download(BOCSAR.file, BOCSAR.url)
   const { header, rows } = await readViolentRows(path)
+
   return matchSuburbs(suburbs, tallyViolent(header, rows))
 }

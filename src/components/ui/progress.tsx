@@ -22,6 +22,7 @@ type ProgressProps = Omit<ProgressPrimitive.Root.Props, "class"> &
 
 function Progress(props: ProgressProps) {
   const rest = omit(props, "class", "children", "variant")
+
   return (
     <ProgressPrimitive.Root
       data-slot="progress"

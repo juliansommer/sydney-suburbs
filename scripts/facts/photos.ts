@@ -26,6 +26,7 @@ export interface ProcessedPhoto {
 // URL and a cached copy can never go stale.
 export function photoPathname(id: string, body: Uint8Array): string {
   const hash = createHash("sha256").update(body).digest("hex")
+
   return `${PREFIX}${id}-${hash.slice(0, HASH_LENGTH)}.webp`
 }
 
@@ -38,6 +39,7 @@ export async function processPhoto(
     .resize({ width: WIDTH, withoutEnlargement: true })
     .webp({ quality: QUALITY })
     .toBuffer({ resolveWithObject: true })
+
   return {
     pathname: photoPathname(id, data),
     body: data,
@@ -50,9 +52,11 @@ export async function processPhoto(
 async function listBlobs(cursor?: string): Promise<Map<string, string>> {
   const page = await list({ prefix: PREFIX, cursor })
   const blobs = new Map(page.blobs.map((b) => [b.pathname, b.url]))
+
   if (!page.hasMore) {
     return blobs
   }
+
   return new Map([...blobs, ...(await listBlobs(page.cursor))])
 }
 
@@ -64,6 +68,7 @@ async function storePhoto(photo: ProcessedPhoto): Promise<string> {
     cacheControlMaxAge: ONE_YEAR_SECONDS,
     contentType: "image/webp",
   })
+
   return blob.url
 }
 
@@ -89,19 +94,23 @@ export async function uploadPhotos(
   const photos = new Map<string, SuburbPhoto>()
   const failed: string[] = []
   let uploaded = 0
+
   for (const [id, source] of sources) {
     try {
       // oxlint-disable-next-line eslint/no-await-in-loop
       const original = await fetchCached(source.thumbUrl, options)
       // oxlint-disable-next-line eslint/no-await-in-loop
       const photo = await processPhoto(id, original)
+
       const url =
         existing.get(photo.pathname) ??
         // oxlint-disable-next-line eslint/no-await-in-loop
         (await storePhoto(photo))
+
       if (!existing.has(photo.pathname)) {
         uploaded += 1
       }
+
       photos.set(id, {
         url,
         width: photo.width,
@@ -116,13 +125,17 @@ export async function uploadPhotos(
       failed.push(id)
     }
   }
+
   const referenced = new Set([...photos.values()].map((p) => p.url))
+
   const unreferenced = [...existing.values()].filter(
     (url) => !referenced.has(url),
   )
+
   if (prune && unreferenced.length > 0) {
     await del(unreferenced)
   }
+
   return {
     photos,
     uploaded,

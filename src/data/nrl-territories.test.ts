@@ -29,8 +29,10 @@ describe("NRL territories", () => {
 
   it("only overrides suburbs that exist, to a different club", () => {
     const byName = new Map(suburbs.map((s) => [s.name, s]))
+
     const pointless = [...SUBURB_OVERRIDES].filter(([name, club]) => {
       const suburb = byName.get(name)
+
       return !suburb || LGA_CLUBS.get(suburb.lga) === club
     })
 

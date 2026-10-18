@@ -79,6 +79,7 @@ function planarPath(projection: GeoProjection) {
     geoTransform({
       point(lon: number, lat: number) {
         const point = projection([lon, lat])
+
         if (point) {
           this.stream.point(point[0], point[1])
         }
@@ -96,6 +97,7 @@ function fitMercator(
   const projection = geoMercator().scale(BASE_SCALE).translate([0, 0])
   const [[x0, y0], [x1, y1]] = planarPath(projection).bounds(object)
   const k = Math.min(width / (x1 - x0), height / (y1 - y0))
+
   return projection
     .scale(BASE_SCALE * k)
     .translate([(width - k * (x1 + x0)) / 2, (height - k * (y1 + y0)) / 2])
@@ -113,10 +115,13 @@ export function projectBase(
     width,
     height,
   )
+
   const path = planarPath(projection)
+
   const projectedSuburbs = suburbs.map((s) => {
     const bounds = path.bounds(s)
     const [[x0, y0], [x1, y1]] = bounds
+
     return {
       id: s.properties.id,
       name: s.properties.name,
@@ -127,6 +132,7 @@ export function projectBase(
       label: projection([s.properties.lx, s.properties.ly]),
     }
   })
+
   return {
     projection,
     suburbs: projectedSuburbs,
@@ -151,11 +157,13 @@ export function projectLayers(
   { suburbs, projection }: ProjectedBase,
 ): ProjectedLayers {
   const path = planarPath(projection)
+
   return {
     fills: fills.map((f) => {
       const parts = suburbs
         .filter((s) => f.ids.has(s.id))
         .map((s) => ({ id: s.id, d: s.d }))
+
       return {
         key: f.key,
         className: f.className,
@@ -167,6 +175,7 @@ export function projectLayers(
     outlines: outlines.map((o) => ({ key: o.key, d: path(o.feature) ?? "" })),
     markers: markers.flatMap((m) => {
       const point = projection(m.coords)
+
       return point
         ? [{ key: m.key, x: point[0], y: point[1], src: m.src, label: m.label }]
         : []

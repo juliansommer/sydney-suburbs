@@ -12,5 +12,6 @@ const MIGRATIONS = path.join(import.meta.dirname, "../../drizzle/migrations")
 export async function createTestDb() {
   const db = drizzle({ client: new PGlite(), schema })
   await migrate(db, { migrationsFolder: MIGRATIONS })
+
   return db
 }

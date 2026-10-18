@@ -18,6 +18,7 @@ export function applyPatch(
   patch: UserSuburbPatch,
 ): UserSuburb[] {
   const others = rows.filter((row) => row.suburbId !== suburbId)
+
   const current = rows.find((row) => row.suburbId === suburbId) ?? {
     suburbId,
     visited: false,
@@ -25,11 +26,15 @@ export function applyPatch(
     notes: "",
     updatedAt: new Date().toISOString(),
   }
+
   const next = { ...current, ...patch }
+
   if (patch.visited === false) {
     next.visitedOn = null
   }
+
   const empty = !next.visited && next.visitedOn === null && next.notes === ""
+
   return empty ? others : [...others, next]
 }
 
@@ -45,6 +50,7 @@ async function save(suburbId: string, patch: UserSuburbPatch): Promise<void> {
     } catch {
       // Its own caller handles a failed save; this one goes out regardless.
     }
+
     await apiFetch(
       `/api/me/suburbs/${encodeURIComponent(suburbId)}`,
       nullable(userSuburbSchema),
@@ -71,12 +77,14 @@ export function useUpdateSuburb(suburbId: string) {
   const mutate = action(function* update(patch: UserSuburbPatch) {
     setSaving(true)
     setRows((rows) => applyPatch(rows, suburbId, patch))
+
     try {
       yield save(suburbId, patch)
       setStatus("saved")
     } catch {
       setStatus("failed")
     }
+
     // The refetch lands with the end of the save, so the rows never flash
     // back to how they were first.
     revalidate(getMySuburbs.key)

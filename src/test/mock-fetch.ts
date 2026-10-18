@@ -40,30 +40,41 @@ export function mockFetch({
     if (pathname === "/sydney-suburbs.topo.json") {
       return Response.json(suburbsTopology)
     }
+
     if (isFactsRequest(pathname)) {
       return facts instanceof Response || facts instanceof Promise
         ? await facts
         : Response.json(facts)
     }
+
     if (pathname === "/api/auth/get-session") {
       return Response.json(currentSession())
     }
+
     if (pathname === "/api/me/suburbs" && request.method === "GET") {
       return Response.json(rows)
     }
+
     const id = /^\/api\/me\/suburbs\/(?<id>[^/]+)$/.exec(pathname)?.groups?.id
+
     if (id && request.method === "PATCH") {
       const patch = (await request.json()) as UserSuburbPatch
       patches.push([pathname, patch])
+
       if (onPatch) {
         return await onPatch(id, patch)
       }
+
       rows = applyPatch(rows, id, patch)
       const row = rows.find((r) => r.suburbId === id)
+
       return row ? Response.json(row) : new Response(null, { status: 204 })
     }
+
     return Response.json({ error: "not found" }, { status: 404 })
   })
+
   vi.stubGlobal("fetch", fetch)
+
   return { patches }
 }

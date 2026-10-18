@@ -24,7 +24,9 @@ export function fitBounds(
     (width - 2 * PADDING) / Math.max(x1 - x0, 1e-6),
     (height - 2 * PADDING) / Math.max(y1 - y0, 1e-6),
   )
+
   const k = Math.min(MAX_FOCUS_ZOOM, Math.max(minZoom, fit))
+
   return {
     x: width / 2 - k * ((x0 + x1) / 2),
     y: height / 2 - k * ((y0 + y1) / 2),

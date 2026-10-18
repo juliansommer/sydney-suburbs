@@ -1,5 +1,6 @@
 // Rough average glyph width of the UI font, as a fraction of font size.
 const CHAR_WIDTH = 0.55
+
 // Breathing room kept between neighbouring labels, in screen pixels.
 const LABEL_GAP = 4
 
@@ -80,6 +81,7 @@ export function labelVisible(
 ): boolean {
   const tier = TIER_BY_NAME.get(suburb.name)
   const tierShown = tier !== undefined && k >= (TIER_MIN_ZOOM[tier] ?? Infinity)
+
   return tierShown || labelFits(suburb, k, suburb.name, fontSize)
 }
 
@@ -92,9 +94,11 @@ export interface LabelCandidate extends Box {
 function byPriority(a: LabelCandidate, b: LabelCandidate): number {
   const tierA = TIER_BY_NAME.get(a.name) ?? Infinity
   const tierB = TIER_BY_NAME.get(b.name) ?? Infinity
+
   if (tierA !== tierB) {
     return tierA - tierB
   }
+
   return b.width * b.height - a.width * a.height
 }
 
@@ -113,22 +117,28 @@ export function placeLabels<T extends LabelCandidate>(
   obstacles: readonly Rect[] = [],
 ): T[] {
   const placed: Rect[] = [...obstacles]
+
   return candidates.toSorted(byPriority).filter((c) => {
     const halfWidth = (c.name.length * CHAR_WIDTH * fontSize + LABEL_GAP) / 2
     const halfHeight = (fontSize + LABEL_GAP) / 2
+
     const box = {
       x0: c.x - halfWidth,
       y0: c.y - halfHeight,
       x1: c.x + halfWidth,
       y1: c.y + halfHeight,
     }
+
     const overlaps = placed.some(
       (p) => box.x0 < p.x1 && box.x1 > p.x0 && box.y0 < p.y1 && box.y1 > p.y0,
     )
+
     if (overlaps) {
       return false
     }
+
     placed.push(box)
+
     return true
   })
 }

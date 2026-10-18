@@ -23,14 +23,18 @@ interface SuburbLabelsProps {
 export function SuburbLabels(props: SuburbLabelsProps) {
   const placed = createMemo(() => {
     const { transform, width, height } = props
+
     const candidates = props.suburbs.flatMap((s) => {
       if (!s.label || !labelVisible(s, transform.k, FONT_SIZE)) {
         return []
       }
+
       const [x, y] = transform.apply(s.label)
       const offScreen = x < 0 || x > width || y < 0 || y > height
+
       return offScreen ? [] : [{ ...s, x, y }]
     })
+
     return placeLabels(candidates, FONT_SIZE, props.obstacles)
   })
 

@@ -75,8 +75,10 @@ interface PanelBodyProps {
 // Keyed on the suburb, so the form and its unsaved notes start fresh for each.
 export function PanelBody(props: PanelBodyProps) {
   const [rows] = useMySuburbs()
+
   const login = () =>
     `/login?redirect=${encodeURIComponent(`/?suburb=${props.suburbId}`)}`
+
   return (
     <Loading
       fallback={<p class="text-sm text-muted-foreground">Loading&hellip;</p>}
@@ -133,6 +135,7 @@ function VisitForm(props: VisitFormProps) {
             max={today}
             onChange={(event) => {
               const date = event.currentTarget.value
+
               if (date <= today) {
                 void visit.mutate({ visitedOn: date || null })
               }
@@ -177,6 +180,7 @@ function NotesField(props: NotesFieldProps) {
 
   function flush() {
     clearTimeout(timer)
+
     if (pending !== null) {
       props.onSave(pending)
       pending = null
@@ -189,8 +193,10 @@ function NotesField(props: NotesFieldProps) {
       flush()
     }
   }
+
   onSettled(() => {
     document.addEventListener("visibilitychange", onVisibilityChange)
+
     return () => {
       document.removeEventListener("visibilitychange", onVisibilityChange)
     }
@@ -201,6 +207,7 @@ function NotesField(props: NotesFieldProps) {
     if (dirty() || props.isSaving) {
       return "Saving…"
     }
+
     return props.isSaved ? "Saved" : ""
   }
 

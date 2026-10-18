@@ -42,6 +42,7 @@ export interface WikiMatch {
 }
 
 const binding = optional(object({ value: string() }))
+
 const sparqlResults = object({
   results: object({
     bindings: array(
@@ -83,6 +84,7 @@ const overrideSchema = record(
     image: optional(nullable(string())),
   }),
 )
+
 export type Overrides = InferOutput<typeof overrideSchema>
 
 export function titleFromUrl(url: string): string {
@@ -132,19 +134,23 @@ export async function queryWikidata(
     sparqlResults,
     options,
   )
+
   const matches = new Map<string, WikiMatch>()
+
   for (const row of results.bindings) {
     matches.set(row.sal.value.replace(/^SAL/, ""), {
       title: row.article ? titleFromUrl(row.article.value) : null,
       image: row.image ? fileFromUrl(row.image.value) : null,
     })
   }
+
   return matches
 }
 
 async function isInNsw(item: string, options: CacheOptions) {
   const query = `ASK { wd:${item} wdt:P131* wd:${NEW_SOUTH_WALES} }`
   const result = await fetchJson(sparqlUrl(query), askResult, options)
+
   return result.boolean
 }
 
@@ -158,16 +164,20 @@ async function lookUpTitle(title: string, options: CacheOptions) {
     ppprop: "wikibase_item|disambiguation",
     titles: title,
   })
+
   const { query } = await fetchJson(
     `${WIKIPEDIA_API}?${params}`,
     pageProps,
     options,
   )
+
   const page = query?.pages[0]
   const item = page?.pageprops?.wikibase_item
+
   if (!page || page.missing || page.pageprops?.disambiguation !== undefined) {
     return null
   }
+
   return item ? { title: page.title, item } : null
 }
 
@@ -180,11 +190,13 @@ export async function findByTitle(
     // One at a time, so the second title is only tried if the first fails.
     // oxlint-disable-next-line eslint/no-await-in-loop
     const page = await lookUpTitle(candidate, options)
+
     // oxlint-disable-next-line eslint/no-await-in-loop
     if (page && (await isInNsw(page.item, options))) {
       return page.title
     }
   }
+
   return null
 }
 
@@ -206,6 +218,7 @@ export async function readPageImages(
   options: CacheOptions,
 ): Promise<Map<string, string>> {
   const images = new Map<string, string>()
+
   for (const batch of chunk(titles.toSorted(), TITLES_PER_REQUEST)) {
     const params = new URLSearchParams({
       action: "query",
@@ -218,6 +231,7 @@ export async function readPageImages(
       pilimit: String(TITLES_PER_REQUEST),
       titles: batch.join("|"),
     })
+
     // Batches run one at a time to keep requests polite.
     // oxlint-disable-next-line eslint/no-await-in-loop
     const { query } = await fetchJson(
@@ -225,13 +239,17 @@ export async function readPageImages(
       pageImages,
       options,
     )
+
     const pages = new Map(query?.pages.map((p) => [p.title, p]))
+
     for (const title of batch) {
       const image = pages.get(resolveTitles(title, query))?.pageimage
+
       if (image) {
         images.set(title, image.replaceAll("_", " "))
       }
     }
   }
+
   return images
 }

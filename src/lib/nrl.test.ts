@@ -20,9 +20,11 @@ describe("nrlLayers", () => {
 
     expect(fills.map((f) => f.key)).toStrictEqual(CLUB_IDS)
     expect(outlines.map((o) => o.key)).toStrictEqual(CLUB_IDS)
+
     const withoutLogo = CLUB_IDS.filter(
       (club) => !markers.some((m) => m.key.startsWith(`${club}-`)),
     )
+
     expect(withoutLogo).toStrictEqual([])
   })
 

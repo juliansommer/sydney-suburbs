@@ -8,6 +8,7 @@ import { getEnv } from "./env.js"
 
 function createAuth() {
   const env = getEnv()
+
   return betterAuth({
     baseURL: env.BETTER_AUTH_URL,
     basePath: "/api/auth",
@@ -40,6 +41,7 @@ let auth: Auth | undefined
 
 export function getAuth(): Auth {
   auth ??= createAuth()
+
   return auth
 }
 
@@ -49,5 +51,6 @@ export async function getSessionUser(c: Context): Promise<SessionUser | null> {
   const session = await getAuth().api.getSession({
     headers: c.req.raw.headers,
   })
+
   return session?.user ?? null
 }

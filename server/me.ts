@@ -23,11 +23,14 @@ const apiColumns = {
 
 const requireUser = createMiddleware<MeEnv>(async (c, next) => {
   const user = await getSessionUser(c)
+
   if (!user) {
     return c.json({ error: "not signed in" }, 401)
   }
+
   c.set("user", user)
   await next()
+
   return undefined
 })
 
@@ -41,6 +44,7 @@ function isForeignKeyError(error: Error) {
       return true
     }
   }
+
   return false
 }
 
@@ -51,6 +55,7 @@ export const me = new Hono<MeEnv>()
       .select(apiColumns)
       .from(userSuburbs)
       .where(eq(userSuburbs.userId, c.var.user.id))
+
     return c.json(rows)
   })
   .patch(
@@ -62,6 +67,7 @@ export const me = new Hono<MeEnv>()
           400,
         )
       }
+
       return undefined
     }),
     async (c) => {
@@ -74,6 +80,7 @@ export const me = new Hono<MeEnv>()
       const visitedOn = patch.visited === false ? null : patch.visitedOn
 
       let saved
+
       try {
         ;[saved] = await db
           .insert(userSuburbs)
@@ -94,14 +101,17 @@ export const me = new Hono<MeEnv>()
         if (error instanceof Error && isForeignKeyError(error)) {
           return c.json({ error: "unknown suburb" }, 404)
         }
+
         throw error
       }
 
       const isEmpty =
         !saved || (!saved.visited && saved.notes === "" && !saved.visitedOn)
+
       if (!isEmpty) {
         return c.json(saved)
       }
+
       // The conditions repeat the check so a concurrent edit that filled the
       // row in since isn't lost.
       await db
@@ -115,6 +125,7 @@ export const me = new Hono<MeEnv>()
             isNull(userSuburbs.visitedOn),
           ),
         )
+
       return c.body(null, 204)
     },
   )

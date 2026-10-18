@@ -12,6 +12,7 @@ import { root } from "./download.ts"
 // Chrome re-draws an SVG pattern fill for every suburb on every frame of a pan
 // or zoom, so the map gets bitmaps. 4:3, like the flag-icons sources.
 const SIZE = { width: 400, height: 300 } as const
+
 // Near-lossless keeps the flat colours and sharp edges clean, at a smaller
 // size than lossy WebP that looks as good.
 const QUALITY = 60
@@ -42,13 +43,16 @@ const sourceDir = `${root}node_modules/flag-icons/flags/4x3/`
 const outDir = `${root}src/data/flags/`
 
 await mkdir(outDir, { recursive: true })
+
 // Drops flags for countries no longer listed.
 const stale = await readdir(outDir)
+
 await Promise.all(
   stale.map(async (file) => {
     await rm(`${outDir}${file}`)
   }),
 )
+
 await Promise.all(
   Object.entries(FLAGS).map(async ([key, code]) => {
     // A high density renders the SVG sharp before it's scaled down.
@@ -58,4 +62,5 @@ await Promise.all(
       .toFile(`${outDir}${key}.webp`)
   }),
 )
+
 console.log(`Wrote ${Object.keys(FLAGS).length} flags to src/data/flags`)

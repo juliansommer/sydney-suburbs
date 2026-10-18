@@ -17,18 +17,24 @@ export function birthplaceLayers(
   { suburbs, topology }: SuburbMapData,
 ): MapLayers {
   const byLabel = new Map(COUNTRIES.map((c) => [c.label, c]))
+
   const countryOf = (id: string): Country | CountryColour => {
     const top = facts[id]?.topBirthplace?.country
+
     if (top === undefined) {
       return NO_BIRTHPLACE
     }
+
     return byLabel.get(top) ?? OTHER_COUNTRY
   }
+
   const members = new Map<string, Set<string>>()
+
   for (const { properties } of suburbs) {
     const { key } = countryOf(properties.id)
     members.set(key, (members.get(key) ?? new Set()).add(properties.id))
   }
+
   const fills: FillLayer[] = [
     ...[OTHER_COUNTRY, NO_BIRTHPLACE].map((c) => ({
       key: `country-${c.key}`,
@@ -42,7 +48,9 @@ export function birthplaceLayers(
       image: c.flag,
     })),
   ]
+
   const regions = mergeSuburbs(topology, (s) => countryOf(s.id).key)
+
   return {
     fills: fills.filter((f) => f.ids.size > 0),
     outlines: [...regions].map(([key, geometry]) => ({

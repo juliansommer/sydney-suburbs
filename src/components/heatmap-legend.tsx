@@ -20,6 +20,7 @@ interface HeatmapLegendProps {
 export function HeatmapLegend(props: HeatmapLegendProps) {
   const selectId = createUniqueId()
   const info = () => STATS[props.stat]
+
   return (
     <div class="flex w-64 flex-col gap-2 rounded-xl border bg-card p-3 text-card-foreground shadow-lg">
       <label class="sr-only" for={selectId}>
@@ -32,6 +33,7 @@ export function HeatmapLegend(props: HeatmapLegendProps) {
           const next = HEATMAP_STATS.find(
             (s) => s === event.currentTarget.value,
           )
+
           if (next) {
             props.onStatChange(next)
           }
@@ -73,9 +75,11 @@ function bucketLabel({ from, to }: HeatBucket, info: StatInfo): string {
   if (from === null) {
     return to === null ? "All" : `Under ${info.format(to)}`
   }
+
   if (to === null) {
     return `${info.format(from)} and over`
   }
+
   return `${info.number(from)} – ${info.format(to)}`
 }
 

@@ -8,10 +8,13 @@ export function useMediaQuery(query: string): Accessor<boolean> {
     const onChange = () => {
       setMatches(list.matches)
     }
+
     list.addEventListener("change", onChange)
+
     return () => {
       list.removeEventListener("change", onChange)
     }
   })
+
   return matches
 }

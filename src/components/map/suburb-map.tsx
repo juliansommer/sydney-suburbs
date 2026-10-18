@@ -37,15 +37,19 @@ import {
 import { SuburbLabels } from "./suburb-labels"
 
 const MAX_ZOOM = 40
+
 // Pointer travel, in pixels, past which a press is a pan rather than a click.
 const CLICK_DISTANCE = 4
 const ZOOM_TO_MS = 600
+
 // Markers keep this size on screen at every zoom, smaller on narrow screens.
 const MARKER_SIZE = 44
 const SMALL_MARKER_SIZE = 32
 const SMALL_SCREEN_WIDTH = 768
+
 // Fill images are flags, drawn at 4:3.
 const IMAGE_ASPECT = [4, 3] as const
+
 // Firefox keeps a transformed group as a scaled bitmap for a few seconds
 // after it stops changing, which looks blurry, so it gets remounted there.
 const REMOUNT_AFTER_GESTURE = navigator.userAgent.includes("Firefox")
@@ -82,11 +86,13 @@ export function SuburbMap(props: SuburbMapProps) {
   const [ref, size] = useElementSize()
   const width = () => size()?.width ?? 0
   const height = () => size()?.height ?? 0
+
   const projected = createMemo(() =>
     width() > 0 && height() > 0
       ? projectBase(props.data, width(), height())
       : null,
   )
+
   return (
     <div class="size-full" ref={ref}>
       <Show when={projected()}>
@@ -114,6 +120,7 @@ interface ZoomableMapProps extends Omit<SuburbMapProps, "data"> {
 
 function ZoomableMap(props: ZoomableMapProps) {
   let svg: SVGSVGElement | undefined
+
   const { zoomer, transform, gesture } = useZoom(
     () => svg,
     () => props.width,
@@ -125,6 +132,7 @@ function ZoomableMap(props: ZoomableMapProps) {
       }
     },
   )
+
   const layers = createMemo(() => projectLayers(props.layers, props.projected))
 
   const [outlinedLga, setOutlinedLga] = createSignal<string | null>(null)
@@ -132,30 +140,37 @@ function ZoomableMap(props: ZoomableMapProps) {
   // Picking the selected suburb again closes it, like the close button.
   function pick(id: string | null) {
     const next = id === props.selectedId ? null : id
+
     if (next) {
       setOutlinedLga(null)
     }
+
     props.onSelect(next)
   }
 
   function zoomToBounds(bounds: Bounds, animate: boolean, minZoom?: number) {
     const current = zoomer()
+
     if (!current) {
       return
     }
+
     const { selection, behaviour } = current
     const { x, y, k } = fitBounds(bounds, props.width, props.height, minZoom)
     // The pan limits are the viewport itself.
     const extent = behaviour.translateExtent()
+
     // Unlike gestures, a programmatic transform skips the pan limits.
     const target = behaviour.constrain()(
       zoomIdentity.translate(x, y).scale(k),
       extent,
       extent,
     )
+
     const reduceMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches
+
     if (animate && !reduceMotion) {
       selection
         .transition()
@@ -170,6 +185,7 @@ function ZoomableMap(props: ZoomableMapProps) {
 
   function zoomTo(id: string, animate: boolean) {
     const suburb = props.projected.suburbs.find((s) => s.id === id)
+
     if (suburb) {
       zoomToBounds(suburb.bounds, animate)
     }
@@ -182,9 +198,11 @@ function ZoomableMap(props: ZoomableMapProps) {
     },
     zoomToCouncil: (lga) => {
       const council = props.projected.councils.find((c) => c.lga === lga)
+
       if (!council) {
         return
       }
+
       // A whole council can be too big for the 2x minimum meant for suburbs.
       zoomToBounds(council.bounds, true, 1)
       setOutlinedLga(lga)
@@ -282,14 +300,18 @@ function useZoom(
     () => ({ w: width(), h: height() }),
     ({ w, h }) => {
       const element = svg()
+
       if (!element) {
         return undefined
       }
+
       const extent: [[number, number], [number, number]] = [
         [0, 0],
         [w, h],
       ]
+
       let startTransform = zoomIdentity
+
       const behaviour = zoom<SVGSVGElement, unknown>()
         .extent(extent)
         .translateExtent(extent)
@@ -308,15 +330,18 @@ function useZoom(
             setGesture((n) => n + 1)
           }
         })
+
       const selection = select(element)
       // A click toggles a suburb, so a quick select-then-close would otherwise
       // read as a double-click and zoom in.
       selection.call(behaviour).on("dblclick.zoom", null)
       zoomer = { selection, behaviour }
+
       if (!drawn) {
         drawn = true
         untrack(onFirstDraw)
       }
+
       return () => {
         zoomer = null
         selection.interrupt().on(".zoom", null)
@@ -339,9 +364,11 @@ interface ScreenLayerProps {
 function ScreenLayer(props: ScreenLayerProps) {
   const markerSize = () =>
     props.width < SMALL_SCREEN_WIDTH ? SMALL_MARKER_SIZE : MARKER_SIZE
+
   const placedMarkers = createMemo(() =>
     onScreen(props.markers, props.transform, props.width, props.height),
   )
+
   return (
     <>
       <SuburbLabels
@@ -368,11 +395,14 @@ interface SuburbPathsProps {
 function SuburbPaths(props: SuburbPathsProps) {
   // Only the old and new selection's paths update, not all of them.
   let previous: string | null = null
+
   const pressed = createProjection<Record<string, boolean>>((draft) => {
     if (previous !== null) {
       draft[previous] = false
     }
+
     previous = props.selectedId
+
     if (previous !== null) {
       draft[previous] = true
     }
@@ -419,6 +449,7 @@ interface FillPathProps {
 // suburb shows the whole image, cropped to its shape rather than stretched.
 function FillPath(props: FillPathProps) {
   const patternId = createUniqueId()
+
   return (
     <Show
       fallback={
@@ -488,12 +519,14 @@ function onScreen(
   return markers.flatMap((m) => {
     const [x, y] = transform.apply([m.x, m.y])
     const offScreen = x < 0 || x > width || y < 0 || y > height
+
     return offScreen ? [] : [{ ...m, x, y }]
   })
 }
 
 function markerRect({ x, y }: ProjectedMarker, size: number): Rect {
   const half = size / 2
+
   return { x0: x - half, y0: y - half, x1: x + half, y1: y + half }
 }
 

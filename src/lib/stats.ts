@@ -12,12 +12,15 @@ export interface StatInfo {
 }
 
 const wholeNumber = new Intl.NumberFormat("en-AU")
+
 const dollars = new Intl.NumberFormat("en-AU", {
   style: "currency",
   currency: "AUD",
   maximumFractionDigits: 0,
 })
+
 const oneDecimal = new Intl.NumberFormat("en-AU", { maximumFractionDigits: 1 })
+
 const twoDecimals = new Intl.NumberFormat("en-AU", {
   maximumFractionDigits: 2,
 })

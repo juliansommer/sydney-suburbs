@@ -7,15 +7,19 @@ export function useShortcut(
 ) {
   const onKeyDown = (event: KeyboardEvent) => {
     const { target } = event
+
     const typing =
       target instanceof HTMLTextAreaElement ||
       target instanceof HTMLInputElement
+
     if (event.key === key && !typing) {
       onPress(event)
     }
   }
+
   onSettled(() => {
     document.addEventListener("keydown", onKeyDown)
+
     return () => {
       document.removeEventListener("keydown", onKeyDown)
     }

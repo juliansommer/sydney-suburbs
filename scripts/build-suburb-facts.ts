@@ -79,6 +79,7 @@ interface MapSuburb {
 // The map's suburbs, so the facts always cover exactly the same set.
 async function readMapSuburbs(): Promise<MapSuburb[]> {
   const topo = parse(topoSuburbs, JSON.parse(await readFile(topoPath, "utf-8")))
+
   return topo.objects.suburbs.geometries
     .map((g) => g.properties)
     .toSorted((a, b) => a.id.localeCompare(b.id))
@@ -99,19 +100,24 @@ async function matchSuburbs(
     queryWikidata(options),
     readOverrides(),
   ])
+
   const matches = new Map<string, SuburbMatch>()
+
   for (const s of suburbs) {
     const override = overrides[s.id]
     let match = wikidata.get(s.id) ?? { title: null, image: null }
+
     if (match.title === null && override?.title === undefined) {
       // oxlint-disable-next-line eslint/no-await-in-loop
       match = { ...match, title: await findByTitle(s.name, options) }
     }
+
     matches.set(s.id, {
       ...applyOverride(match, override),
       fixedImage: override?.image !== undefined,
     })
   }
+
   return matches
 }
 
@@ -134,6 +140,7 @@ function toStats(
   // Places with no residents still get figures from a few non-resident
   // records, like a median age of 65 for Port Botany, so those are dropped.
   const residents = people > 0 ? census : undefined
+
   return {
     medianAge: residents?.medianAge ?? null,
     medianRent: residents?.medianRent ?? null,
@@ -163,8 +170,10 @@ async function choosePhotos(
   const titles = [...matches.values()].flatMap((m) =>
     m.title && !m.fixedImage ? [m.title] : [],
   )
+
   const pageImages = await readPageImages(titles, options)
   const candidates = new Map<string, string[]>()
+
   for (const [id, m] of matches) {
     const pageImage = m.title ? pageImages.get(m.title) : undefined
     const choices = m.fixedImage ? [m.image] : [m.image, pageImage]
@@ -173,15 +182,20 @@ async function choosePhotos(
       choices.filter((f): f is string => f !== null && f !== undefined),
     )
   }
+
   const allFiles = [...new Set([...candidates.values()].flat())]
+
   const sources = await readPhotoSources(
     allFiles.filter(isSuitableFile),
     options,
   )
+
   const photos = new Map<string, PhotoChoice>()
+
   for (const [id, files] of candidates) {
     const file = files.find((f) => sources.has(f))
     const source = file ? sources.get(file) : undefined
+
     if (file && source) {
       photos.set(id, {
         source,
@@ -189,6 +203,7 @@ async function choosePhotos(
       })
     }
   }
+
   return photos
 }
 
@@ -196,7 +211,9 @@ function listMissing(label: string, suburbs: MapSuburb[]) {
   if (suburbs.length === 0) {
     return
   }
+
   console.log(`\nNo ${label} (${suburbs.length}):`)
+
   for (const s of suburbs) {
     console.log(`  ${s.id} ${s.name}`)
   }
@@ -205,6 +222,7 @@ function listMissing(label: string, suburbs: MapSuburb[]) {
 if (existsSync(`${root}.env`)) {
   process.loadEnvFile(`${root}.env`)
 }
+
 if (!process.env.BLOB_READ_WRITE_TOKEN) {
   throw new Error("BLOB_READ_WRITE_TOKEN is not set; see .env.example")
 }
@@ -217,24 +235,30 @@ const census = await readCensus()
 const postcodes = await readPostcodes(ids)
 const geography = await readGeography(ids)
 const violentCrime = await readViolentCrime(suburbs)
+
 const canopy = await readCanopy(
   suburbs.map((s) => ({ ...s, areaKm2: geography.get(s.id)?.areaKm2 ?? 0 })),
 )
+
 const matches = await matchSuburbs(suburbs, options)
 const summaries = await readSummaries()
 
 const choices = await choosePhotos(matches, options)
+
 const upload = await uploadPhotos(
   new Map([...choices].map(([id, c]) => [id, c.source])),
   { ...options, prune },
 )
 
 const facts: SuburbFactsFile = {}
+
 for (const s of suburbs) {
   const place = geography.get(s.id)
+
   if (!place) {
     throw new Error(`No boundary for suburb ${s.id} ${s.name}`)
   }
+
   facts[s.id] = {
     population: census.get(s.id)?.population ?? null,
     postcode: postcodes.get(s.id) ?? null,
@@ -249,37 +273,47 @@ for (const s of suburbs) {
     photo: upload.photos.get(s.id) ?? null,
   }
 }
+
 await writeFile(factsPath, JSON.stringify(facts))
 
 console.log(`Suburbs: ${suburbs.length}`)
+
 console.log(`Photos uploaded: ${upload.uploaded}`)
+
 if (prune) {
   console.log(`Photos pruned: ${upload.pruned}`)
 }
+
 listMissing(
   "population",
   suburbs.filter((s) => facts[s.id]?.population === null),
 )
+
 listMissing(
   "postcode",
   suburbs.filter((s) => facts[s.id]?.postcode === null),
 )
+
 listMissing(
   "BOCSAR crime figures",
   suburbs.filter((s) => !violentCrime.has(s.id)),
 )
+
 listMissing(
   "tree canopy",
   suburbs.filter((s) => !canopy.has(s.id)),
 )
+
 listMissing(
   "Wikipedia article",
   suburbs.filter((s) => !matches.get(s.id)?.title),
 )
+
 listMissing(
   "summary",
   suburbs.filter((s) => facts[s.id]?.summary === null),
 )
+
 listMissing(
   "photo",
   suburbs.filter((s) => facts[s.id]?.photo === null),
@@ -289,7 +323,9 @@ listMissing(
 const fromPageImages = suburbs.filter(
   (s) => choices.get(s.id)?.fromPageImage && upload.photos.has(s.id),
 )
+
 console.log(`\nPhotos from page images (${fromPageImages.length}):`)
+
 for (const s of fromPageImages) {
   console.log(`  ${s.id} ${s.name}: ${choices.get(s.id)?.source.sourceUrl}`)
 }

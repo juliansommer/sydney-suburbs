@@ -27,7 +27,9 @@ export function SuburbSheet(props: SuburbPanelProps) {
   const [snapPoint, setSnapPoint] = createSignal<DrawerRoot.SnapPoint | null>(
     PEEK,
   )
+
   const shown = createMemo<Suburb | undefined>((prev) => props.suburb ?? prev)
+
   return (
     <Drawer.Root
       disablePointerDismissal
@@ -77,6 +79,7 @@ interface SheetPopupProps extends SuburbPanelProps {
 // sit below and come into view as the sheet expands.
 function SheetPopup(props: SheetPopupProps) {
   const facts = useSuburbFacts(() => props.suburb.id)
+
   return (
     <Drawer.Portal>
       <Drawer.Viewport class="pointer-events-none fixed inset-0 flex items-end">

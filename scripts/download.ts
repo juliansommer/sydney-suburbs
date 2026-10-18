@@ -16,6 +16,7 @@ const wikiCacheDir = `${root}.cache/wiki/`
 // Wikimedia asks API clients to identify themselves with a way to get in touch.
 const USER_AGENT =
   "sydney-suburbs/1.0 (https://github.com/juliansommer/sydney-suburbs)"
+
 const REQUEST_GAP_MS = 200
 const MAX_ATTEMPTS = 5
 const DEFAULT_RETRY_SECONDS = 5
@@ -23,16 +24,21 @@ const DEFAULT_RETRY_SECONDS = 5
 // Downloads `url` to `.cache/abs/{file}` unless it is already there.
 export async function download(file: string, url: string): Promise<string> {
   const path = absCacheDir + file
+
   if (existsSync(path)) {
     return path
   }
+
   await mkdir(absCacheDir, { recursive: true })
   console.log(`Downloading ${file}`)
   const res = await fetch(url)
+
   if (!res.ok) {
     throw new Error(`Download failed: ${file} (${res.status})`)
   }
+
   await writeFile(path, new Uint8Array(await res.arrayBuffer()))
+
   return path
 }
 
@@ -44,18 +50,25 @@ async function politeFetch(url: string, attempt = 1): Promise<Uint8Array> {
   await sleep(Math.max(0, lastRequestAt + REQUEST_GAP_MS - Date.now()))
   lastRequestAt = Date.now()
   const res = await fetch(url, { headers: { "User-Agent": USER_AGENT } })
+
   if (res.ok) {
     return new Uint8Array(await res.arrayBuffer())
   }
+
   const retryable = res.status === 429 || res.status === 503
+
   if (!retryable || attempt === MAX_ATTEMPTS) {
     throw new Error(`Request failed: ${url} (${res.status})`)
   }
+
   const seconds = Number(res.headers.get("Retry-After"))
+
   const waitSeconds =
     Number.isFinite(seconds) && seconds > 0 ? seconds : DEFAULT_RETRY_SECONDS
+
   console.log(`Rate limited, retrying in ${waitSeconds}s`)
   await sleep(waitSeconds * 1000)
+
   return await politeFetch(url, attempt + 1)
 }
 
@@ -71,12 +84,15 @@ export async function fetchCached(
 ): Promise<Uint8Array> {
   const key = createHash("sha256").update(url).digest("hex")
   const path = wikiCacheDir + key
+
   if (!refresh && existsSync(path)) {
     return new Uint8Array(await readFile(path))
   }
+
   await mkdir(wikiCacheDir, { recursive: true })
   const body = await politeFetch(url)
   await writeFile(path, body)
+
   return body
 }
 
@@ -87,5 +103,6 @@ export async function fetchJson<T>(
   options?: CacheOptions,
 ): Promise<T> {
   const body = await fetchCached(url, options)
+
   return parse(schema, JSON.parse(new TextDecoder().decode(body)))
 }
