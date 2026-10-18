@@ -214,9 +214,6 @@ importers:
       drizzle-orm:
         specifier: ^0.45.4
         version: 0.45.4(@cloudflare/workers-types@5.20260922.1)(@electric-sql/pglite@0.5.8)(@neondatabase/serverless@1.2.0)(better-sqlite3@13.0.3)(kysely@0.29.6)
-      flag-icons:
-        specifier: ^7.5.0
-        version: 7.5.0
       hono:
         specifier: ^4.13.13
         version: 4.13.13
@@ -296,6 +293,9 @@ importers:
       filesystem-routing:
         specifier: ^0.4.0
         version: 0.4.0(supports-color@10.2.2)(vite@8.3.4(@types/node@24.19.1)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
+      flag-icons:
+        specifier: ^7.5.0
+        version: 7.5.0
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5

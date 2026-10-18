@@ -1,5 +1,4 @@
 import { once } from "@/lib/load"
-import { rasterise } from "@/lib/raster"
 
 import { getSuburbFacts } from "./suburb-facts"
 import { getSuburbsTopo } from "./suburbs-topo"
@@ -11,11 +10,5 @@ export const getBirthplace = once(async () => {
     getSuburbFacts(),
     getSuburbsTopo(),
   ])
-  const layers = birthplaceLayers(facts, data)
-  const fills = await Promise.all(
-    layers.fills.map(async (f) =>
-      f.image ? { ...f, image: await rasterise(f.image) } : f,
-    ),
-  )
-  return { ...layers, fills }
+  return birthplaceLayers(facts, data)
 })
