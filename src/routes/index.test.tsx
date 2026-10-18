@@ -61,16 +61,19 @@ describe("map page", () => {
     ).resolves.toHaveAttribute("href", "/login")
   })
 
-  it("signs out", async () => {
+  it("signs out to the map", async () => {
     signIn()
+    const assign = vi.spyOn(window.location, "assign").mockReturnValue()
 
-    await renderRoute("/")
+    await renderRoute("/?suburb=1")
 
     await userEvent.click(
       await screen.findByRole("button", { name: "Sign out" }),
     )
 
     expect(authClient.signOut).toHaveBeenCalledWith()
+    expect(assign).toHaveBeenCalledWith("/")
+    assign.mockRestore()
   })
 
   it("counts visited suburbs in the header", async () => {

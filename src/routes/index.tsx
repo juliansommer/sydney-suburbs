@@ -27,7 +27,7 @@ import {
 } from "@/lib/stats"
 import { birthplaceQuery } from "@/queries/birthplace"
 import { heatmapQuery } from "@/queries/heatmap"
-import { mySuburbsKey, mySuburbsQuery } from "@/queries/my-suburbs"
+import { mySuburbsQuery } from "@/queries/my-suburbs"
 import { nrlLayersQuery } from "@/queries/nrl-layers"
 import { suburbFactsQuery } from "@/queries/suburb-facts"
 import { suburbsTopoQuery } from "@/queries/suburbs-topo"
@@ -360,8 +360,6 @@ interface AccountProps {
 }
 
 function Account({ signedIn, children }: AccountProps) {
-  const queryClient = useQueryClient()
-
   if (!signedIn) {
     return (
       <Link className={buttonVariants()} to="/login">
@@ -376,9 +374,9 @@ function Account({ signedIn, children }: AccountProps) {
       <Button
         onClick={async () => {
           await authClient.signOut()
-          // Disabled queries keep their data, so drop it or the next person
-          // on this browser would see these visits.
-          queryClient.removeQueries({ queryKey: mySuburbsKey })
+          // A full load wipes the query cache, so the next person on this
+          // browser can't see these visits, and nothing refetches into a 401.
+          window.location.assign("/")
         }}
         variant="outline"
       >
