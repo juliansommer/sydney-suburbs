@@ -1,8 +1,6 @@
 import { type SearchParams, useSearchParams } from "@solidjs/router"
 import {
-  createEffect,
   createMemo,
-  createSignal,
   Errored,
   For,
   lazy,
@@ -92,30 +90,10 @@ interface MapHandleRef {
   current?: SuburbMapHandle
 }
 
-interface LoadedOverlay {
-  mode: MapMode
-  stat: HeatmapStat
-  layers: MapLayers
-  heatmap?: Heatmap
-}
-
 // An overlay that can't load leaves the map plain instead of taking it down.
-async function loadOverlay(
-  mode: MapMode,
-  stat: HeatmapStat,
-): Promise<Pick<LoadedOverlay, "layers" | "heatmap"> | undefined> {
+async function unlessFailed<T>(work: Promise<T>): Promise<T | undefined> {
   try {
-    if (mode === "heatmap") {
-      const heatmap = await getHeatmap(stat)
-      return { layers: heatmap.layers, heatmap }
-    }
-    if (mode === "nrl") {
-      return { layers: await getNrlLayers() }
-    }
-    if (mode === "birthplace") {
-      return { layers: await getBirthplace() }
-    }
-    return undefined
+    return await work
   } catch {
     return undefined
   }
@@ -235,33 +213,28 @@ function MapView(props: MapViewProps) {
   const mode = (): MapMode => search.mode ?? "visited"
   const stat = (): HeatmapStat => search.stat ?? DEFAULT_HEATMAP_STAT
 
-  // Loaded outside the render, so the mode switches at once and the map fills
-  // in when the layers land, rather than both waiting on the load.
-  const [loaded, setLoaded] = createSignal<LoadedOverlay>()
-  createEffect(
-    () => ({ mode: mode(), stat: stat() }),
-    (current) => {
-      let live = true
-      void (async () => {
-        const overlay = await loadOverlay(current.mode, current.stat)
-        if (live) {
-          setLoaded(overlay && { ...current, ...overlay })
-        }
-      })()
-      return () => {
-        live = false
-      }
-    },
+  // Only the current mode's layers load, and the map keeps what it has until
+  // they're ready.
+  const heatmap = createMemo(
+    (): Promise<Heatmap | undefined> | undefined =>
+      mode() === "heatmap" ? unlessFailed(getHeatmap(stat())) : undefined,
+    { loadingValue: undefined },
   )
-  // A new stat keeps the old one's colours until it loads, but its key waits.
-  const heatmap = (): Heatmap | undefined => {
-    const current = loaded()
-    return current?.stat === stat() ? current.heatmap : undefined
-  }
+  const overlayLayers = createMemo(
+    (): Promise<MapLayers | undefined> | MapLayers | undefined => {
+      if (mode() === "nrl") {
+        return unlessFailed(getNrlLayers())
+      }
+      if (mode() === "birthplace") {
+        return unlessFailed(getBirthplace())
+      }
+      return heatmap()?.layers
+    },
+    { loadingValue: undefined },
+  )
   const layers = createMemo((): MapLayers => {
     if (mode() !== "visited") {
-      const current = loaded()
-      return current?.mode === mode() ? current.layers : NO_LAYERS
+      return overlayLayers() ?? NO_LAYERS
     }
     return {
       fills: [
@@ -344,12 +317,11 @@ function MapView(props: MapViewProps) {
         selectedId={selected()?.id ?? null}
       />
       <div class="absolute bottom-4 left-4 flex flex-col items-start gap-2">
-        {/* A fresh boundary, so the legend's chunk doesn't hold up the switch. */}
-        <Show when={mode() === "nrl"}>
-          <Loading>
+        <Loading>
+          <Show when={mode() === "nrl"}>
             <NrlLegend />
-          </Loading>
-        </Show>
+          </Show>
+        </Loading>
         <Show when={mode() === "heatmap"}>
           <HeatmapLegend
             heatmap={heatmap()}
@@ -357,12 +329,11 @@ function MapView(props: MapViewProps) {
             stat={stat()}
           />
         </Show>
-        {/* A fresh boundary, so the legend's chunk doesn't hold up the switch. */}
-        <Show when={mode() === "birthplace"}>
-          <Loading>
+        <Loading>
+          <Show when={mode() === "birthplace"}>
             <BirthplaceLegend />
-          </Loading>
-        </Show>
+          </Show>
+        </Loading>
         <fieldset class="flex gap-1 rounded-lg border bg-background p-0.5 shadow-sm">
           <legend class="sr-only">Map mode</legend>
           <For each={MAP_MODES}>
