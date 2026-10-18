@@ -1,13 +1,17 @@
-import { useSyncExternalStore } from "react"
+import { type Accessor, createSignal, onSettled } from "solid-js"
 
 // Whether the media query currently matches, updating as it changes.
-export function useMediaQuery(query: string) {
-  const subscribe = (onChange: () => void) => {
-    const list = window.matchMedia(query)
+export function useMediaQuery(query: string): Accessor<boolean> {
+  const list = window.matchMedia(query)
+  const [matches, setMatches] = createSignal(list.matches)
+  onSettled(() => {
+    const onChange = () => {
+      setMatches(list.matches)
+    }
     list.addEventListener("change", onChange)
     return () => {
       list.removeEventListener("change", onChange)
     }
-  }
-  return useSyncExternalStore(subscribe, () => window.matchMedia(query).matches)
+  })
+  return matches
 }

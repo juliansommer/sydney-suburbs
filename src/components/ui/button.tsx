@@ -1,5 +1,7 @@
-import { Button as ButtonPrimitive } from "@base-ui/react/button"
+import type { JSX } from "@solidjs/web"
+import { Button as ButtonPrimitive } from "base-ui-solid/button"
 import { cva, type VariantProps } from "class-variance-authority"
+import { omit } from "solid-js"
 
 import { cn } from "@/lib/utils"
 
@@ -40,19 +42,21 @@ const buttonVariants = cva(
   },
 )
 
-function Button({
-  className,
-  variant = "default",
-  size = "default",
-  ...props
-}: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
+type ButtonProps = Omit<ButtonPrimitive.Props, "class"> &
+  VariantProps<typeof buttonVariants> & { class?: JSX.ClassValue }
+
+function Button(props: ButtonProps) {
+  const rest = omit(props, "class", "variant", "size")
   return (
     <ButtonPrimitive
       data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
-      {...props}
+      class={cn(
+        buttonVariants({ variant: props.variant, size: props.size }),
+        props.class,
+      )}
+      {...rest}
     />
   )
 }
 
-export { Button, buttonVariants }
+export { Button, buttonVariants, type ButtonProps }

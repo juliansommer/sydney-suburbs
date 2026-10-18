@@ -1,4 +1,4 @@
-import { SearchIcon } from "lucide-react"
+import SearchIcon from "@lucide/solid/icons/search"
 
 import {
   InputGroup,
@@ -10,12 +10,12 @@ import {
 // nothing shifts when the real one swaps in.
 export function SearchPlaceholder() {
   return (
-    <div className="rounded-lg bg-background shadow-sm">
-      <InputGroup className="w-auto">
+    <div class="rounded-lg bg-background shadow-sm">
+      <InputGroup class="w-auto">
         <InputGroupInput
           aria-label="Search suburbs"
           placeholder="Search suburbs"
-          readOnly
+          readonly
         />
         <InputGroupAddon align="inline-end" />
         <InputGroupAddon>

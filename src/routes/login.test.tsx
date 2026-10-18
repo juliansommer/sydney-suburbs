@@ -1,18 +1,15 @@
-import { screen, waitFor } from "@testing-library/react"
+import { screen, waitFor } from "@solidjs/testing-library"
 import userEvent from "@testing-library/user-event"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-import { authClient } from "@/lib/auth-client"
+import { signInWith } from "@/lib/auth"
 import { signIn, signOut } from "@/test/auth"
 import { mockFetch } from "@/test/mock-fetch"
 import { renderRoute } from "@/test/utils"
 
-vi.mock("@/lib/auth-client", () => ({
-  authClient: {
-    useSession: vi.fn(),
-    signIn: { social: vi.fn() },
-    signOut: vi.fn(),
-  },
+vi.mock(import("@/lib/auth"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  signInWith: vi.fn(),
 }))
 
 describe("login page", () => {
@@ -28,10 +25,20 @@ describe("login page", () => {
       await screen.findByRole("button", { name: "Sign in with Google" }),
     )
 
-    expect(authClient.signIn.social).toHaveBeenCalledWith({
-      provider: "google",
-      callbackURL: "/",
-    })
+    expect(signInWith).toHaveBeenCalledWith("google", "/")
+  })
+
+  it("says so when sign-in can't start", async () => {
+    vi.mocked(signInWith).mockRejectedValueOnce(new Error("500"))
+    await renderRoute("/login")
+
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Sign in with Google" }),
+    )
+
+    await expect(screen.findByRole("alert")).resolves.toHaveTextContent(
+      "Couldn’t start sign-in. Try again.",
+    )
   })
 
   it("offers GitHub sign-in", async () => {
@@ -41,10 +48,7 @@ describe("login page", () => {
       await screen.findByRole("button", { name: "Sign in with GitHub" }),
     )
 
-    expect(authClient.signIn.social).toHaveBeenCalledWith({
-      provider: "github",
-      callbackURL: "/",
-    })
+    expect(signInWith).toHaveBeenCalledWith("github", "/")
   })
 
   it("sends signed-in users to the map", async () => {
@@ -64,10 +68,7 @@ describe("login page", () => {
       await screen.findByRole("button", { name: "Sign in with Google" }),
     )
 
-    expect(authClient.signIn.social).toHaveBeenCalledWith({
-      provider: "google",
-      callbackURL: "/?suburb=2",
-    })
+    expect(signInWith).toHaveBeenCalledWith("google", "/?suburb=2")
   })
 
   it("sends signed-in users back to the redirect", async () => {
@@ -91,10 +92,7 @@ describe("login page", () => {
         await screen.findByRole("button", { name: "Sign in with Google" }),
       )
 
-      expect(authClient.signIn.social).toHaveBeenCalledWith({
-        provider: "google",
-        callbackURL: "/",
-      })
+      expect(signInWith).toHaveBeenCalledWith("google", "/")
     },
   )
 })

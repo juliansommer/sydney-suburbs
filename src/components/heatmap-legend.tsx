@@ -1,4 +1,4 @@
-import { useId } from "react"
+import { createUniqueId, For, Show } from "solid-js"
 
 import { type HeatBucket, type Heatmap, NO_DATA } from "@/lib/heatmap"
 import {
@@ -17,54 +17,54 @@ interface HeatmapLegendProps {
 }
 
 // The stat picker and a key of each colour's range, highest at the top.
-export function HeatmapLegend({
-  stat,
-  heatmap,
-  onStatChange,
-}: HeatmapLegendProps) {
-  const selectId = useId()
-  const info = STATS[stat]
-  const buckets = heatmap?.buckets.toReversed() ?? []
+export function HeatmapLegend(props: HeatmapLegendProps) {
+  const selectId = createUniqueId()
+  const info = () => STATS[props.stat]
   return (
-    <div className="flex w-64 flex-col gap-2 rounded-xl border bg-card p-3 text-card-foreground shadow-lg">
-      <label className="sr-only" htmlFor={selectId}>
+    <div class="flex w-64 flex-col gap-2 rounded-xl border bg-card p-3 text-card-foreground shadow-lg">
+      <label class="sr-only" for={selectId}>
         Statistic
       </label>
       <select
-        className="h-8 rounded-lg border border-input bg-background px-2 text-sm font-medium"
+        class="h-8 rounded-lg border border-input bg-background px-2 text-sm font-medium"
         id={selectId}
         onChange={(event) => {
-          const next = HEATMAP_STATS.find((s) => s === event.target.value)
+          const next = HEATMAP_STATS.find(
+            (s) => s === event.currentTarget.value,
+          )
           if (next) {
-            onStatChange(next)
+            props.onStatChange(next)
           }
         }}
-        value={stat}
+        value={props.stat}
       >
-        {HEATMAP_STATS.map((s) => (
-          <option key={s} value={s}>
-            {STATS[s].label}
-          </option>
-        ))}
+        <For each={HEATMAP_STATS}>
+          {(s) => <option value={s}>{STATS[s].label}</option>}
+        </For>
       </select>
       <ul
-        aria-label={`${info.label} key`}
-        className="flex flex-col gap-1 text-xs"
+        aria-label={`${info().label} key`}
+        class="flex flex-col gap-1 text-xs"
       >
-        {buckets.map((b) => (
-          <li className="flex items-center gap-2" key={b.swatch}>
-            <Swatch className={b.swatch} />
-            {bucketLabel(b, info)}
-          </li>
-        ))}
-        {heatmap?.hasNoData ? (
-          <li className="flex items-center gap-2 text-muted-foreground">
-            <Swatch className={NO_DATA.swatch} />
+        <For
+          each={props.heatmap?.buckets.toReversed() ?? []}
+          keyed={(b) => b.swatch}
+        >
+          {(b) => (
+            <li class="flex items-center gap-2">
+              <Swatch class={b().swatch} />
+              {bucketLabel(b(), info())}
+            </li>
+          )}
+        </For>
+        <Show when={props.heatmap?.hasNoData}>
+          <li class="flex items-center gap-2 text-muted-foreground">
+            <Swatch class={NO_DATA.swatch} />
             No data
           </li>
-        ) : null}
+        </Show>
       </ul>
-      <p className="text-xs text-muted-foreground">{info.source}</p>
+      <p class="text-xs text-muted-foreground">{info().source}</p>
     </div>
   )
 }
@@ -80,14 +80,14 @@ function bucketLabel({ from, to }: HeatBucket, info: StatInfo): string {
 }
 
 interface SwatchProps {
-  className: string
+  class: string
 }
 
-function Swatch({ className }: SwatchProps) {
+function Swatch(props: SwatchProps) {
   return (
     <span
-      aria-hidden
-      className={cn("size-3.5 shrink-0 rounded-sm border", className)}
+      aria-hidden="true"
+      class={cn("size-3.5 shrink-0 rounded-sm border", props.class)}
     />
   )
 }

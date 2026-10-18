@@ -1,4 +1,4 @@
-import { queryOptions } from "@tanstack/react-query"
+import { queryOptions } from "@tanstack/solid-query"
 import { z } from "zod/mini"
 
 import { apiFetch } from "@/lib/api"

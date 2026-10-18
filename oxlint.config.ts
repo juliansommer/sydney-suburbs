@@ -1,17 +1,16 @@
 import { defineConfig } from "oxlint"
 import antiSlop from "ultracite/oxlint/anti-slop"
 import core from "ultracite/oxlint/core"
-import react from "ultracite/oxlint/react"
 import shadcn from "ultracite/oxlint/shadcn"
+import solid from "ultracite/oxlint/solid"
 import tanstack from "ultracite/oxlint/tanstack"
 import vitest from "ultracite/oxlint/vitest"
 
 export default defineConfig({
-  extends: [core, react, vitest, tanstack, shadcn, antiSlop],
+  extends: [core, solid, vitest, tanstack, shadcn, antiSlop],
   jsPlugins: [
     "@tanstack/eslint-plugin-query",
     "@tanstack/eslint-plugin-router",
-    "eslint-plugin-react-you-might-not-need-an-effect",
   ],
   options: {
     typeAware: true,
@@ -44,18 +43,6 @@ export default defineConfig({
     "import/consistent-type-specifier-style": "off",
     "node/callback-return": "off",
     "unicorn/no-useless-undefined": "off",
-    "react/function-component-definition": [
-      "error",
-      { namedComponents: "function-declaration" },
-    ],
-    "react/no-array-index-key": "error",
-    "react/jsx-handler-names": "off",
-    "react/todo": "off",
-    "react-you-might-not-need-an-effect/no-event-handler": "error",
-    "react-you-might-not-need-an-effect/no-external-store-subscription":
-      "error",
-    "react-you-might-not-need-an-effect/no-pass-data-to-parent": "error",
-    "react-you-might-not-need-an-effect/no-pass-live-state-to-parent": "error",
     "typescript/no-floating-promises": [
       "error",
       {

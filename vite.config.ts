@@ -3,9 +3,9 @@ import { existsSync } from "node:fs"
 import { fileURLToPath, URL } from "node:url"
 
 import devServer from "@hono/vite-dev-server"
+import solid from "@solidjs/vite-plugin"
 import tailwindcss from "@tailwindcss/vite"
 import { tanstackRouter } from "@tanstack/router-plugin/vite"
-import react from "@vitejs/plugin-react"
 import { cn as cnTables } from "cn/vite"
 import { defineConfig } from "vite"
 
@@ -20,11 +20,11 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     tanstackRouter({
-      target: "react",
+      target: "solid",
       autoCodeSplitting: true,
       routeFileIgnorePattern: "\\.test\\.(ts|tsx)$",
     }),
-    react({ compiler: mode !== "test" }),
+    solid(),
     tailwindcss(),
     // Compiles merge tables for only the classes we use, into src/lib.
     cnTables({ content: ["src/**/*.{ts,tsx}"], out: "src/lib/cn-tables.ts" }),
@@ -46,13 +46,13 @@ export default defineConfig(({ mode }) => ({
   },
   test: {
     clearMocks: true,
+    environment: "happy-dom",
     projects: [
       {
         extends: true,
         test: {
           name: "client",
           globals: true,
-          environment: "happy-dom",
           include: ["src/**/*.test.{ts,tsx}"],
           setupFiles: "./src/test/setup.ts",
           pool: "threads",

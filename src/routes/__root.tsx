@@ -1,9 +1,9 @@
-import type { QueryClient } from "@tanstack/react-query"
+import type { QueryClient } from "@tanstack/solid-query"
 import {
   createRootRouteWithContext,
   Link,
   Outlet,
-} from "@tanstack/react-router"
+} from "@tanstack/solid-router"
 
 interface RouterContext {
   queryClient: QueryClient
@@ -16,7 +16,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
 function RootLayout() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div class="min-h-screen bg-background text-foreground">
       <Outlet />
     </div>
   )
@@ -24,7 +24,7 @@ function RootLayout() {
 
 function NotFound() {
   return (
-    <p className="p-4 text-muted-foreground">
+    <p class="p-4 text-muted-foreground">
       No such page. <Link to="/">Back to the map</Link>
     </p>
   )

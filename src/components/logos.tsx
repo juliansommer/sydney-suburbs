@@ -1,8 +1,8 @@
 // oxlint-disable shadcn/no-raw-colors
-import type { SVGProps } from "react"
+import type { ComponentProps } from "@solidjs/web"
 
 // The GitHub mark, in the current text colour.
-export function GitHubLogo(props: SVGProps<SVGSVGElement>) {
+export function GitHubLogo(props: ComponentProps<"svg">) {
   return (
     <svg
       aria-hidden="true"
@@ -16,7 +16,7 @@ export function GitHubLogo(props: SVGProps<SVGSVGElement>) {
   )
 }
 
-export function GoogleLogo(props: SVGProps<SVGSVGElement>) {
+export function GoogleLogo(props: ComponentProps<"svg">) {
   return (
     <svg
       aria-hidden="true"

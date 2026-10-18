@@ -1,9 +1,11 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router"
+import { useQuery } from "@tanstack/solid-query"
+import { createFileRoute, Navigate } from "@tanstack/solid-router"
+import { createSignal, Match, Show, Switch } from "solid-js"
 import { z } from "zod/mini"
 
 import { GitHubLogo, GoogleLogo } from "@/components/logos"
 import { Button } from "@/components/ui/button"
-import { authClient } from "@/lib/auth-client"
+import { sessionQuery, signInWith } from "@/lib/auth"
 
 // Only same-origin paths, so the login page can't bounce someone off-site.
 // `//host` and `/\host` are protocol-relative to browsers.
@@ -23,52 +25,60 @@ export const Route = createFileRoute("/login")({
 })
 
 function LoginPage() {
-  const { data: session, isPending } = authClient.useSession()
+  const session = useQuery(() => sessionQuery)
   const redirect = Route.useSearch({ select: (s) => s.redirect ?? "/" })
+  const [failed, setFailed] = createSignal(false)
 
-  if (isPending) {
-    return null
-  }
-
-  if (session) {
-    // `href` wins over `to`, which is only there because the types need it.
-    return <Navigate href={redirect} replace to="/" />
+  async function signIn(provider: "google" | "github") {
+    setFailed(false)
+    try {
+      await signInWith(provider, redirect())
+    } catch {
+      setFailed(true)
+    }
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-4">
-      <h1 className="text-2xl font-semibold">Sydney Suburbs</h1>
-      <p className="text-muted-foreground">
-        Sign in to track the suburbs you&rsquo;ve visited.
-      </p>
-      <div className="flex flex-col gap-2">
-        <Button
-          size="lg"
-          variant="outline"
-          onClick={async () => {
-            await authClient.signIn.social({
-              provider: "google",
-              callbackURL: redirect,
-            })
-          }}
-        >
-          <GoogleLogo />
-          Sign in with Google
-        </Button>
-        <Button
-          size="lg"
-          variant="outline"
-          onClick={async () => {
-            await authClient.signIn.social({
-              provider: "github",
-              callbackURL: redirect,
-            })
-          }}
-        >
-          <GitHubLogo />
-          Sign in with GitHub
-        </Button>
-      </div>
-    </main>
+    <Switch>
+      <Match when={session.isSuccess && session.data}>
+        {/* `href` wins over `to`, which is only there because the types need it. */}
+        <Navigate href={redirect()} replace to="/" />
+      </Match>
+      <Match when={!session.isPending}>
+        <main class="flex min-h-screen flex-col items-center justify-center gap-4">
+          <h1 class="text-2xl font-semibold">Sydney Suburbs</h1>
+          <p class="text-muted-foreground">
+            Sign in to track the suburbs you&rsquo;ve visited.
+          </p>
+          <div class="flex flex-col gap-2">
+            <Button
+              onClick={async () => {
+                await signIn("google")
+              }}
+              size="lg"
+              variant="outline"
+            >
+              <GoogleLogo />
+              Sign in with Google
+            </Button>
+            <Button
+              onClick={async () => {
+                await signIn("github")
+              }}
+              size="lg"
+              variant="outline"
+            >
+              <GitHubLogo />
+              Sign in with GitHub
+            </Button>
+          </div>
+          <Show when={failed()}>
+            <p class="text-sm text-destructive" role="alert">
+              Couldn&rsquo;t start sign-in. Try again.
+            </p>
+          </Show>
+        </main>
+      </Match>
+    </Switch>
   )
 }
