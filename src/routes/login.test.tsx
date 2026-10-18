@@ -1,6 +1,6 @@
 import { screen, waitFor } from "@solidjs/testing-library"
 import userEvent from "@testing-library/user-event"
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { signInWith } from "@/lib/auth"
 import { signIn, signOut } from "@/test/auth"
@@ -12,7 +12,15 @@ vi.mock(import("@/lib/auth"), async (importOriginal) => ({
   signInWith: vi.fn(),
 }))
 
+// A redirect lands once the map page's chunk loads, which takes seconds cold,
+// longer than a waitFor waits, so it loads up front.
+const WARM_UP_TIMEOUT_MS = 30_000
+
 describe("login page", () => {
+  beforeAll(async () => {
+    await import("@/routes/index")
+  }, WARM_UP_TIMEOUT_MS)
+
   beforeEach(() => {
     mockFetch()
     signOut()
@@ -54,10 +62,10 @@ describe("login page", () => {
   it("sends signed-in users to the map", async () => {
     signIn()
 
-    const { router } = await renderRoute("/login")
+    const { pathname } = await renderRoute("/login")
 
     await waitFor(() => {
-      expect(router.state.location.pathname).toBe("/")
+      expect(pathname()).toBe("/")
     })
   })
 
@@ -74,12 +82,12 @@ describe("login page", () => {
   it("sends signed-in users back to the redirect", async () => {
     signIn()
 
-    const { router } = await renderRoute(
+    const { search } = await renderRoute(
       `/login?redirect=${encodeURIComponent("/?suburb=2")}`,
     )
 
     await waitFor(() => {
-      expect(router.state.location.search).toHaveProperty("suburb", 2)
+      expect(search()).toHaveProperty("suburb", "2")
     })
   })
 

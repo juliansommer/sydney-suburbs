@@ -1,32 +1,19 @@
-import { useQuery } from "@tanstack/solid-query"
-import { createFileRoute, Navigate } from "@tanstack/solid-router"
-import { createSignal, Match, Show, Switch } from "solid-js"
-import { z } from "zod/mini"
+import { useNavigate, useSearchParams } from "@solidjs/router"
+import { createMemo, createSignal, Loading, Show, untrack } from "solid-js"
 
 import { GitHubLogo, GoogleLogo } from "@/components/logos"
 import { Button } from "@/components/ui/button"
-import { sessionQuery, signInWith } from "@/lib/auth"
+import { getSession, signInWith } from "@/lib/auth"
 
-// Only same-origin paths, so the login page can't bounce someone off-site.
-// `//host` and `/\host` are protocol-relative to browsers.
-const redirectPath = z
-  .string()
-  .check(z.refine((path) => /^\/(?![/\\])/.test(path)))
-
-interface LoginSearch {
-  redirect?: string
-}
-
-export const Route = createFileRoute("/login")({
-  validateSearch: (search): LoginSearch => ({
-    redirect: redirectPath.safeParse(search.redirect).data,
-  }),
-  component: LoginPage,
-})
-
-function LoginPage() {
-  const session = useQuery(() => sessionQuery)
-  const redirect = Route.useSearch({ select: (s) => s.redirect ?? "/" })
+export default function LoginPage() {
+  const [search] = useSearchParams<{ redirect?: string }>()
+  const session = createMemo(async () => await getSession())
+  // Only same-origin paths, so the login page can't bounce someone off-site.
+  // `//host` and `/\host` are protocol-relative to browsers.
+  const redirect = () => {
+    const to = search.redirect ?? "/"
+    return /^\/(?![/\\])/.test(to) ? to : "/"
+  }
   const [failed, setFailed] = createSignal(false)
 
   async function signIn(provider: "google" | "github") {
@@ -39,12 +26,8 @@ function LoginPage() {
   }
 
   return (
-    <Switch>
-      <Match when={session.isSuccess && session.data}>
-        {/* `href` wins over `to`, which is only there because the types need it. */}
-        <Navigate href={redirect()} replace to="/" />
-      </Match>
-      <Match when={!session.isPending}>
+    <Loading>
+      <Show fallback={<Redirect to={redirect()} />} when={!session()}>
         <main class="flex min-h-screen flex-col items-center justify-center gap-4">
           <h1 class="text-2xl font-semibold">Sydney Suburbs</h1>
           <p class="text-muted-foreground">
@@ -78,7 +61,21 @@ function LoginPage() {
             </p>
           </Show>
         </main>
-      </Match>
-    </Switch>
+      </Show>
+    </Loading>
   )
+}
+
+interface RedirectProps {
+  to: string
+}
+
+// Already signed in, so there's nothing to do here.
+function Redirect(props: RedirectProps) {
+  const navigate = useNavigate()
+  navigate(
+    untrack(() => props.to),
+    { replace: true },
+  )
+  return null
 }

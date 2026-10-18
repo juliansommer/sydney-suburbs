@@ -1,12 +1,10 @@
-import { queryOptions } from "@tanstack/solid-query"
+import { query } from "@solidjs/router"
 import { z } from "zod/mini"
 
 // Better Auth's endpoints under /api/auth, on the same origin, so the session
 // cookie rides along on every request.
 const session = z.nullable(z.object({ user: z.object({ email: z.string() }) }))
 const redirect = z.object({ url: z.string() })
-
-const SESSION_STALE_MS = 5 * 60 * 1000
 
 export type Session = z.infer<typeof session>
 
@@ -25,20 +23,19 @@ async function post(
   return res
 }
 
-export const sessionQuery = queryOptions({
-  queryKey: ["session"],
-  queryFn: async () => {
+// A failed check reads as signed out, so the page shows Sign in rather than
+// an error. A live session shows up again on the next load.
+export const getSession = query(async (): Promise<Session> => {
+  try {
     const res = await fetch("/api/auth/get-session")
     if (!res.ok) {
-      throw new Error(`${res.status} ${res.statusText}`)
+      return null
     }
     return session.parse(await res.json())
-  },
-  // Failing fast shows Sign in rather than holding the header back through
-  // retries, and the session rarely changes under a tab.
-  retry: false,
-  staleTime: SESSION_STALE_MS,
-})
+  } catch {
+    return null
+  }
+}, "session")
 
 // Leaves for the provider's sign-in page, which comes back to `callbackURL`.
 export async function signInWith(

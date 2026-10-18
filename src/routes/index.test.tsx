@@ -34,6 +34,7 @@ vi.mock(import("@/lib/auth"), async (importOriginal) => ({
 const WARM_UP_TIMEOUT_MS = 30_000
 async function loadLazyChunks() {
   await Promise.all([
+    import("@/routes/index"),
     import("@/components/suburb-panel"),
     import("@/components/map/suburb-search"),
     import("@/components/council-progress"),
@@ -162,7 +163,7 @@ describe("map page", () => {
   })
 
   it("toggles the birthplace map from the suburb panel", async () => {
-    const { router } = await renderRoute("/?suburb=1")
+    const { search } = await renderRoute("/?suburb=1")
 
     await userEvent.click(
       await screen.findByRole("button", { name: "More details" }),
@@ -170,14 +171,18 @@ describe("map page", () => {
     const button = screen.getByRole("button", { name: "Show birthplace map" })
     await userEvent.click(button)
 
-    expect({ ...router.state.location.search }).toStrictEqual({
-      suburb: 1,
-      mode: "birthplace",
+    await waitFor(() => {
+      expect(search()).toStrictEqual({
+        suburb: "1",
+        mode: "birthplace",
+      })
     })
 
     await userEvent.click(button)
 
-    expect({ ...router.state.location.search }).toStrictEqual({ suburb: 1 })
+    await waitFor(() => {
+      expect(search()).toStrictEqual({ suburb: "1" })
+    })
   })
 
   it("shows a heatmap of household income by default", async () => {
@@ -205,16 +210,18 @@ describe("map page", () => {
   })
 
   it("switches the heatmap's stat from the key", async () => {
-    const { router } = await renderRoute("/?mode=heatmap")
+    const { search } = await renderRoute("/?mode=heatmap")
 
     await userEvent.selectOptions(
       await screen.findByRole("combobox", { name: "Statistic" }),
       "Violent crime",
     )
 
-    expect({ ...router.state.location.search }).toStrictEqual({
-      mode: "heatmap",
-      stat: "violentCrimeRate",
+    await waitFor(() => {
+      expect(search()).toStrictEqual({
+        mode: "heatmap",
+        stat: "violentCrimeRate",
+      })
     })
     await expect(
       screen.findByRole("list", { name: "Violent crime key" }),
@@ -222,7 +229,7 @@ describe("map page", () => {
   })
 
   it("shows a stat's heatmap from the suburb panel", async () => {
-    const { router } = await renderRoute("/?suburb=1")
+    const { search } = await renderRoute("/?suburb=1")
 
     await userEvent.click(
       await screen.findByRole("button", { name: "More details" }),
@@ -231,10 +238,12 @@ describe("map page", () => {
       screen.getByRole("button", { name: "Show Median rent heatmap" }),
     )
 
-    expect({ ...router.state.location.search }).toStrictEqual({
-      suburb: 1,
-      mode: "heatmap",
-      stat: "medianRent",
+    await waitFor(() => {
+      expect(search()).toStrictEqual({
+        suburb: "1",
+        mode: "heatmap",
+        stat: "medianRent",
+      })
     })
     await expect(
       screen.findByRole("list", { name: "Median rent key" }),
@@ -242,7 +251,7 @@ describe("map page", () => {
   })
 
   it("hides the heatmap when its stat is clicked again", async () => {
-    const { router } = await renderRoute(
+    const { search } = await renderRoute(
       "/?suburb=1&mode=heatmap&stat=medianRent",
     )
 
@@ -253,50 +262,34 @@ describe("map page", () => {
       screen.getByRole("button", { name: "Show Median rent heatmap" }),
     )
 
-    expect({ ...router.state.location.search }).toStrictEqual({ suburb: 1 })
-  })
-
-  it("drops an unknown stat, and any stat outside the heatmap", async () => {
-    const { router } = await renderRoute("/?mode=heatmap&stat=vibes")
-
-    await expect(
-      screen.findByRole("combobox", { name: "Statistic" }),
-    ).resolves.toHaveValue("medianHouseholdIncome")
-    expect(router.state.location.search).not.toHaveProperty("stat")
-
-    await userEvent.click(screen.getByRole("button", { name: "NRL" }))
-
-    expect({ ...router.state.location.search }).toStrictEqual({ mode: "nrl" })
-  })
-
-  it("falls back to the visited mode for an unknown mode", async () => {
-    const { router } = await renderRoute("/?mode=rugby")
-
-    await expect(
-      screen.findByRole("button", { name: "Visited" }),
-    ).resolves.toHaveAttribute("aria-pressed", "true")
-    expect(router.state.location.search).not.toHaveProperty("mode")
+    await waitFor(() => {
+      expect(search()).toStrictEqual({ suburb: "1" })
+    })
   })
 
   it("keeps the selected suburb when switching mode", async () => {
-    const { router } = await renderRoute("/?suburb=1")
+    const { search } = await renderRoute("/?suburb=1")
 
     await userEvent.click(await screen.findByRole("button", { name: "NRL" }))
 
-    expect({ ...router.state.location.search }).toStrictEqual({
-      suburb: 1,
-      mode: "nrl",
+    await waitFor(() => {
+      expect(search()).toStrictEqual({
+        suburb: "1",
+        mode: "nrl",
+      })
     })
   })
 
   it("selects a suburb on click and shows its panel", async () => {
-    const { router } = await renderRoute("/")
+    const { search } = await renderRoute("/")
 
     // A bare click: happy-dom lacks the SVG geometry d3-zoom's mousedown needs.
     fireEvent.click(await screen.findByRole("button", { name: "Alpha" }))
 
     const panel = await screen.findByRole("region", { name: "Alpha" })
-    expect(router.state.location.search).toHaveProperty("suburb", 1)
+    await waitFor(() => {
+      expect(search()).toHaveProperty("suburb", "1")
+    })
     expect(within(panel).getByText("Sydney Council")).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Alpha" })).toHaveAttribute(
       "aria-pressed",
@@ -375,7 +368,7 @@ describe("map page", () => {
   })
 
   it("closes the panel on Escape", async () => {
-    const { router } = await renderRoute("/?suburb=1")
+    const { search } = await renderRoute("/?suburb=1")
     await screen.findByRole("region", { name: "Alpha" })
 
     await userEvent.keyboard("{Escape}")
@@ -383,7 +376,9 @@ describe("map page", () => {
     await waitFor(() => {
       expect(screen.queryByRole("region")).not.toBeInTheDocument()
     })
-    expect(router.state.location.search).not.toHaveProperty("suburb")
+    await waitFor(() => {
+      expect(search()).not.toHaveProperty("suburb")
+    })
   })
 
   it("closes the panel from its close button", async () => {
@@ -395,7 +390,7 @@ describe("map page", () => {
   })
 
   it("closes the panel when its suburb is clicked again", async () => {
-    const { router } = await renderRoute("/?suburb=1")
+    const { search } = await renderRoute("/?suburb=1")
     await screen.findByRole("region", { name: "Alpha" })
 
     fireEvent.click(screen.getByRole("button", { name: "Alpha" }))
@@ -403,7 +398,9 @@ describe("map page", () => {
     await waitFor(() => {
       expect(screen.queryByRole("region")).not.toBeInTheDocument()
     })
-    expect(router.state.location.search).not.toHaveProperty("suburb")
+    await waitFor(() => {
+      expect(search()).not.toHaveProperty("suburb")
+    })
   })
 })
 

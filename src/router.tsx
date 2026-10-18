@@ -1,27 +1,33 @@
-import { createRouter } from "@tanstack/solid-router"
+import {
+  createRouter,
+  intentPreload,
+  type RouterHistory,
+} from "@solidjs/router"
+import { fileRoutes } from "@solidjs/router/fs"
+import type { JSX } from "@solidjs/web"
+import { Loading } from "solid-js"
+import { pageRoutes } from "virtual:file-routes"
 
-import { createQueryClient } from "@/lib/query-client"
-import { routeTree } from "@/routeTree.gen"
-
-export function createAppRouter() {
-  const queryClient = createQueryClient()
-
-  const router = createRouter({
-    routeTree,
-    // Route loaders prefetch through the query client; Query owns the cache
-    // from there, so the router's own one would only be a second copy of the
-    // same data with a different expiry.
-    defaultPreload: "intent",
-    defaultPreloadStaleTime: 0,
-    context: { queryClient },
-    scrollRestoration: true,
+// Routes come from the files in src/routes. Tests pass a memory history.
+export function createAppRouter(history?: RouterHistory) {
+  return createRouter({
+    routes: fileRoutes(pageRoutes),
+    history,
+    // Hovering a link loads the page's chunk before the click.
+    preloadLinks: intentPreload(),
   })
-
-  return { router, queryClient }
 }
 
-declare module "@tanstack/solid-router" {
-  interface Register {
-    router: ReturnType<typeof createAppRouter>["router"]
-  }
+interface AppShellProps {
+  children?: JSX.Element
+}
+
+// Wraps every page, and stays mounted across navigations. Pages load in their
+// own chunks, so the first one fills in once it arrives.
+export function AppShell(props: AppShellProps) {
+  return (
+    <div class="min-h-screen bg-background text-foreground">
+      <Loading>{props.children}</Loading>
+    </div>
+  )
 }

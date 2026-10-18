@@ -1,9 +1,9 @@
-import { MutationObserver, useQueryClient } from "@tanstack/solid-query"
-import { createSignal, onCleanup } from "solid-js"
+import { revalidate } from "@solidjs/router"
+import { action, createOptimistic, createSignal } from "solid-js"
 import { z } from "zod/mini"
 
 import { apiFetch } from "@/lib/api"
-import { mySuburbsKey } from "@/queries/my-suburbs"
+import { getMySuburbs, useMySuburbs } from "@/queries/my-suburbs"
 import {
   type UserSuburb,
   type UserSuburbPatch,
@@ -33,70 +33,65 @@ export function applyPatch(
   return empty ? others : [...others, next]
 }
 
-// Every change to one suburb goes through here. The shared scope runs them in
-// order, so a notes save can't overtake the toggle before it.
+let lastSave: Promise<void> = Promise.resolve()
+
+// Saves go out one at a time, so a later change can't land before an earlier
+// one, like a notes save overtaking the toggle before it.
+async function save(suburbId: string, patch: UserSuburbPatch): Promise<void> {
+  const previous = lastSave
+  lastSave = (async () => {
+    try {
+      await previous
+    } catch {
+      // Its own caller handles a failed save; this one goes out regardless.
+    }
+    await apiFetch(
+      `/api/me/suburbs/${encodeURIComponent(suburbId)}`,
+      z.nullable(userSuburbSchema),
+      {
+        method: "PATCH",
+        body: JSON.stringify(patch),
+        // The page may be going away, so let the request outlive it.
+        keepalive: document.visibilityState === "hidden",
+      },
+    )
+  })()
+  await lastSave
+}
+
+type SaveStatus = "idle" | "saved" | "failed"
+
+// Every change to one suburb goes through here. The change shows at once, and
+// reverts if the save fails.
 export function useUpdateSuburb(suburbId: string) {
-  const queryClient = useQueryClient()
-  // Solid Query's useMutation runs as a transition, which would hold the
-  // optimistic change back until the save finishes, so this observes the
-  // mutation directly.
-  const observer = new MutationObserver(queryClient, {
-    mutationKey: [...mySuburbsKey, suburbId],
-    scope: { id: `me/suburbs/${suburbId}` },
-    mutationFn: async (patch: UserSuburbPatch) =>
-      await apiFetch(
-        `/api/me/suburbs/${encodeURIComponent(suburbId)}`,
-        z.nullable(userSuburbSchema),
-        {
-          method: "PATCH",
-          body: JSON.stringify(patch),
-          // The page may be going away, so let the request outlive it.
-          keepalive: document.visibilityState === "hidden",
-        },
-      ),
-    onMutate: async (patch) => {
-      await queryClient.cancelQueries({ queryKey: mySuburbsKey })
-      const previous = queryClient.getQueryData<UserSuburb[]>(mySuburbsKey)
-      if (previous) {
-        queryClient.setQueryData(
-          mySuburbsKey,
-          applyPatch(previous, suburbId, patch),
-        )
-      }
-      return { previous }
-    },
-    onError: (_error, _patch, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(mySuburbsKey, context.previous)
-      }
-    },
-    onSettled: async () => {
-      // Refetching while another save is in flight would briefly undo its
-      // optimistic change, so only the last one to finish refetches.
-      if (queryClient.isMutating({ mutationKey: mySuburbsKey }) === 1) {
-        await queryClient.invalidateQueries({ queryKey: mySuburbsKey })
-      }
-    },
+  const [, setRows] = useMySuburbs()
+  const [saving, setSaving] = createOptimistic(false)
+  const [status, setStatus] = createSignal<SaveStatus>("idle")
+
+  const mutate = action(function* update(patch: UserSuburbPatch) {
+    setSaving(true)
+    setRows((rows) => applyPatch(rows, suburbId, patch))
+    try {
+      yield save(suburbId, patch)
+      setStatus("saved")
+    } catch {
+      setStatus("failed")
+    }
+    // The refetch lands with the end of the save, so the rows never flash
+    // back to how they were first.
+    revalidate(getMySuburbs.key)
   })
-  const [result, setResult] = createSignal(observer.getCurrentResult())
-  onCleanup(observer.subscribe(setResult))
 
   return {
-    mutate: async (patch: UserSuburbPatch) => {
-      try {
-        await observer.mutate(patch)
-      } catch {
-        // Failures land in isError, and onError rolls back.
-      }
-    },
+    mutate,
     get isPending() {
-      return result().isPending
+      return saving()
     },
     get isSuccess() {
-      return result().isSuccess
+      return status() === "saved"
     },
     get isError() {
-      return result().isError
+      return status() === "failed"
     },
   }
 }

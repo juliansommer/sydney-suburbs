@@ -1,4 +1,3 @@
-import { queryOptions } from "@tanstack/solid-query"
 import type {
   Feature,
   Geometry,
@@ -14,6 +13,7 @@ import type {
 } from "topojson-specification"
 
 import { readJson } from "@/lib/json"
+import { once } from "@/lib/load"
 import type {
   Council,
   Land,
@@ -119,15 +119,11 @@ export function toSuburbMap(topology: MapTopology): SuburbMapData {
   }
 }
 
-// The file only changes on deploy, so it never goes stale in a session.
-export const suburbsTopoQuery = queryOptions({
-  queryKey: ["suburbs-topo"],
-  queryFn: async () => {
-    const res = await fetch("/sydney-suburbs.topo.json")
-    if (!res.ok) {
-      throw new Error(`Map data failed to load (${res.status})`)
-    }
-    return toSuburbMap(await readJson<MapTopology>(res))
-  },
-  staleTime: Infinity,
+// The file only changes on deploy.
+export const getSuburbsTopo = once(async () => {
+  const res = await fetch("/sydney-suburbs.topo.json")
+  if (!res.ok) {
+    throw new Error(`Map data failed to load (${res.status})`)
+  }
+  return toSuburbMap(await readJson<MapTopology>(res))
 })

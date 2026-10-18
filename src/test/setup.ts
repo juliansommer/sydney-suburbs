@@ -1,5 +1,8 @@
 import "@testing-library/jest-dom/vitest"
-import { vi } from "vitest"
+import { query } from "@solidjs/router"
+import { beforeEach, vi } from "vitest"
+
+import { clearOnce } from "@/lib/load"
 
 // happy-dom has no layout, so report a fixed size as soon as an element is
 // observed.
@@ -21,3 +24,9 @@ class FixedResizeObserver {
 }
 
 vi.stubGlobal("ResizeObserver", FixedResizeObserver)
+
+// Cached loads would otherwise carry one test's data into the next.
+beforeEach(() => {
+  query.clear()
+  clearOnce()
+})

@@ -1,8 +1,14 @@
 import ChevronRightIcon from "@lucide/solid/icons/chevron-right"
 import InfoIcon from "@lucide/solid/icons/info"
-import { useQuery } from "@tanstack/solid-query"
 import { Collapsible } from "base-ui-solid/collapsible"
-import { type Accessor, createMemo, For, Match, Show, Switch } from "solid-js"
+import {
+  type Accessor,
+  createMemo,
+  Errored,
+  For,
+  Loading,
+  Show,
+} from "solid-js"
 
 import {
   Popover,
@@ -11,7 +17,7 @@ import {
 } from "@/components/ui/popover"
 import { DETAIL_STATS, isHeatmapStat, type Overlay, STATS } from "@/lib/stats"
 import { cn } from "@/lib/utils"
-import { suburbFactsQuery } from "@/queries/suburb-facts"
+import { getSuburbFacts } from "@/queries/suburb-facts"
 import type {
   SuburbFacts,
   SuburbPhoto,
@@ -21,57 +27,49 @@ import type {
 
 const populationFormat = new Intl.NumberFormat("en-AU")
 
-type FactsState =
-  | { status: "pending" }
-  | { status: "error" }
-  | { status: "success"; facts: SuburbFacts | undefined }
-
-// A failed load hides the facts, so the rest of the panel keeps working.
 // Nothing is fetched until a suburb is selected; the map page prefetches.
+// Reading it suspends until the file loads.
 export function useSuburbFacts(
   suburbId: Accessor<string | undefined>,
-): Accessor<FactsState> {
-  const query = useQuery(() => ({
-    ...suburbFactsQuery,
-    enabled: suburbId() !== undefined,
-  }))
-  return createMemo((): FactsState => {
+): Accessor<SuburbFacts | undefined> {
+  return createMemo(async (): Promise<SuburbFacts | undefined> => {
     const id = suburbId()
-    if (query.isSuccess && id !== undefined) {
-      return { status: "success", facts: query.data[id] }
+    if (id === undefined) {
+      return undefined
     }
-    return query.isError ? { status: "error" } : { status: "pending" }
+    const facts = await getSuburbFacts()
+    return facts[id]
   })
 }
 
-function factsOf(state: FactsState): SuburbFacts | undefined {
-  return state.status === "success" ? state.facts : undefined
-}
-
 interface SuburbMediaProps {
-  state: FactsState
+  facts: SuburbFacts | undefined
   name: string
   class?: string
 }
 
 // The photo at the top of the panel, or a skeleton of the same size while the
-// facts load. Suburbs without a photo skip it entirely.
+// facts load. Suburbs without a photo skip it entirely. A failed load hides
+// the facts here and below, so the rest of the panel keeps working.
 export function SuburbMedia(props: SuburbMediaProps) {
   return (
-    <Switch>
-      <Match when={props.state.status === "pending"}>
-        <div
-          aria-hidden="true"
-          class={cn("aspect-3/2 animate-pulse bg-muted", props.class)}
-          data-testid="photo-skeleton"
-        />
-      </Match>
-      <Match when={factsOf(props.state)?.photo}>
-        {(photo) => (
-          <Photo class={props.class} name={props.name} photo={photo()} />
-        )}
-      </Match>
-    </Switch>
+    <Errored fallback={null}>
+      <Loading
+        fallback={
+          <div
+            aria-hidden="true"
+            class={cn("aspect-3/2 animate-pulse bg-muted", props.class)}
+            data-testid="photo-skeleton"
+          />
+        }
+      >
+        <Show when={props.facts?.photo}>
+          {(photo) => (
+            <Photo class={props.class} name={props.name} photo={photo()} />
+          )}
+        </Show>
+      </Loading>
+    </Errored>
   )
 }
 
@@ -144,14 +142,14 @@ function PhotoCredit(props: PhotoCreditProps) {
 }
 
 interface FactsRowProps {
-  state: FactsState
+  facts: SuburbFacts | undefined
 }
 
 // "Postcode 2042 · 15,301 people". Places with nobody living there, like
 // industrial areas, leave the population out rather than saying "0 people".
 export function FactsRow(props: FactsRowProps) {
   const parts = () => {
-    const facts = factsOf(props.state)
+    const { facts } = props
     return [
       facts?.postcode ? `Postcode ${facts.postcode}` : null,
       facts?.population
@@ -160,30 +158,37 @@ export function FactsRow(props: FactsRowProps) {
     ].filter((part) => part !== null)
   }
   return (
-    <Switch>
-      <Match when={props.state.status === "pending"}>
-        <div
-          aria-hidden="true"
-          class="mt-1 h-4 w-40 animate-pulse rounded bg-muted"
-          data-testid="facts-skeleton"
-        />
-      </Match>
-      <Match when={parts().length > 0}>
-        <p class="text-sm text-muted-foreground">{parts().join(" · ")}</p>
-      </Match>
-    </Switch>
+    <Errored fallback={null}>
+      <Loading
+        fallback={
+          <div
+            aria-hidden="true"
+            class="mt-1 h-4 w-40 animate-pulse rounded bg-muted"
+            data-testid="facts-skeleton"
+          />
+        }
+      >
+        <Show when={parts().length > 0}>
+          <p class="text-sm text-muted-foreground">{parts().join(" · ")}</p>
+        </Show>
+      </Loading>
+    </Errored>
   )
 }
 
 interface SummaryProps {
-  state: FactsState
+  facts: SuburbFacts | undefined
 }
 
 export function Summary(props: SummaryProps) {
   return (
-    <Show when={factsOf(props.state)?.summary}>
-      {(summary) => <p class="text-sm">{summary()}</p>}
-    </Show>
+    <Errored fallback={null}>
+      <Loading>
+        <Show when={props.facts?.summary}>
+          {(summary) => <p class="text-sm">{summary()}</p>}
+        </Show>
+      </Loading>
+    </Errored>
   )
 }
 
@@ -231,7 +236,7 @@ function toDetails(
 }
 
 interface MoreDetailsProps {
-  state: FactsState
+  facts: SuburbFacts | undefined
   // What the map is showing from the panel, if anything.
   overlay: Overlay | undefined
   onToggleOverlay: (overlay: Overlay) => void
@@ -242,35 +247,39 @@ interface MoreDetailsProps {
 // again.
 export function MoreDetails(props: MoreDetailsProps) {
   return (
-    <Show when={factsOf(props.state)}>
-      {(facts) => (
-        <Collapsible.Root>
-          <Collapsible.Trigger class="group flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground">
-            <ChevronRightIcon class="size-4 transition-transform group-data-panel-open:rotate-90" />
-            More details
-          </Collapsible.Trigger>
-          <Collapsible.Panel>
-            <dl class="grid grid-cols-2 gap-x-2 gap-y-1 pt-3">
-              <For
-                each={toDetails(facts().stats, facts().topBirthplace)}
-                keyed={(d) => d.key}
-              >
-                {(detail) => (
-                  <DetailCell
-                    detail={detail()}
-                    onToggleOverlay={props.onToggleOverlay}
-                    shown={
-                      detail().overlay !== undefined &&
-                      detail().overlay === props.overlay
-                    }
-                  />
-                )}
-              </For>
-            </dl>
-          </Collapsible.Panel>
-        </Collapsible.Root>
-      )}
-    </Show>
+    <Errored fallback={null}>
+      <Loading>
+        <Show when={props.facts}>
+          {(facts) => (
+            <Collapsible.Root>
+              <Collapsible.Trigger class="group flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground">
+                <ChevronRightIcon class="size-4 transition-transform group-data-panel-open:rotate-90" />
+                More details
+              </Collapsible.Trigger>
+              <Collapsible.Panel>
+                <dl class="grid grid-cols-2 gap-x-2 gap-y-1 pt-3">
+                  <For
+                    each={toDetails(facts().stats, facts().topBirthplace)}
+                    keyed={(d) => d.key}
+                  >
+                    {(detail) => (
+                      <DetailCell
+                        detail={detail()}
+                        onToggleOverlay={props.onToggleOverlay}
+                        shown={
+                          detail().overlay !== undefined &&
+                          detail().overlay === props.overlay
+                        }
+                      />
+                    )}
+                  </For>
+                </dl>
+              </Collapsible.Panel>
+            </Collapsible.Root>
+          )}
+        </Show>
+      </Loading>
+    </Errored>
   )
 }
 
