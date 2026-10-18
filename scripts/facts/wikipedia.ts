@@ -2,7 +2,17 @@
 
 import { readFile } from "node:fs/promises"
 
-import { z } from "zod/mini"
+import {
+  array,
+  boolean,
+  nullable,
+  object,
+  optional,
+  parse,
+  record,
+  string,
+  type InferOutput,
+} from "valibot"
 
 import { type CacheOptions, fetchJson, root } from "../download.ts"
 import { chunk, resolveTitles, titleMappings } from "./titles.ts"
@@ -31,12 +41,12 @@ export interface WikiMatch {
   image: string | null
 }
 
-const binding = z.optional(z.object({ value: z.string() }))
-const sparqlResults = z.object({
-  results: z.object({
-    bindings: z.array(
-      z.object({
-        sal: z.object({ value: z.string() }),
+const binding = optional(object({ value: string() }))
+const sparqlResults = object({
+  results: object({
+    bindings: array(
+      object({
+        sal: object({ value: string() }),
         article: binding,
         image: binding,
       }),
@@ -44,19 +54,19 @@ const sparqlResults = z.object({
   }),
 })
 
-const askResult = z.object({ boolean: z.boolean() })
+const askResult = object({ boolean: boolean() })
 
-const pageProps = z.object({
-  query: z.optional(
-    z.object({
-      pages: z.array(
-        z.object({
-          title: z.string(),
-          missing: z.optional(z.boolean()),
-          pageprops: z.optional(
-            z.object({
-              wikibase_item: z.optional(z.string()),
-              disambiguation: z.optional(z.string()),
+const pageProps = object({
+  query: optional(
+    object({
+      pages: array(
+        object({
+          title: string(),
+          missing: optional(boolean()),
+          pageprops: optional(
+            object({
+              wikibase_item: optional(string()),
+              disambiguation: optional(string()),
             }),
           ),
         }),
@@ -66,14 +76,14 @@ const pageProps = z.object({
 })
 
 // A SAL code maps to replacement values; `null` means there is none.
-const overrideSchema = z.record(
-  z.string(),
-  z.object({
-    title: z.optional(z.nullable(z.string())),
-    image: z.optional(z.nullable(z.string())),
+const overrideSchema = record(
+  string(),
+  object({
+    title: optional(nullable(string())),
+    image: optional(nullable(string())),
   }),
 )
-export type Overrides = z.infer<typeof overrideSchema>
+export type Overrides = InferOutput<typeof overrideSchema>
 
 export function titleFromUrl(url: string): string {
   return decodeURIComponent(url.slice(ARTICLE_PREFIX.length)).replaceAll(
@@ -103,7 +113,8 @@ export function applyOverride(
 }
 
 export async function readOverrides(): Promise<Overrides> {
-  return overrideSchema.parse(
+  return parse(
+    overrideSchema,
     JSON.parse(await readFile(overridesPath, "utf-8")),
   )
 }
@@ -180,13 +191,11 @@ export async function findByTitle(
 // The API takes at most 50 titles per request.
 const TITLES_PER_REQUEST = 50
 
-const pageImages = z.object({
-  query: z.optional(
-    z.object({
-      ...titleMappings.shape,
-      pages: z.array(
-        z.object({ title: z.string(), pageimage: z.optional(z.string()) }),
-      ),
+const pageImages = object({
+  query: optional(
+    object({
+      ...titleMappings.entries,
+      pages: array(object({ title: string(), pageimage: optional(string()) })),
     }),
   ),
 })

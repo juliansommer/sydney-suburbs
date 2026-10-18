@@ -5,7 +5,7 @@ import { readFile } from "node:fs/promises"
 
 import { unzipSync } from "fflate"
 import geo from "mapshaper"
-import { z } from "zod/mini"
+import { array, nullable, number, object, parse, string } from "valibot"
 
 import type { TopBirthplace } from "../../src/types/suburb-facts.ts"
 import { absCacheDir, download } from "../download.ts"
@@ -184,8 +184,8 @@ export async function readCensus(): Promise<Map<string, CensusFacts>> {
   )
 }
 
-const postcodeRows = z.array(
-  z.object({ id: z.string(), postcode: z.nullable(z.string()) }),
+const postcodeRows = array(
+  object({ id: string(), postcode: nullable(string()) }),
 )
 
 // Each suburb's postcode is the postal area covering most of it. NSW postal
@@ -210,7 +210,7 @@ export async function readPostcodes(
       "-o postcodes.json format=json",
     ].join(" "),
   )
-  const rows = postcodeRows.parse(JSON.parse(out["postcodes.json"] ?? "null"))
+  const rows = parse(postcodeRows, JSON.parse(out["postcodes.json"] ?? "null"))
   const postcodes = new Map<string, string>()
   for (const row of rows) {
     if (row.postcode) {
@@ -220,10 +220,10 @@ export async function readPostcodes(
   return postcodes
 }
 
-const geographyRows = z.array(
-  z.object({
-    id: z.string(),
-    area: z.number(),
+const geographyRows = array(
+  object({
+    id: string(),
+    area: number(),
   }),
 )
 
@@ -246,6 +246,6 @@ export async function readGeography(
       "-o geography.json format=json",
     ].join(" "),
   )
-  const rows = geographyRows.parse(JSON.parse(out["geography.json"] ?? "null"))
+  const rows = parse(geographyRows, JSON.parse(out["geography.json"] ?? "null"))
   return new Map(rows.map((row) => [row.id, { areaKm2: row.area }]))
 }

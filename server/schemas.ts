@@ -1,4 +1,15 @@
-import { z } from "zod/mini"
+import {
+  boolean,
+  check,
+  type InferOutput,
+  isoDate,
+  maxLength,
+  nullable,
+  optional,
+  pipe,
+  strictObject,
+  string,
+} from "valibot"
 
 // Visits are dated in Sydney time, whatever the Worker's own clock zone.
 const sydneyDateFormat = new Intl.DateTimeFormat("en-CA", {
@@ -11,22 +22,21 @@ function sydneyToday() {
 
 // Every key is optional so overlapping edits (the visited toggle and the notes
 // autosave) only write the field they changed.
-export const suburbPatchSchema = z
-  .strictObject({
-    visited: z.optional(z.boolean()),
-    visitedOn: z.optional(
-      z.nullable(
-        z.iso
-          .date()
-          .check(
-            z.refine((date) => date <= sydneyToday(), "date is in the future"),
-          ),
+export const suburbPatchSchema = pipe(
+  strictObject({
+    visited: optional(boolean()),
+    visitedOn: optional(
+      nullable(
+        pipe(
+          string(),
+          isoDate(),
+          check((date) => date <= sydneyToday(), "date is in the future"),
+        ),
       ),
     ),
-    notes: z.optional(z.string().check(z.maxLength(10_000))),
-  })
-  .check(
-    z.refine((patch) => Object.keys(patch).length > 0, "nothing to update"),
-  )
+    notes: optional(pipe(string(), maxLength(10_000))),
+  }),
+  check((patch) => Object.keys(patch).length > 0, "nothing to update"),
+)
 
-export type SuburbPatch = z.infer<typeof suburbPatchSchema>
+export type SuburbPatch = InferOutput<typeof suburbPatchSchema>

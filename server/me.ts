@@ -1,4 +1,4 @@
-import { zValidator } from "@hono/zod-validator"
+import { vValidator } from "@hono/valibot-validator"
 import { and, eq, isNull } from "drizzle-orm"
 import { Hono } from "hono"
 import { createMiddleware } from "hono/factory"
@@ -55,10 +55,10 @@ export const me = new Hono<MeEnv>()
   })
   .patch(
     "/suburbs/:id",
-    zValidator("json", suburbPatchSchema, (result, c) => {
+    vValidator("json", suburbPatchSchema, (result, c) => {
       if (!result.success) {
         return c.json(
-          { error: result.error.issues[0]?.message ?? "invalid request" },
+          { error: result.issues[0]?.message ?? "invalid request" },
           400,
         )
       }

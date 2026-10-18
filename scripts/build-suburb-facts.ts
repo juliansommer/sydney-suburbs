@@ -22,7 +22,7 @@
 import { existsSync } from "node:fs"
 import { readFile, writeFile } from "node:fs/promises"
 
-import { z } from "zod/mini"
+import { array, object, parse, record, string } from "valibot"
 
 import type { SuburbFactsFile, SuburbStats } from "../src/types/suburb-facts.ts"
 import { type CacheOptions, root } from "./download.ts"
@@ -54,15 +54,15 @@ const topoPath = `${root}public/sydney-suburbs.topo.json`
 const factsPath = `${root}src/data/suburb-facts.json`
 const summariesPath = `${root}scripts/suburb-summaries.json`
 
-const topoSuburbs = z.object({
-  objects: z.object({
-    suburbs: z.object({
-      geometries: z.array(
-        z.object({
-          properties: z.object({
-            id: z.string(),
-            name: z.string(),
-            lga: z.string(),
+const topoSuburbs = object({
+  objects: object({
+    suburbs: object({
+      geometries: array(
+        object({
+          properties: object({
+            id: string(),
+            name: string(),
+            lga: string(),
           }),
         }),
       ),
@@ -78,7 +78,7 @@ interface MapSuburb {
 
 // The map's suburbs, so the facts always cover exactly the same set.
 async function readMapSuburbs(): Promise<MapSuburb[]> {
-  const topo = topoSuburbs.parse(JSON.parse(await readFile(topoPath, "utf-8")))
+  const topo = parse(topoSuburbs, JSON.parse(await readFile(topoPath, "utf-8")))
   return topo.objects.suburbs.geometries
     .map((g) => g.properties)
     .toSorted((a, b) => a.id.localeCompare(b.id))
@@ -116,9 +116,10 @@ async function matchSuburbs(
 }
 
 async function readSummaries(): Promise<Record<string, string>> {
-  return z
-    .record(z.string(), z.string())
-    .parse(JSON.parse(await readFile(summariesPath, "utf-8")))
+  return parse(
+    record(string(), string()),
+    JSON.parse(await readFile(summariesPath, "utf-8")),
+  )
 }
 
 const AREA_DECIMALS = 100

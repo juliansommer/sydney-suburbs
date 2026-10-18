@@ -1,12 +1,12 @@
 import { query } from "@solidjs/router"
-import { z } from "zod/mini"
+import { nullable, object, parse, string, type InferOutput } from "valibot"
 
 // Better Auth's endpoints under /api/auth, on the same origin, so the session
 // cookie rides along on every request.
-const session = z.nullable(z.object({ user: z.object({ email: z.string() }) }))
-const redirect = z.object({ url: z.string() })
+const session = nullable(object({ user: object({ email: string() }) }))
+const redirect = object({ url: string() })
 
-export type Session = z.infer<typeof session>
+export type Session = InferOutput<typeof session>
 
 async function post(
   path: string,
@@ -31,7 +31,7 @@ export const getSession = query(async (): Promise<Session> => {
     if (!res.ok) {
       return null
     }
-    return session.parse(await res.json())
+    return parse(session, await res.json())
   } catch {
     return null
   }
@@ -43,7 +43,7 @@ export async function signInWith(
   callbackURL: string,
 ) {
   const res = await post("/sign-in/social", { provider, callbackURL })
-  const { url } = redirect.parse(await res.json())
+  const { url } = parse(redirect, await res.json())
   window.location.assign(url)
 }
 

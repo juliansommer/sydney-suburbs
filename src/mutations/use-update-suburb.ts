@@ -1,6 +1,6 @@
 import { revalidate } from "@solidjs/router"
 import { action, createOptimistic, createSignal } from "solid-js"
-import { z } from "zod/mini"
+import { nullable } from "valibot"
 
 import { apiFetch } from "@/lib/api"
 import { getMySuburbs, useMySuburbs } from "@/queries/my-suburbs"
@@ -47,7 +47,7 @@ async function save(suburbId: string, patch: UserSuburbPatch): Promise<void> {
     }
     await apiFetch(
       `/api/me/suburbs/${encodeURIComponent(suburbId)}`,
-      z.nullable(userSuburbSchema),
+      nullable(userSuburbSchema),
       {
         method: "PATCH",
         body: JSON.stringify(patch),

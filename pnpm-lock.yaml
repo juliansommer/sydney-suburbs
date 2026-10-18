@@ -169,12 +169,12 @@ importers:
       '@fontsource-variable/geist':
         specifier: ^5.3.0
         version: 5.3.0
+      '@hono/valibot-validator':
+        specifier: ^0.6.1
+        version: 0.6.1(hono@4.13.13)(valibot@1.5.0(typescript@7.0.2))
       '@hono/vercel':
         specifier: ^1.0.1
         version: 1.0.1(hono@4.13.13)
-      '@hono/zod-validator':
-        specifier: ^0.9.1
-        version: 0.9.1(hono@4.13.13)(zod@4.6.5)
       '@lucide/solid':
         specifier: ^1.57.0
         version: 1.57.0(solid-js@2.0.0-rc.15)
@@ -226,9 +226,9 @@ importers:
       tw-animate-css:
         specifier: ^1.4.0
         version: 1.4.0
-      zod:
-        specifier: ^4.6.5
-        version: 4.6.5
+      valibot:
+        specifier: ^1.5.0
+        version: 1.5.0(typescript@7.0.2)
     devDependencies:
       '@electric-sql/pglite':
         specifier: ^0.5.8
@@ -1060,6 +1060,12 @@ packages:
     peerDependencies:
       hono: ^4
 
+  '@hono/valibot-validator@0.6.1':
+    resolution: {integrity: sha512-rqKhQJI8IVR8gRRNHHf2wGtIT7sKEqV1KoGL5f2SocNytl+tBNn4EtRu4zfk/D6axgWSswnaxeiuJhM5yNFrCg==}
+    peerDependencies:
+      hono: '>=3.9.0'
+      valibot: ^1.0.0 || ^1.0.0-beta.4 || ^1.0.0-rc
+
   '@hono/vercel@1.0.1':
     resolution: {integrity: sha512-2g9P7VOHB7k99t20vZd6Mv8Pvq/PwgTYI29NBgDPohUy4KNceylHW7hCSrD7Q8XrbFo0p+Na2ScymTFDCRX3Uw==}
     engines: {node: '>=16.9.0'}
@@ -1078,12 +1084,6 @@ packages:
         optional: true
       wrangler:
         optional: true
-
-  '@hono/zod-validator@0.9.1':
-    resolution: {integrity: sha512-iiv6w0qrIc0arfvCtUqBWsvl4fXjzaTcQcCJTTtCnkawF9HHGE+KjEl0ox3gQJ6rKZEgE3mLExlQCF72M+mNuw==}
-    peerDependencies:
-      hono: '>=4.11.2'
-      zod: ^3.25.0 || ^4.0.0
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -4643,6 +4643,14 @@ packages:
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
 
+  valibot@1.5.0:
+    resolution: {integrity: sha512-nil6AkP2TChWL43Z5uJ6GTxX01CUA+g8LWUM+N/rB9NBbkUMaUsi9PUNzlUPgoKASgmx9f7eGOYpJ04/fSa6FQ==}
+    peerDependencies:
+      typescript: '>=5'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
   vite@8.3.4:
     resolution: {integrity: sha512-IftLE8phJhdNRIGNEV4JCCvfNScoZQVfcXaN8TQropWGJtOHcu+iAB9pHcuGvmEb/kddw0LBe/jS8ztdC6xdiQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -5375,6 +5383,11 @@ snapshots:
     dependencies:
       hono: 4.13.13
 
+  '@hono/valibot-validator@0.6.1(hono@4.13.13)(valibot@1.5.0(typescript@7.0.2))':
+    dependencies:
+      hono: 4.13.13
+      valibot: 1.5.0(typescript@7.0.2)
+
   '@hono/vercel@1.0.1(hono@4.13.13)':
     dependencies:
       hono: 4.13.13
@@ -5384,11 +5397,6 @@ snapshots:
       '@hono/node-server': 1.19.17(hono@4.13.13)
       hono: 4.13.13
       minimatch: 9.0.9
-
-  '@hono/zod-validator@0.9.1(hono@4.13.13)(zod@4.6.5)':
-    dependencies:
-      hono: 4.13.13
-      zod: 4.6.5
 
   '@humanfs/core@0.19.2':
     dependencies:
@@ -8634,6 +8642,10 @@ snapshots:
     optional: true
 
   util-deprecate@1.0.2: {}
+
+  valibot@1.5.0(typescript@7.0.2):
+    optionalDependencies:
+      typescript: 7.0.2
 
   vite@8.3.4(@types/node@24.19.1)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1):
     dependencies:
