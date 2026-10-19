@@ -10,11 +10,11 @@ import { cn } from "@/lib/utils"
 // Country key for the birthplace mode, with each country's flag.
 export function BirthplaceLegend() {
   return (
-    <div class="flex w-64 flex-col gap-2 rounded-xl border bg-card p-3 text-card-foreground shadow-lg">
+    <div class="flex w-full flex-col gap-2 rounded-xl border bg-card p-3 text-card-foreground shadow-lg md:w-64">
       <p class="text-sm font-medium">Top birthplace</p>
       <ul
         aria-label="Birthplace key"
-        class="grid grid-cols-2 gap-x-2 gap-y-1 text-xs"
+        class="grid grid-cols-3 gap-x-2 gap-y-1 text-xs md:grid-cols-2"
       >
         <For each={COUNTRIES}>
           {(c) => (

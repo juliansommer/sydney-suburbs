@@ -22,7 +22,7 @@ export function HeatmapLegend(props: HeatmapLegendProps) {
   const info = () => STATS[props.stat]
 
   return (
-    <div class="flex w-64 flex-col gap-2 rounded-xl border bg-card p-3 text-card-foreground shadow-lg">
+    <div class="flex w-full flex-col gap-2 rounded-xl border bg-card p-3 text-card-foreground shadow-lg md:w-64">
       <label class="sr-only" for={selectId}>
         Statistic
       </label>
@@ -46,21 +46,22 @@ export function HeatmapLegend(props: HeatmapLegendProps) {
       </select>
       <ul
         aria-label={`${info().label} key`}
-        class="flex flex-col gap-1 text-xs"
+        // Columns fill top to bottom, so the ranges still read in order.
+        class="columns-2 gap-x-2 text-xs md:columns-1"
       >
         <For
           each={props.heatmap?.buckets.toReversed() ?? []}
           keyed={(b) => b.swatch}
         >
           {(b) => (
-            <li class="flex items-center gap-2">
+            <li class="mb-1 flex break-inside-avoid items-center gap-2">
               <Swatch class={b().swatch} />
               {bucketLabel(b(), info())}
             </li>
           )}
         </For>
         <Show when={props.heatmap?.hasNoData}>
-          <li class="flex items-center gap-2 text-muted-foreground">
+          <li class="mb-1 flex break-inside-avoid items-center gap-2 text-muted-foreground">
             <Swatch class={NO_DATA.swatch} />
             No data
           </li>

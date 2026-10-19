@@ -11,6 +11,7 @@ import {
 
 import { HeatmapLegend } from "@/components/heatmap-legend"
 import { GitHubLogo } from "@/components/logos"
+import { MapKey } from "@/components/map-key"
 import { SearchPlaceholder } from "@/components/map/search-placeholder"
 import { SuburbMap, type SuburbMapHandle } from "@/components/map/suburb-map"
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -336,24 +337,28 @@ function MapView(props: MapViewProps) {
         }}
         selectedId={selected()?.id ?? null}
       />
-      <div class="absolute bottom-4 left-4 flex flex-col items-start gap-2">
-        <Loading>
-          <Show when={mode() === "nrl"}>
-            <NrlLegend />
-          </Show>
-        </Loading>
-        <Show when={mode() === "heatmap"}>
-          <HeatmapLegend
-            heatmap={heatmap()}
-            onStatChange={showHeatmap}
-            stat={stat()}
-          />
+      <div class="absolute inset-x-4 bottom-4 flex flex-col items-start gap-2 md:right-auto">
+        <Show when={mode() !== "visited"}>
+          <MapKey>
+            <Loading>
+              <Show when={mode() === "nrl"}>
+                <NrlLegend />
+              </Show>
+            </Loading>
+            <Show when={mode() === "heatmap"}>
+              <HeatmapLegend
+                heatmap={heatmap()}
+                onStatChange={showHeatmap}
+                stat={stat()}
+              />
+            </Show>
+            <Loading>
+              <Show when={mode() === "birthplace"}>
+                <BirthplaceLegend />
+              </Show>
+            </Loading>
+          </MapKey>
         </Show>
-        <Loading>
-          <Show when={mode() === "birthplace"}>
-            <BirthplaceLegend />
-          </Show>
-        </Loading>
         <fieldset class="flex gap-1 rounded-lg border bg-background p-0.5 shadow-sm">
           <legend class="sr-only">Map mode</legend>
           <For each={MAP_MODES}>

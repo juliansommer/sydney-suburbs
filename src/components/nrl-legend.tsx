@@ -6,8 +6,8 @@ import { CLUB_IDS, CLUBS, clubLogo } from "@/data/nrl-territories"
 // aren't official.
 export function NrlLegend() {
   return (
-    <div class="flex w-64 flex-col gap-2 rounded-xl border bg-card p-3 text-card-foreground shadow-lg">
-      <ul class="grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
+    <div class="flex w-full flex-col gap-2 rounded-xl border bg-card p-3 text-card-foreground shadow-lg md:w-64">
+      <ul class="grid grid-cols-3 gap-x-2 gap-y-1 text-xs md:grid-cols-2">
         <For each={CLUB_IDS}>
           {(club) => (
             <li class="flex items-center gap-1.5">
