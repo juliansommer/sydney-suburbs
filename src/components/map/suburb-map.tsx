@@ -76,8 +76,8 @@ export interface SuburbMapHandle {
 }
 
 interface Zoomer {
-  selection: Selection<SVGSVGElement, unknown, null, undefined>
-  behaviour: ZoomBehavior<SVGSVGElement, unknown>
+  selection: Selection<HTMLDivElement, unknown, null, undefined>
+  behaviour: ZoomBehavior<HTMLDivElement, unknown>
 }
 
 // Fills its container. The map is drawn once the container has a size, and
@@ -119,10 +119,11 @@ interface ZoomableMapProps extends Omit<SuburbMapProps, "data"> {
 }
 
 function ZoomableMap(props: ZoomableMapProps) {
-  let svg: SVGSVGElement | undefined
+  let container: HTMLDivElement | undefined
+  let zoomed: SVGSVGElement | undefined
 
   const { zoomer, transform, gesture } = useZoom(
-    () => svg,
+    () => container,
     () => props.width,
     () => props.height,
     () => {
@@ -132,6 +133,17 @@ function ZoomableMap(props: ZoomableMapProps) {
       }
     },
   )
+
+  // Only the scale is an SVG transform, so a pan, which leaves it unchanged,
+  // just moves the map's layer rather than repainting every path.
+  const scale = createMemo(() => transform().k)
+
+  // Set directly, as a custom property would restyle every path each frame.
+  createEffect(transform, ({ x, y }) => {
+    if (zoomed) {
+      zoomed.style.transform = `translate(${x}px, ${y}px)`
+    }
+  })
 
   const layers = createMemo(() => projectLayers(props.layers, props.projected))
 
@@ -213,10 +225,8 @@ function ZoomableMap(props: ZoomableMapProps) {
     // Keyboard users select through the suburb paths and clear with Escape;
     // this handler only adds "click off the suburbs to deselect".
     // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
-    <svg
-      aria-label="Map of Sydney suburbs"
-      class="block touch-none select-none"
-      height={props.height}
+    <div
+      class="relative size-full touch-none overflow-hidden bg-map-water select-none"
       onClick={(event) => {
         if (event.target instanceof Element) {
           const suburb = event.target.closest<SVGElement>("[data-suburb-id]")
@@ -224,66 +234,84 @@ function ZoomableMap(props: ZoomableMapProps) {
         }
       }}
       ref={(element) => {
-        svg = element
+        container = element
       }}
-      width={props.width}
     >
-      <rect class="fill-map-water" height={props.height} width={props.width} />
-      <Show keyed when={gesture()}>
-        {(_gesture) => (
-          <g transform={transform().toString()}>
-            <path class="fill-map-surrounds" d={props.projected.surrounds} />
-            {/* Plain land under the parks and water. */}
-            <path class="fill-map-land" d={props.projected.land} />
-            <For each={props.projected.landuse} keyed={(l) => l.kind}>
-              {(l) => <path class={LANDUSE_FILL[l().kind]} d={l().d} />}
-            </For>
-            {/* Over the parks and water, so a filled suburb is filled edge to edge. */}
-            {/* Keyed by layer, so a re-projection updates paths in place. */}
-            <For each={layers().fills.filter((f) => f.d)} keyed={(f) => f.key}>
-              {(f) => <FillPath fill={f()} />}
-            </For>
-            <SuburbPaths
-              onSelect={pick}
-              selectedId={props.selectedId}
-              suburbs={props.projected.suburbs}
-            />
-            <For each={layers().outlines} keyed={(o) => o.key}>
-              {(o) => <Outline d={o().d} strokeWidth={1.5} />}
-            </For>
-            <Outline
-              d={
-                props.projected.councils.find((c) => c.lga === outlinedLga())?.d
-              }
-              strokeWidth={3}
-            />
-            {/* SVG has no z-index, so the selected suburb is drawn again last to
-                keep its outline above the neighbouring borders. */}
-            <Outline
-              d={
-                props.projected.suburbs.find((s) => s.id === props.selectedId)
-                  ?.d
-              }
-              strokeWidth={2.5}
-            />
-          </g>
-        )}
-      </Show>
-      <ScreenLayer
+      <svg
+        aria-label="Map of Sydney suburbs"
+        class="absolute top-0 left-0 overflow-visible will-change-transform"
         height={props.height}
-        markers={layers().markers}
-        suburbs={props.projected.suburbs}
-        transform={transform()}
+        ref={(element) => {
+          zoomed = element
+        }}
         width={props.width}
-      />
-    </svg>
+      >
+        <Show keyed when={gesture()}>
+          {(_gesture) => (
+            <g transform={`scale(${scale()})`}>
+              <path class="fill-map-surrounds" d={props.projected.surrounds} />
+              {/* Plain land under the parks and water. */}
+              <path class="fill-map-land" d={props.projected.land} />
+              <For each={props.projected.landuse} keyed={(l) => l.kind}>
+                {(l) => <path class={LANDUSE_FILL[l().kind]} d={l().d} />}
+              </For>
+              {/* Over the parks and water, so a filled suburb is filled edge to edge. */}
+              {/* Keyed by layer, so a re-projection updates paths in place. */}
+              <For
+                each={layers().fills.filter((f) => f.d)}
+                keyed={(f) => f.key}
+              >
+                {(f) => <FillPath fill={f()} />}
+              </For>
+              <SuburbPaths
+                onSelect={pick}
+                selectedId={props.selectedId}
+                suburbs={props.projected.suburbs}
+              />
+              <For each={layers().outlines} keyed={(o) => o.key}>
+                {(o) => <Outline d={o().d} strokeWidth={1.5} />}
+              </For>
+              <Outline
+                d={
+                  props.projected.councils.find((c) => c.lga === outlinedLga())
+                    ?.d
+                }
+                strokeWidth={3}
+              />
+              {/* SVG has no z-index, so the selected suburb is drawn again last to
+                  keep its outline above the neighbouring borders. */}
+              <Outline
+                d={
+                  props.projected.suburbs.find((s) => s.id === props.selectedId)
+                    ?.d
+                }
+                strokeWidth={2.5}
+              />
+            </g>
+          )}
+        </Show>
+      </svg>
+      <svg
+        class="pointer-events-none absolute top-0 left-0"
+        height={props.height}
+        width={props.width}
+      >
+        <ScreenLayer
+          height={props.height}
+          markers={layers().markers}
+          suburbs={props.projected.suburbs}
+          transform={transform()}
+          width={props.width}
+        />
+      </svg>
+    </div>
   )
 }
 
-// d3-zoom on the map's SVG, with the current transform in a signal. The
-// behaviour is rebuilt whenever the viewport size changes.
+// d3-zoom on the map's container, with the current transform in a signal.
+// The behaviour is rebuilt whenever the viewport size changes.
 function useZoom(
-  svg: Accessor<SVGSVGElement | undefined>,
+  container: Accessor<HTMLDivElement | undefined>,
   width: Accessor<number>,
   height: Accessor<number>,
   onFirstDraw: () => void,
@@ -295,11 +323,11 @@ function useZoom(
   let zoomer: Zoomer | null = null
   let drawn = false
 
-  // The SVG is read in the apply phase, by which time it has been rendered.
+  // The container is read in the apply phase, by which time it has rendered.
   createEffect(
     () => ({ w: width(), h: height() }),
     ({ w, h }) => {
-      const element = svg()
+      const element = container()
 
       if (!element) {
         return undefined
@@ -312,18 +340,18 @@ function useZoom(
 
       let startTransform = zoomIdentity
 
-      const behaviour = zoom<SVGSVGElement, unknown>()
+      const behaviour = zoom<HTMLDivElement, unknown>()
         .extent(extent)
         .translateExtent(extent)
         .scaleExtent([1, MAX_ZOOM])
         .clickDistance(CLICK_DISTANCE)
-        .on("start", (event: D3ZoomEvent<SVGSVGElement, unknown>) => {
+        .on("start", (event: D3ZoomEvent<HTMLDivElement, unknown>) => {
           startTransform = event.transform
         })
-        .on("zoom", (event: D3ZoomEvent<SVGSVGElement, unknown>) => {
+        .on("zoom", (event: D3ZoomEvent<HTMLDivElement, unknown>) => {
           setTransform(event.transform)
         })
-        .on("end", (event: D3ZoomEvent<SVGSVGElement, unknown>) => {
+        .on("end", (event: D3ZoomEvent<HTMLDivElement, unknown>) => {
           // A plain click starts and ends a gesture too, and remounting then
           // would swap the paths out from under the click.
           if (REMOUNT_AFTER_GESTURE && event.transform !== startTransform) {
