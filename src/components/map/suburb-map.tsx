@@ -42,6 +42,9 @@ const MAX_ZOOM = 40
 const CLICK_DISTANCE = 4
 const ZOOM_TO_MS = 600
 
+// How far a gesture can shrink the drawn map before it's redrawn.
+const MAX_ZOOM_OUT_DRIFT = 2
+
 // Markers keep this size on screen at every zoom, smaller on narrow screens.
 const MARKER_SIZE = 44
 const SMALL_MARKER_SIZE = 32
@@ -122,7 +125,7 @@ function ZoomableMap(props: ZoomableMapProps) {
   let container: HTMLDivElement | undefined
   let zoomed: SVGSVGElement | undefined
 
-  const { zoomer, transform, gesture } = useZoom(
+  const { zoomer, transform, scale, gesture } = useZoom(
     () => container,
     () => props.width,
     () => props.height,
@@ -134,16 +137,17 @@ function ZoomableMap(props: ZoomableMapProps) {
     },
   )
 
-  // Only the scale is an SVG transform, so a pan, which leaves it unchanged,
-  // just moves the map's layer rather than repainting every path.
-  const scale = createMemo(() => transform().k)
-
+  // The paths are drawn at the scale the last gesture ended on, and the
+  // gesture itself moves and scales that drawing rather than repainting it.
   // Set directly, as a custom property would restyle every path each frame.
-  createEffect(transform, ({ x, y }) => {
-    if (zoomed) {
-      zoomed.style.transform = `translate(${x}px, ${y}px)`
-    }
-  })
+  createEffect(
+    () => ({ t: transform(), drawnScale: scale() }),
+    ({ t, drawnScale }) => {
+      if (zoomed) {
+        zoomed.style.transform = `translate(${t.x}px, ${t.y}px) scale(${t.k / drawnScale})`
+      }
+    },
+  )
 
   const layers = createMemo(() => projectLayers(props.layers, props.projected))
 
@@ -239,7 +243,7 @@ function ZoomableMap(props: ZoomableMapProps) {
     >
       <svg
         aria-label="Map of Sydney suburbs"
-        class="absolute top-0 left-0 overflow-visible will-change-transform"
+        class="absolute top-0 left-0 origin-top-left overflow-visible will-change-transform"
         height={props.height}
         ref={(element) => {
           zoomed = element
@@ -317,6 +321,8 @@ function useZoom(
   onFirstDraw: () => void,
 ) {
   const [transform, setTransform] = createSignal<ZoomTransform>(zoomIdentity)
+  // The transform's scale, but only updated when a gesture ends.
+  const [scale, setScale] = createSignal(zoomIdentity.k)
   // Bumped when a gesture ends in Firefox, to redraw the map sharp. Starts at
   // 1 so the keyed group, which needs a truthy key, renders from the start.
   const [gesture, setGesture] = createSignal(1)
@@ -350,8 +356,16 @@ function useZoom(
         })
         .on("zoom", (event: D3ZoomEvent<HTMLDivElement, unknown>) => {
           setTransform(event.transform)
+
+          // Zoomed out, a drawing at the old scale is too big for the browser
+          // to rasterise quickly, so it's redrawn smaller mid-gesture.
+          if (event.transform.k < untrack(scale) / MAX_ZOOM_OUT_DRIFT) {
+            setScale(event.transform.k)
+          }
         })
         .on("end", (event: D3ZoomEvent<HTMLDivElement, unknown>) => {
+          setScale(event.transform.k)
+
           // A plain click starts and ends a gesture too, and remounting then
           // would swap the paths out from under the click.
           if (REMOUNT_AFTER_GESTURE && event.transform !== startTransform) {
@@ -377,7 +391,7 @@ function useZoom(
     },
   )
 
-  return { zoomer: () => zoomer, transform, gesture }
+  return { zoomer: () => zoomer, transform, scale, gesture }
 }
 
 interface ScreenLayerProps {
