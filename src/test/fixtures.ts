@@ -81,6 +81,7 @@ export const suburbFacts: SuburbFactsFile = {
     postcode: "2042",
     summary: "A harbourside suburb of the Inner West, known for its parks.",
     stats: {
+      medianHousePrice: 2_150_000,
       medianAge: 34,
       medianRent: 650,
       medianHouseholdIncome: 2450,
@@ -107,6 +108,7 @@ export const suburbFacts: SuburbFactsFile = {
     postcode: "2000",
     summary: null,
     stats: {
+      medianHousePrice: null,
       medianAge: null,
       medianRent: null,
       medianHouseholdIncome: null,

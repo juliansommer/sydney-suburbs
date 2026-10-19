@@ -1,3 +1,4 @@
+import housePricePeriod from "@/data/house-price-period.json"
 import type { SuburbStats } from "@/types/suburb-facts"
 
 export type StatKey = keyof SuburbStats
@@ -17,6 +18,20 @@ const dollars = new Intl.NumberFormat("en-AU", {
   style: "currency",
   currency: "AUD",
   maximumFractionDigits: 0,
+})
+
+// Short enough for the heatmap key, e.g. "$1.25M".
+const compactDollars = new Intl.NumberFormat("en-AU", {
+  style: "currency",
+  currency: "AUD",
+  notation: "compact",
+  maximumFractionDigits: 2,
+})
+
+const monthYear = new Intl.DateTimeFormat("en-AU", {
+  month: "short",
+  year: "numeric",
+  timeZone: "UTC",
 })
 
 const oneDecimal = new Intl.NumberFormat("en-AU", { maximumFractionDigits: 1 })
@@ -43,10 +58,30 @@ function stat(
 }
 
 const formatDollars = (value: number) => dollars.format(value)
+const formatCompactDollars = (value: number) => compactDollars.format(value)
 const formatWhole = (value: number) => wholeNumber.format(value)
 const formatOneDecimal = (value: number) => oneDecimal.format(value)
 
+// A YYYY-MM month as e.g. "Jan 2025".
+function formatMonth(month: string): string {
+  return monthYear.format(new Date(`${month}-01T00:00:00Z`))
+}
+
+function housePriceSource(): string {
+  const { from, to } = housePricePeriod
+
+  return from && to
+    ? `NSW Valuer General, houses settled ${formatMonth(from)} – ${formatMonth(to)}`
+    : "NSW Valuer General"
+}
+
 export const STATS: Record<StatKey, StatInfo> = {
+  medianHousePrice: stat(
+    "House price",
+    formatCompactDollars,
+    "",
+    housePriceSource(),
+  ),
   medianAge: stat("Median age", String, "", CENSUS),
   bornOverseas: stat("Born overseas", String, "%", CENSUS),
   medianRent: stat("Median rent", formatDollars, "/wk", CENSUS),
@@ -85,6 +120,7 @@ export const STATS: Record<StatKey, StatInfo> = {
 
 // The order of the panel's details.
 export const DETAIL_STATS: readonly StatKey[] = [
+  "medianHousePrice",
   "medianAge",
   "bornOverseas",
   "medianRent",
@@ -98,6 +134,7 @@ export const DETAIL_STATS: readonly StatKey[] = [
 
 // Area is left off, since its heatmap only shows suburb size.
 export const HEATMAP_STATS = [
+  "medianHousePrice",
   "medianHouseholdIncome",
   "medianRent",
   "publicHousing",
@@ -113,6 +150,9 @@ export type HeatmapStat = (typeof HEATMAP_STATS)[number]
 // Edges between the heatmap's colours, lowest first. Fixed round numbers keep
 // the key readable and the same from one rebuild to the next.
 export const HEATMAP_BREAKS: Record<HeatmapStat, readonly number[]> = {
+  medianHousePrice: [
+    1_000_000, 1_250_000, 1_500_000, 2_000_000, 3_000_000, 4_000_000,
+  ],
   medianHouseholdIncome: [1000, 1500, 2000, 2500, 3000, 3500],
   medianRent: [400, 450, 500, 550, 600, 700],
   // Most suburbs have almost none, so the steps widen to spread them out.

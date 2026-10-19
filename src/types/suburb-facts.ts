@@ -14,6 +14,9 @@ export interface SuburbPhoto {
 // From the 2021 Census, ABS boundaries, BOCSAR and NSW tree canopy data. Census figures are null
 // where too few people live there for the ABS to publish them.
 export interface SuburbStats {
+  // In dollars, over houses settled in the period in house-price-period.json,
+  // from Valuer General sales. Null under 5 sales.
+  medianHousePrice: number | null
   medianAge: number | null
   // Weekly, in dollars.
   medianRent: number | null

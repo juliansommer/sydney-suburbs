@@ -73,6 +73,14 @@ export const CANOPY = {
   },
 } as const
 
+// NSW Property Sales Information from the Valuer General, licensed CC BY-NC-ND
+// 4.0. Cloudflare blocks scripted downloads, so the weekly and yearly zips are
+// downloaded by hand into this folder.
+export const PSI = {
+  page: "https://valuation.property.nsw.gov.au/embed/propertySalesInformation",
+  dir: ".cache/psi/",
+} as const
+
 export function boundaryUrl(file: string): string {
   return `${SOURCE.baseUrl}/${file}`
 }

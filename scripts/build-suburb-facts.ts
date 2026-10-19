@@ -22,10 +22,11 @@
 import { existsSync } from "node:fs"
 import { readFile, writeFile } from "node:fs/promises"
 
-import { array, object, parse, record, string } from "valibot"
+import { parse, record, string } from "valibot"
 
 import type { SuburbFactsFile, SuburbStats } from "../src/types/suburb-facts.ts"
 import { type CacheOptions, root } from "./download.ts"
+import { factsPath, readFactsFile } from "./facts-file.ts"
 import {
   type CensusFacts,
   type Geography,
@@ -49,41 +50,9 @@ import {
   readPageImages,
   type WikiMatch,
 } from "./facts/wikipedia.ts"
+import { type MapSuburb, readMapSuburbs } from "./map-suburbs.ts"
 
-const topoPath = `${root}public/sydney-suburbs.topo.json`
-const factsPath = `${root}src/data/suburb-facts.json`
 const summariesPath = `${root}scripts/suburb-summaries.json`
-
-const topoSuburbs = object({
-  objects: object({
-    suburbs: object({
-      geometries: array(
-        object({
-          properties: object({
-            id: string(),
-            name: string(),
-            lga: string(),
-          }),
-        }),
-      ),
-    }),
-  }),
-})
-
-interface MapSuburb {
-  id: string
-  name: string
-  lga: string
-}
-
-// The map's suburbs, so the facts always cover exactly the same set.
-async function readMapSuburbs(): Promise<MapSuburb[]> {
-  const topo = parse(topoSuburbs, JSON.parse(await readFile(topoPath, "utf-8")))
-
-  return topo.objects.suburbs.geometries
-    .map((g) => g.properties)
-    .toSorted((a, b) => a.id.localeCompare(b.id))
-}
 
 interface SuburbMatch extends WikiMatch {
   // Set when an override picked the image, so no fallback is tried.
@@ -135,6 +104,7 @@ function toStats(
   geography: Geography,
   violentIncidents: number | undefined,
   treeCanopy: number | undefined,
+  medianHousePrice: number | null,
 ): SuburbStats {
   const people = census?.population ?? 0
   // Places with no residents still get figures from a few non-resident
@@ -142,6 +112,7 @@ function toStats(
   const residents = people > 0 ? census : undefined
 
   return {
+    medianHousePrice,
     medianAge: residents?.medianAge ?? null,
     medianRent: residents?.medianRent ?? null,
     medianHouseholdIncome: residents?.medianHouseholdIncome ?? null,
@@ -243,6 +214,9 @@ const canopy = await readCanopy(
 const matches = await matchSuburbs(suburbs, options)
 const summaries = await readSummaries()
 
+// House prices are built monthly by build-house-prices.ts, so they're kept.
+const previous = await readFactsFile()
+
 const choices = await choosePhotos(matches, options)
 
 const upload = await uploadPhotos(
@@ -268,6 +242,7 @@ for (const s of suburbs) {
       place,
       violentCrime.get(s.id),
       canopy.get(s.id),
+      previous[s.id]?.stats.medianHousePrice ?? null,
     ),
     topBirthplace: census.get(s.id)?.topBirthplace ?? null,
     photo: upload.photos.get(s.id) ?? null,

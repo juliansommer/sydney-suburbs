@@ -5,6 +5,7 @@ import type { SuburbFactsFile, SuburbStats } from "@/types/suburb-facts"
 import { bucketOf, heatmap } from "./heatmap"
 
 const NO_STATS: SuburbStats = {
+  medianHousePrice: null,
   medianAge: null,
   medianRent: null,
   medianHouseholdIncome: null,

@@ -15,6 +15,7 @@
     "db:migrate": "drizzle-kit migrate",
     "build:suburbs": "node --max-old-space-size=8192 scripts/build-suburbs.ts",
     "build:facts": "node --max-old-space-size=8192 scripts/build-suburb-facts.ts",
+    "build:house-prices": "node --max-old-space-size=8192 scripts/build-house-prices.ts",
     "build:flags": "node scripts/build-flags.ts"
   },
   "dependencies": {
