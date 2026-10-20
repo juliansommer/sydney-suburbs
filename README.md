@@ -36,3 +36,14 @@ Suburb facts come from these sources:
 - Matching suburbs to articles and photos: [Wikidata](https://www.wikidata.org), licensed under [CC0](https://creativecommons.org/publicdomain/zero/1.0/)
 - Summaries: written for this app, drawing on [Wikipedia](https://en.wikipedia.org) (CC BY-SA 4.0)
 - Photos: [Wikimedia Commons](https://commons.wikimedia.org), each under its own free licence; every photo's photographer, licence and source page are listed in `src/data/suburb-facts.json` and on the website
+
+### Updating the data
+
+| Data                  | Current                        | Next update                                                            | How                                                                                                                     |
+| --------------------- | ------------------------------ | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Census                | 2021                           | 2026 Census DataPacks, expected mid-2027                               | Update `CENSUS` in `scripts/source.ts`, then `pnpm build:facts`                                                         |
+| Suburb boundaries     | ASGS Edition 3 (2021)          | Edition 4 Suburbs and Localities, released with the 2026 Census data   | Update `SOURCE` in `scripts/source.ts` at the same time as the Census, then `pnpm build:suburbs` and `pnpm build:facts` |
+| House and land prices | October 2025 to September 2026 | Once a year, when the full 2026 yearly file is published in early 2027 | Download the yearly and weekly zips into `.cache/psi`, then `pnpm build:house-prices`                                   |
+| Violent crime         | July 2025 to June 2026         | BOCSAR adds new months a few times a year                              | Delete `.cache/abs/SuburbData.zip`, then `pnpm build:facts`                                                             |
+| Tree canopy           | 2024/25                        | Roughly every two to three years (2019, 2022, 2024/25 so far)          | Update `CANOPY` in `scripts/source.ts`, then `pnpm build:facts`                                                         |
+| Photos and summaries  | Ongoing                        | Whenever a suburb gets a better photo                                  | Edit `scripts/wikipedia-overrides.json`, then `pnpm build:facts`                                                        |
