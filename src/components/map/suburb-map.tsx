@@ -45,6 +45,9 @@ const ZOOM_TO_MS = 600
 // How far a gesture can shrink the drawn map before it's redrawn.
 const MAX_ZOOM_OUT_DRIFT = 2
 
+// How far a gesture can enlarge it, which thickens the borders, before then.
+const MAX_ZOOM_IN_DRIFT = 1.25
+
 // Markers keep this size on screen at every zoom, smaller on narrow screens.
 const MARKER_SIZE = 44
 const SMALL_MARKER_SIZE = 32
@@ -357,9 +360,13 @@ function useZoom(
         .on("zoom", (event: D3ZoomEvent<HTMLDivElement, unknown>) => {
           setTransform(event.transform)
 
-          // Zoomed out, a drawing at the old scale is too big for the browser
-          // to rasterise quickly, so it's redrawn smaller mid-gesture.
-          if (event.transform.k < untrack(scale) / MAX_ZOOM_OUT_DRIFT) {
+          // Zoomed out, a drawing at the old scale is too big to rasterise
+          // quickly, and zoomed in its borders thicken, so either redraws.
+          const drawnScale = untrack(scale)
+          const tooSmall = event.transform.k < drawnScale / MAX_ZOOM_OUT_DRIFT
+          const tooBig = event.transform.k > drawnScale * MAX_ZOOM_IN_DRIFT
+
+          if (tooSmall || tooBig) {
             setScale(event.transform.k)
           }
         })
