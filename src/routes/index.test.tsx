@@ -199,9 +199,9 @@ describe("map page", () => {
       name: "Household income key",
     })
 
-    expect(key).toHaveTextContent("$2,000 – $2,500/wk")
+    expect(key).toHaveTextContent("$2,250 – $2,500/wk")
     expect(key).toHaveTextContent("No data")
-    expect(document.querySelector('[data-layer="heat-3"]')).toHaveAttribute(
+    expect(document.querySelector('[data-layer="heat-4"]')).toHaveAttribute(
       "d",
       screen.getByRole("button", { name: "Alpha" }).getAttribute("d"),
     )
@@ -227,7 +227,7 @@ describe("map page", () => {
     })
     await expect(
       screen.findByRole("list", { name: "Violent crime key" }),
-    ).resolves.toHaveTextContent("1,000 – 2,500 per 100k")
+    ).resolves.toHaveTextContent("1,000 – 1,500 per 100k")
   })
 
   it("shows a stat's heatmap from the suburb panel", async () => {

@@ -78,7 +78,7 @@ function bucketLabel({ from, to }: HeatBucket, info: StatInfo): string {
   }
 
   if (to === null) {
-    return `${info.format(from)} and over`
+    return `Over ${info.format(from)}`
   }
 
   return `${info.number(from)} – ${info.format(to)}`

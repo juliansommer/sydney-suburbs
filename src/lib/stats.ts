@@ -159,20 +159,21 @@ export type HeatmapStat = (typeof HEATMAP_STATS)[number]
 // the key readable and the same from one rebuild to the next.
 export const HEATMAP_BREAKS: Record<HeatmapStat, readonly number[]> = {
   medianHousePrice: [
-    1_000_000, 1_250_000, 1_500_000, 2_000_000, 3_000_000, 4_000_000,
+    1_000_000, 1_250_000, 1_500_000, 2_000_000, 2_500_000, 3_000_000, 4_000_000,
   ],
   // Acreage sits under $500 and the eastern suburbs above $20,000, so the
-  // steps widen to spread them out.
-  landPricePerM2: [1000, 2500, 5000, 10_000, 15_000, 20_000],
-  medianHouseholdIncome: [1000, 1500, 2000, 2500, 3000, 3500],
-  medianRent: [400, 450, 500, 550, 600, 700],
-  // Most suburbs have almost none, so the steps widen to spread them out.
-  publicHousing: [1, 5, 10, 25, 50],
-  violentCrimeRate: [250, 500, 750, 1000, 2500, 5000],
-  density: [500, 1000, 2000, 3000, 4000, 6000],
-  medianAge: [30, 35, 40, 45, 50],
-  bornOverseas: [20, 30, 40, 50, 60, 70],
-  treeCanopy: [10, 15, 20, 30, 40, 50],
+  // steps widen at the top to spread them out.
+  landPricePerM2: [1500, 2500, 3500, 5000, 7500, 10_000, 15_000],
+  medianHouseholdIncome: [1500, 1750, 2000, 2250, 2500, 3000, 3500],
+  medianRent: [400, 450, 500, 550, 600, 650, 700],
+  // A third of suburbs have none, so the lowest step holds just those and the
+  // steps widen from there to spread out the rest.
+  publicHousing: [0.1, 0.5, 1, 2, 5, 10, 20],
+  violentCrimeRate: [250, 500, 750, 1000, 1500, 2500, 5000],
+  density: [1000, 2000, 2500, 3000, 4000, 6000, 10_000],
+  medianAge: [30, 35, 40, 45, 50, 55],
+  bornOverseas: [20, 30, 35, 40, 50, 60, 70],
+  treeCanopy: [10, 15, 20, 25, 30, 40, 50],
 }
 
 // Something the panel can put on the map: a stat's heatmap or the top

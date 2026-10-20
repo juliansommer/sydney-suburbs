@@ -16,6 +16,7 @@ const RED_LEVELS: readonly HeatLevel[] = [
   { fill: "fill-heat-5", swatch: "bg-heat-5" },
   { fill: "fill-heat-6", swatch: "bg-heat-6" },
   { fill: "fill-heat-7", swatch: "bg-heat-7" },
+  { fill: "fill-heat-8", swatch: "bg-heat-8" },
 ]
 
 // White to green, for stats where more is greener.
@@ -27,6 +28,7 @@ const GREEN_LEVELS: readonly HeatLevel[] = [
   { fill: "fill-canopy-5", swatch: "bg-canopy-5" },
   { fill: "fill-canopy-6", swatch: "bg-canopy-6" },
   { fill: "fill-canopy-7", swatch: "bg-canopy-7" },
+  { fill: "fill-canopy-8", swatch: "bg-canopy-8" },
 ]
 
 const PALETTES: Partial<Record<HeatmapStat, readonly HeatLevel[]>> = {

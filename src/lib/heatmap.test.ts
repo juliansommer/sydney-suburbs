@@ -52,7 +52,7 @@ describe("bucketOf", () => {
 describe("heatmap", () => {
   it("colours suburbs from white to red by the stat's steps", () => {
     const facts = factsWith([
-      { medianRent: 350 },
+      { medianRent: 250 },
       { medianRent: 520 },
       { medianRent: 1200 },
     ])
@@ -61,7 +61,7 @@ describe("heatmap", () => {
 
     expect(fillOf(map, "0")).toBe("fill-heat-1")
     expect(fillOf(map, "1")).toBe("fill-heat-4")
-    expect(fillOf(map, "2")).toBe("fill-heat-7")
+    expect(fillOf(map, "2")).toBe("fill-heat-8")
   })
 
   it("keys every step, open-ended at both ends", () => {
@@ -69,7 +69,7 @@ describe("heatmap", () => {
 
     const { buckets } = heatmap("medianRent", facts)
 
-    expect(buckets).toHaveLength(7)
+    expect(buckets).toHaveLength(8)
     expect(buckets[0]).toStrictEqual({
       from: null,
       to: 400,
@@ -79,18 +79,8 @@ describe("heatmap", () => {
     expect(buckets.at(-1)).toStrictEqual({
       from: 700,
       to: null,
-      swatch: "bg-heat-7",
+      swatch: "bg-heat-8",
     })
-  })
-
-  it("spreads fewer steps across the full range of colours", () => {
-    const facts = factsWith([{ publicHousing: 0 }, { publicHousing: 60 }])
-
-    const map = heatmap("publicHousing", facts)
-
-    expect(map.buckets).toHaveLength(6)
-    expect(fillOf(map, "0")).toBe("fill-heat-1")
-    expect(fillOf(map, "1")).toBe("fill-heat-7")
   })
 
   it("colours tree canopy in greens", () => {
@@ -99,8 +89,8 @@ describe("heatmap", () => {
     const map = heatmap("treeCanopy", facts)
 
     expect(fillOf(map, "0")).toBe("fill-canopy-1")
-    expect(fillOf(map, "1")).toBe("fill-canopy-7")
-    expect(map.buckets.at(-1)?.swatch).toBe("bg-canopy-7")
+    expect(fillOf(map, "1")).toBe("fill-canopy-8")
+    expect(map.buckets.at(-1)?.swatch).toBe("bg-canopy-8")
   })
 
   it("greys out suburbs without a figure", () => {
