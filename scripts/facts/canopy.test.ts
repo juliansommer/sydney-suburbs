@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import {
   canopyRows,
   matchCanopy,
+  MAX_AREA_RATIO,
   MIN_URBAN_SHARE,
   parseSharedStrings,
   parseSheet,
@@ -10,8 +11,8 @@ import {
 
 const STRINGS = [
   "Suburb Reference",
-  "Suburb (MUA) (ha)",
-  "2022 MUA Canopy %",
+  "SUBURB AREA WITHIN MUA (ha)",
+  "2024/25 MUA Canopy %",
   "ABBOTSBURY",
   "Notes",
 ]
@@ -42,6 +43,19 @@ describe("canopyRows", () => {
     )
   })
 
+  it("keeps the urban row of suburbs reaching into rural areas", () => {
+    const strings = [...STRINGS]
+
+    const named = (name: string): string =>
+      SHEET.replace("<v>3</v>", `<v>${strings.push(name) - 1}</v>`)
+
+    expect([
+      ...canopyRows(parseSheet(named("APPIN (MUA)"), strings)).keys(),
+      ...canopyRows(parseSheet(named("BARGO*"), strings)).keys(),
+      ...canopyRows(parseSheet(named("APPIN (MUA + MRA)*"), strings)).keys(),
+    ]).toStrictEqual(["APPIN", "BARGO"])
+  })
+
   it("fails when the header has changed", () => {
     expect(() => canopyRows(parseSheet(SHEET, ["Suburb"]))).toThrow(
       'No "Suburb Reference" header',
@@ -60,6 +74,14 @@ describe("matchCanopy", () => {
 
   it("skips suburbs mostly outside the urban area", () => {
     const areaKm2 = 147.8 / 100 / MIN_URBAN_SHARE + 1
+
+    expect(
+      matchCanopy([{ id: "1", name: "Abbotsbury", areaKm2 }], rows),
+    ).toStrictEqual(new Map())
+  })
+
+  it("skips suburbs whose boundary has since grown", () => {
+    const areaKm2 = 147.8 / 100 / MAX_AREA_RATIO - 0.1
 
     expect(
       matchCanopy([{ id: "1", name: "Abbotsbury", areaKm2 }], rows),

@@ -113,7 +113,7 @@ export const STATS: Record<StatKey, StatInfo> = {
     "Tree canopy",
     formatOneDecimal,
     "%",
-    "NSW Department of Planning, Housing and Infrastructure, 2022 share of the suburb's urban area under tree canopy",
+    "NSW Department of Planning, Housing and Infrastructure, 2024/25 share of the suburb's urban area under tree canopy",
   ),
   areaKm2: stat(
     "Area",

@@ -63,13 +63,13 @@ export const BOCSAR = {
 // Tree canopy over Greater Sydney's urban area by suburb, from the NSW
 // Department of Planning, Housing and Infrastructure, licensed CC BY 4.0.
 export const CANOPY = {
-  url: "https://www.planningportal.nsw.gov.au/opendata/dataset/4fc71c24-ebc2-4029-b19b-6259d00107d0/resource/5b2919d4-54ba-4d06-918b-f58fccb68731/download/tree-canopy-summarised-by-lga-and-suburb-2022-and-2019.xlsx",
-  file: "tree-canopy-by-suburb-2022.xlsx",
-  sheet: "2022 Suburb (MUA)",
+  url: "https://www.planningportal.nsw.gov.au/opendata/dataset/7cc0a2cf-f448-4d31-b8c6-47bbb310a605/resource/e1c4a43a-34e2-41ce-ad54-ed7cf0e85b3f/download/seed_tree-canopy-summarised-by-lga-and-suburb-2022-and-2024.xlsx",
+  file: "tree-canopy-by-suburb-2024.xlsx",
+  sheet: "2024-25 Suburb ",
   columns: {
     suburb: "Suburb Reference",
-    areaHa: "Suburb (MUA) (ha)",
-    canopy: "2022 MUA Canopy %",
+    areaHa: "SUBURB AREA WITHIN MUA (ha)",
+    canopy: "2024/25 MUA Canopy %",
   },
 } as const
 

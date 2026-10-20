@@ -11,6 +11,10 @@ import { CANOPY } from "../source.ts"
 // The canopy only covers the urban part of a suburb, so suburbs mostly
 // outside it get no figure rather than one for a sliver.
 export const MIN_URBAN_SHARE = 0.2
+
+// Newer sheets use newer suburb boundaries, so a suburb whose area grew by half
+// is measuring different land.
+export const MAX_AREA_RATIO = 1.5
 const HA_PER_KM2 = 100
 const PERCENT = 100
 const ONE_DECIMAL = 10
@@ -70,6 +74,18 @@ export interface CanopyRow {
   canopy: number
 }
 
+// Suburbs reaching into rural areas end in "*", and those split by the urban
+// edge also get "NAME (MUA)" and "NAME (MUA + MRA)*" rows. The urban row wins.
+function suburbKey(name: string): string | null {
+  const upper = name.toUpperCase().trim()
+
+  if (upper.includes("(MUA + MRA)")) {
+    return null
+  }
+
+  return upper.replace(/\s*\(MUA\)$/u, "").replace(/\*$/u, "")
+}
+
 // Rows below the header, keyed by the uppercase suburb name.
 export function canopyRows(
   rows: Map<string, string>[],
@@ -105,8 +121,10 @@ export function canopyRows(
     const area = Number(row.get(columns.areaHa))
     const share = Number(row.get(columns.canopy))
 
-    if (name && Number.isFinite(area) && Number.isFinite(share)) {
-      parsed.set(name.toUpperCase(), { areaHa: area, canopy: share })
+    const key = name ? suburbKey(name) : null
+
+    if (key && Number.isFinite(area) && Number.isFinite(share)) {
+      parsed.set(key, { areaHa: area, canopy: share })
     }
   }
 
@@ -129,10 +147,11 @@ export function matchCanopy(
   for (const s of suburbs) {
     const row = rows.get(s.name.toUpperCase())
 
-    const mostlyUrban =
-      row && row.areaHa >= s.areaKm2 * HA_PER_KM2 * MIN_URBAN_SHARE
+    const areaHa = s.areaKm2 * HA_PER_KM2
+    const mostlyUrban = row && row.areaHa >= areaHa * MIN_URBAN_SHARE
+    const sameLand = row && row.areaHa <= areaHa * MAX_AREA_RATIO
 
-    if (row && mostlyUrban) {
+    if (row && mostlyUrban && sameLand) {
       matched.set(
         s.id,
         Math.round(row.canopy * PERCENT * ONE_DECIMAL) / ONE_DECIMAL,
