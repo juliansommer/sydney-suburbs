@@ -17,6 +17,9 @@ export interface SuburbStats {
   // In dollars, over houses settled in the period in house-price-period.json,
   // from Valuer General sales. Null under 5 sales.
   medianHousePrice: number | null
+  // Median of each house sale's price over its land area, in dollars per
+  // square metre, from the same sales. Null under 5 sales with an area.
+  landPricePerM2: number | null
   medianAge: number | null
   // Weekly, in dollars.
   medianRent: number | null

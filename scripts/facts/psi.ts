@@ -1,5 +1,5 @@
-// Median house prices for each mapped suburb, from the NSW Valuer General's
-// bulk Property Sales Information (PSI).
+// Median house prices, and prices per square metre of land, for each mapped
+// suburb, from the NSW Valuer General's bulk Property Sales Information (PSI).
 
 import { readdir, readFile } from "node:fs/promises"
 
@@ -14,6 +14,8 @@ const FIELD = {
   downloaded: 4,
   locality: 9,
   postcode: 10,
+  area: 11,
+  areaType: 12,
   settlementDate: 14,
   price: 15,
   nature: 17,
@@ -42,6 +44,16 @@ const PERIOD_MONTHS = 12
 const MONTH_END_DAYS = 7
 
 const ROUND_TO = 1000
+const ROUND_PER_M2_TO = 10
+
+// Area is in square metres (M) or hectares (H).
+const M2_PER_AREA_UNIT = new Map([
+  ["M", 1],
+  ["H", 10_000],
+])
+
+// Smaller than any real house block, so a typo or a part lot.
+const MIN_AREA_M2 = 50
 
 // Weekly files come out every 7 days; a longer gap means one wasn't
 // downloaded.
@@ -56,6 +68,8 @@ export interface Sale {
   downloaded: string
   locality: string
   postcode: string
+  // Land area in square metres, or null if not given.
+  areaM2: number | null
   // CCYYMMDD.
   settlementDate: string
   price: number
@@ -73,6 +87,9 @@ export function parseSale(line: string): Sale | null {
   }
 
   const field = (i: number) => f[i]?.trim() ?? ""
+  const area = Number(field(FIELD.area))
+  const unit = M2_PER_AREA_UNIT.get(field(FIELD.areaType))
+  const areaM2 = unit !== undefined && area > 0 ? area * unit : null
 
   return {
     district: field(FIELD.district),
@@ -81,6 +98,7 @@ export function parseSale(line: string): Sale | null {
     downloaded: field(FIELD.downloaded),
     locality: field(FIELD.locality),
     postcode: field(FIELD.postcode),
+    areaM2,
     settlementDate: field(FIELD.settlementDate),
     price: Number(field(FIELD.price)),
     nature: field(FIELD.nature),
@@ -193,6 +211,9 @@ function inPeriod(settlementDate: string, { from, to }: Period): boolean {
 export interface LocalityPrice {
   median: number
   sales: number
+  // Median of each sale's price over its land area, or null when too few
+  // sales give an area.
+  medianPerM2: number | null
 }
 
 function median(sorted: number[]): number {
@@ -203,18 +224,30 @@ function median(sorted: number[]): number {
     : ((sorted[mid - 1] ?? 0) + (sorted[mid] ?? 0)) / 2
 }
 
-// Median house price by lower-cased locality, over house sales settled in
-// the period. Localities with too few sales are left out.
+function roundedMedian(values: number[], step: number): number {
+  const sorted = values.toSorted((a, b) => a - b)
+
+  return Math.round(median(sorted) / step) * step
+}
+
+// Median house price and price per square metre of land by lower-cased
+// locality, over house sales settled in the period. Localities with too few
+// sales are left out.
 export function medianPrices(
   sales: Iterable<Sale>,
   period: Period,
 ): Map<string, LocalityPrice> {
   const prices = new Map<string, number[]>()
+  const perM2 = new Map<string, number[]>()
 
   for (const sale of sales) {
     if (isHouseSale(sale) && inPeriod(sale.settlementDate, period)) {
       const key = sale.locality.toLowerCase()
       prices.set(key, [...(prices.get(key) ?? []), sale.price])
+
+      if (sale.areaM2 !== null && sale.areaM2 >= MIN_AREA_M2) {
+        perM2.set(key, [...(perM2.get(key) ?? []), sale.price / sale.areaM2])
+      }
     }
   }
 
@@ -222,10 +255,15 @@ export function medianPrices(
 
   for (const [locality, list] of prices) {
     if (list.length >= MIN_SALES) {
-      const sorted = list.toSorted((a, b) => a - b)
+      const landPrices = perM2.get(locality) ?? []
+
       medians.set(locality, {
-        median: Math.round(median(sorted) / ROUND_TO) * ROUND_TO,
+        median: roundedMedian(list, ROUND_TO),
         sales: list.length,
+        medianPerM2:
+          landPrices.length >= MIN_SALES
+            ? roundedMedian(landPrices, ROUND_PER_M2_TO)
+            : null,
       })
     }
   }

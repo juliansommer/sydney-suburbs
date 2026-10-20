@@ -104,7 +104,7 @@ function toStats(
   geography: Geography,
   violentIncidents: number | undefined,
   treeCanopy: number | undefined,
-  medianHousePrice: number | null,
+  housePrices: Pick<SuburbStats, "medianHousePrice" | "landPricePerM2">,
 ): SuburbStats {
   const people = census?.population ?? 0
   // Places with no residents still get figures from a few non-resident
@@ -112,7 +112,7 @@ function toStats(
   const residents = people > 0 ? census : undefined
 
   return {
-    medianHousePrice,
+    ...housePrices,
     medianAge: residents?.medianAge ?? null,
     medianRent: residents?.medianRent ?? null,
     medianHouseholdIncome: residents?.medianHouseholdIncome ?? null,
@@ -242,7 +242,10 @@ for (const s of suburbs) {
       place,
       violentCrime.get(s.id),
       canopy.get(s.id),
-      previous[s.id]?.stats.medianHousePrice ?? null,
+      {
+        medianHousePrice: previous[s.id]?.stats.medianHousePrice ?? null,
+        landPricePerM2: previous[s.id]?.stats.landPricePerM2 ?? null,
+      },
     ),
     topBirthplace: census.get(s.id)?.topBirthplace ?? null,
     photo: upload.photos.get(s.id) ?? null,

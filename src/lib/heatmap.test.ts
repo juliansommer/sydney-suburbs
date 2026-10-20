@@ -6,6 +6,7 @@ import { bucketOf, heatmap } from "./heatmap"
 
 const NO_STATS: SuburbStats = {
   medianHousePrice: null,
+  landPricePerM2: null,
   medianAge: null,
   medianRent: null,
   medianHouseholdIncome: null,

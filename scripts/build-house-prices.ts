@@ -56,6 +56,7 @@ for (const s of suburbs) {
 
   if (stats) {
     stats.medianHousePrice = price?.median ?? null
+    stats.landPricePerM2 = price?.medianPerM2 ?? null
   }
 
   if (price) {

@@ -82,6 +82,12 @@ export const STATS: Record<StatKey, StatInfo> = {
     "",
     housePriceSource(),
   ),
+  landPricePerM2: stat(
+    "Land price",
+    formatDollars,
+    "/m²",
+    `${housePriceSource()}, median of price over land area`,
+  ),
   medianAge: stat("Median age", String, "", CENSUS),
   bornOverseas: stat("Born overseas", String, "%", CENSUS),
   medianRent: stat("Median rent", formatDollars, "/wk", CENSUS),
@@ -121,6 +127,7 @@ export const STATS: Record<StatKey, StatInfo> = {
 // The order of the panel's details.
 export const DETAIL_STATS: readonly StatKey[] = [
   "medianHousePrice",
+  "landPricePerM2",
   "medianAge",
   "bornOverseas",
   "medianRent",
@@ -135,6 +142,7 @@ export const DETAIL_STATS: readonly StatKey[] = [
 // Area is left off, since its heatmap only shows suburb size.
 export const HEATMAP_STATS = [
   "medianHousePrice",
+  "landPricePerM2",
   "medianHouseholdIncome",
   "medianRent",
   "publicHousing",
@@ -153,6 +161,9 @@ export const HEATMAP_BREAKS: Record<HeatmapStat, readonly number[]> = {
   medianHousePrice: [
     1_000_000, 1_250_000, 1_500_000, 2_000_000, 3_000_000, 4_000_000,
   ],
+  // Acreage sits under $500 and the eastern suburbs above $20,000, so the
+  // steps widen to spread them out.
+  landPricePerM2: [1500, 2500, 3500, 5000, 10_000, 20_000],
   medianHouseholdIncome: [1000, 1500, 2000, 2500, 3000, 3500],
   medianRent: [400, 450, 500, 550, 600, 700],
   // Most suburbs have almost none, so the steps widen to spread them out.

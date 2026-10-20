@@ -23,6 +23,7 @@ function sale(overrides: Partial<Sale> = {}): Sale {
     downloaded: "20250106 01:02",
     locality: "PUNCHBOWL",
     postcode: "2196",
+    areaM2: 500,
     settlementDate: "20250310",
     price: 1_000_000,
     nature: "R",
@@ -53,12 +54,18 @@ describe("parseSale", () => {
       downloaded: "20250106 01:02",
       locality: "PUNCHBOWL",
       postcode: "2196",
+      areaM2: 556.6,
       settlementDate: "20250103",
       price: 1_250_000,
       nature: "R",
       strataLot: "",
       interest: "",
     })
+  })
+
+  it("reads hectares as square metres and a missing area as null", () => {
+    expect(parseSale(RECORD.replace("556.6;M", "2;H"))?.areaM2).toBe(20_000)
+    expect(parseSale(RECORD.replace("556.6;M", ";"))?.areaM2).toBeNull()
   })
 
   it("skips other records", () => {
@@ -134,7 +141,26 @@ describe("medianPrices", () => {
     expect(medianPrices(sales, period).get("punchbowl")).toStrictEqual({
       median: 1_050_000,
       sales: 6,
+      medianPerM2: 2100,
     })
+  })
+
+  it("takes price per square metre from sales with a real land area", () => {
+    const sales = [
+      ...[250, 400, 500, 800, 1000].map((areaM2) => sale({ areaM2 })),
+      sale({ areaM2: null }),
+      sale({ areaM2: 10 }),
+    ]
+
+    expect(medianPrices(sales, period).get("punchbowl")?.medianPerM2).toBe(2000)
+  })
+
+  it("leaves out price per square metre with too few areas", () => {
+    const sales = Array.from({ length: 5 }, (_, i) =>
+      sale({ areaM2: i === 0 ? 500 : null }),
+    )
+
+    expect(medianPrices(sales, period).get("punchbowl")?.medianPerM2).toBeNull()
   })
 
   it("leaves out sales settled outside the period and non-houses", () => {
