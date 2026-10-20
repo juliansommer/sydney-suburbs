@@ -163,7 +163,7 @@ export const HEATMAP_BREAKS: Record<HeatmapStat, readonly number[]> = {
   ],
   // Acreage sits under $500 and the eastern suburbs above $20,000, so the
   // steps widen to spread them out.
-  landPricePerM2: [1500, 2500, 3500, 5000, 10_000, 20_000],
+  landPricePerM2: [1000, 2500, 5000, 10_000, 15_000, 20_000],
   medianHouseholdIncome: [1000, 1500, 2000, 2500, 3000, 3500],
   medianRent: [400, 450, 500, 550, 600, 700],
   // Most suburbs have almost none, so the steps widen to spread them out.
