@@ -3,12 +3,7 @@ import { describe, expect, it } from "vitest"
 import { toSuburbMap } from "@/queries/suburbs-topo"
 import { suburbsTopology } from "@/test/fixtures"
 
-import {
-  ABS_CREDIT,
-  EXPORT_PALETTE,
-  exportFileName,
-  exportSvg,
-} from "./export-png"
+import { EXPORT_PALETTE, exportFileName, exportSvg } from "./export-png"
 import { EMPTY_REGION_MAP, type RegionMap } from "./regions"
 
 const map: RegionMap = {
@@ -29,13 +24,12 @@ function render(options = {}) {
 }
 
 describe("exportSvg", () => {
-  it("has the title, a legend entry per region and the ABS credit", () => {
+  it("has the title and region names, but no key", () => {
     const { svg } = render()
 
     expect(svg).toContain("South &amp; East")
-    expect(svg).toContain("Harbour (2 suburbs)")
-    expect(svg).toContain("Beach (1 suburb)")
-    expect(svg).toContain(ABS_CREDIT)
+    expect(svg).toContain(">Harbour<")
+    expect(svg).not.toContain("suburbs)")
   })
 
   it("uses literal colours only, with no classes or CSS variables", () => {

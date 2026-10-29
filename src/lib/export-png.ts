@@ -23,11 +23,8 @@ export const EXPORT_PALETTE = {
   halo: "#ffffff",
   outline: "#252525",
   text: "#171717",
-  muted: "#737373",
   background: "#ffffff",
 } as const
-
-export const ABS_CREDIT = "Suburb boundaries © ABS, CC BY 4.0"
 
 export type Framing = "regions" | "all"
 
@@ -38,10 +35,8 @@ export interface ExportOptions {
   fontUrl?: string
 }
 
-// Long edge of the map, and the cap on either edge of the whole image, under
-// iOS Safari's canvas limit.
+// Long edge of the map, well under iOS Safari's canvas limit.
 const LONG_EDGE = 2400
-const MAX_EDGE = 4096
 const FRAME_PADDING = 0.05
 
 // The map is projected at this size, then framed and scaled up.
@@ -51,11 +46,7 @@ const BASE_SIZE = 1000
 const TITLE_SIZE = 56
 const REGION_LABEL_SIZE = 40
 const SUBURB_LABEL_SIZE = 20
-const LEGEND_SIZE = 28
-const CREDIT_SIZE = 20
 const MARGIN = 48
-const SWATCH = 28
-const LEGEND_GAP = 40
 
 // The download starts after the click returns, so the PNG's URL outlives it.
 const REVOKE_AFTER_MS = 10_000
@@ -147,48 +138,6 @@ function textWidth(text: string, size: number): number {
   return text.length * CHAR_WIDTH * size
 }
 
-interface LegendEntry {
-  x: number
-  y: number
-  color: string
-  text: string
-}
-
-// Wraps the legend into rows across the image's width.
-interface LegendLayout {
-  entries: LegendEntry[]
-  height: number
-}
-
-function layoutLegend(
-  map: RegionMap,
-  width: number,
-  top: number,
-): LegendLayout {
-  const entries: LegendEntry[] = []
-  let x = MARGIN
-  let y = top
-  const rowHeight = LEGEND_SIZE * 1.6
-
-  for (const region of map.regions) {
-    const count = region.suburbIds.length
-    const text = `${region.name} (${count} ${count === 1 ? "suburb" : "suburbs"})`
-    const entryWidth = SWATCH + 12 + textWidth(text, LEGEND_SIZE)
-
-    if (x > MARGIN && x + entryWidth > width - MARGIN) {
-      x = MARGIN
-      y += rowHeight
-    }
-
-    entries.push({ x, y, color: region.color, text })
-    x += entryWidth + LEGEND_GAP
-  }
-
-  const height = entries.length > 0 ? y - top + rowHeight : 0
-
-  return { entries, height }
-}
-
 export interface ExportSvg {
   svg: string
   width: number
@@ -211,13 +160,7 @@ export function exportSvg(
   const width = Math.round(frameWidth * scale)
   const mapHeight = Math.round(frameHeight * scale)
   const header = MARGIN * 2 + TITLE_SIZE
-  const legend = layoutLegend(map, width, header + mapHeight + MARGIN)
-  const creditTop = header + mapHeight + MARGIN + legend.height
-
-  const height = Math.min(
-    MAX_EDGE,
-    Math.round(creditTop + CREDIT_SIZE + MARGIN),
-  )
+  const height = header + mapHeight
 
   const toImage = ([x, y]: [number, number]): [number, number] => [
     (x - fx0) * scale,
@@ -317,23 +260,6 @@ export function exportSvg(
     `<g ${halo(REGION_LABEL_SIZE, 600)}>`,
     ...regionLabels.map((l) => svgText(l.x, l.y, REGION_LABEL_SIZE, l.text)),
     "</g>",
-    ...legend.entries.flatMap((e) => [
-      `<rect x="${e.x}" y="${e.y}" width="${SWATCH}" height="${SWATCH}" rx="4" fill="${mixHex(e.color, EXPORT_PALETTE.land, REGION_FILL_MIX)}" stroke="${EXPORT_PALETTE.outline}" stroke-width="1"/>`,
-      svgText(
-        e.x + SWATCH + 12,
-        e.y + SWATCH / 2,
-        LEGEND_SIZE,
-        e.text,
-        `fill="${EXPORT_PALETTE.text}" dominant-baseline="central"`,
-      ),
-    ]),
-    svgText(
-      MARGIN,
-      creditTop + CREDIT_SIZE,
-      CREDIT_SIZE,
-      ABS_CREDIT,
-      `fill="${EXPORT_PALETTE.muted}"`,
-    ),
     "</svg>",
   ]
 
