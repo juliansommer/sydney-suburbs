@@ -21,7 +21,7 @@ import {
 } from "solid-js"
 
 import { useElementSize } from "@/hooks/use-element-size"
-import type { Rect } from "@/lib/labels"
+import { CHAR_WIDTH, labelFits, placeLabels, type Rect } from "@/lib/labels"
 import { type Bounds, fitBounds } from "@/lib/zoom"
 import type { MapLayers } from "@/types/map-layers"
 import type { LanduseKind, SuburbMapData } from "@/types/suburb"
@@ -30,6 +30,7 @@ import {
   projectBase,
   type ProjectedBase,
   type ProjectedFill,
+  type ProjectedLabel,
   projectLayers,
   type ProjectedMarker,
   type ProjectedSuburb,
@@ -53,6 +54,13 @@ const MARKER_SIZE = 44
 const SMALL_MARKER_SIZE = 32
 const SMALL_SCREEN_WIDTH = 768
 
+// Area names, like custom regions, read over the suburb names.
+const AREA_LABEL_SIZE = 16
+const AREA_HALO_WIDTH = 4
+
+// Picked colours are softened toward the land, like the club colours.
+const TINTED_FILL = "fill-region"
+
 // Fill images are flags, drawn at 4:3.
 const IMAGE_ASPECT = [4, 3] as const
 
@@ -71,7 +79,16 @@ interface SuburbMapProps {
   layers: MapLayers
   // Called with null when a click lands off the suburbs (water, surrounds).
   onSelect: (id: string | null) => void
+  // The suburb under a mouse pointer, at its position in the viewport, or
+  // null once it leaves the suburbs or starts dragging.
+  onHover?: (hover: SuburbHover | null) => void
   ref?: (handle: SuburbMapHandle) => void
+}
+
+export interface SuburbHover {
+  id: string
+  x: number
+  y: number
 }
 
 export interface SuburbMapHandle {
@@ -106,6 +123,7 @@ export function SuburbMap(props: SuburbMapProps) {
           <ZoomableMap
             height={height()}
             layers={props.layers}
+            onHover={props.onHover}
             onSelect={props.onSelect}
             projected={base()}
             ref={props.ref}
@@ -240,6 +258,10 @@ function ZoomableMap(props: ZoomableMapProps) {
           pick(suburb?.dataset.suburbId ?? null)
         }
       }}
+      onPointerLeave={() => props.onHover?.(null)}
+      onPointerMove={(event) => {
+        props.onHover?.(hoverAt(event))
+      }}
       ref={(element) => {
         container = element
       }}
@@ -305,6 +327,7 @@ function ZoomableMap(props: ZoomableMapProps) {
       >
         <ScreenLayer
           height={props.height}
+          labels={layers().labels}
           markers={layers().markers}
           suburbs={props.projected.suburbs}
           transform={transform()}
@@ -401,10 +424,20 @@ function useZoom(
   return { zoomer: () => zoomer, transform, scale, gesture }
 }
 
+// Touch has no hover, and a drag is a pan rather than a point.
+function hoverAt(event: PointerEvent): SuburbHover | null {
+  const dragging = event.pointerType !== "mouse" || event.buttons !== 0
+  const target = event.target instanceof Element ? event.target : null
+  const id = target?.closest<SVGElement>("[data-suburb-id]")?.dataset.suburbId
+
+  return dragging || !id ? null : { id, x: event.clientX, y: event.clientY }
+}
+
 interface ScreenLayerProps {
   transform: ZoomTransform
   suburbs: ProjectedSuburb[]
   markers: ProjectedMarker[]
+  labels: ProjectedLabel[]
   width: number
   height: number
 }
@@ -418,17 +451,69 @@ function ScreenLayer(props: ScreenLayerProps) {
     onScreen(props.markers, props.transform, props.width, props.height),
   )
 
+  const placedAreas = createMemo(() => {
+    const { transform, width, height } = props
+
+    const candidates = props.labels.flatMap((l) => {
+      if (!labelFits(l, transform.k, l.text, AREA_LABEL_SIZE)) {
+        return []
+      }
+
+      const [x, y] = transform.apply([l.x, l.y])
+      const offScreen = x < 0 || x > width || y < 0 || y > height
+
+      return offScreen ? [] : [{ ...l, name: l.text, x, y }]
+    })
+
+    return placeLabels(candidates, AREA_LABEL_SIZE)
+  })
+
+  // Suburb names give way to the markers and the area names.
+  const obstacles = () => [
+    ...placedMarkers().map((m) => markerRect(m, markerSize())),
+    ...placedAreas().map((l) => labelRect(l, AREA_LABEL_SIZE)),
+  ]
+
   return (
     <>
       <SuburbLabels
+        dimmed={props.labels.length > 0}
         height={props.height}
-        obstacles={placedMarkers().map((m) => markerRect(m, markerSize()))}
+        obstacles={obstacles()}
         suburbs={props.suburbs}
         transform={props.transform}
         width={props.width}
       />
       <Markers markers={placedMarkers()} size={markerSize()} />
+      <AreaLabels labels={placedAreas()} />
     </>
+  )
+}
+
+interface AreaLabelsProps {
+  labels: ProjectedLabel[]
+}
+
+// Larger and bolder than the suburb names, with the same halo.
+function AreaLabels(props: AreaLabelsProps) {
+  return (
+    <g
+      class="pointer-events-none fill-map-label stroke-map-halo [paint-order:stroke]"
+      dominant-baseline="central"
+      font-size={AREA_LABEL_SIZE}
+      font-weight={600}
+      stroke-linejoin="round"
+      stroke-width={AREA_HALO_WIDTH}
+      text-anchor="middle"
+    >
+      <For each={props.labels} keyed={(l) => l.key}>
+        {(l) => (
+          <text x={l().x} y={l().y}>
+            {l().text}
+          </text>
+        )}
+      </For>
+    </g>
   )
 }
 
@@ -503,9 +588,12 @@ function FillPath(props: FillPathProps) {
     <Show
       fallback={
         <path
-          class={props.fill.className}
+          class={props.fill.color ? TINTED_FILL : props.fill.className}
           d={props.fill.d}
           data-layer={props.fill.key}
+          style={
+            props.fill.color ? { "--region": props.fill.color } : undefined
+          }
         />
       }
       when={props.fill.image}
@@ -577,6 +665,18 @@ function markerRect({ x, y }: ProjectedMarker, size: number): Rect {
   const half = size / 2
 
   return { x0: x - half, y0: y - half, x1: x + half, y1: y + half }
+}
+
+function labelRect({ x, y, text }: ProjectedLabel, fontSize: number): Rect {
+  const halfWidth = (text.length * CHAR_WIDTH * fontSize) / 2
+  const halfHeight = fontSize / 2
+
+  return {
+    x0: x - halfWidth,
+    y0: y - halfHeight,
+    x1: x + halfWidth,
+    y1: y + halfHeight,
+  }
 }
 
 interface MarkersProps {

@@ -127,6 +127,8 @@
     var(--map-land)
   );
   --color-canopy-8: color-mix(in oklab, var(--canopy-green) 85%, black);
+  --color-region: color-mix(in oklab, var(--region) 70%, var(--map-land));
+  --color-swatch: var(--swatch);
   --color-country-other: color-mix(in oklab, #a3a3a3 70%, var(--map-land));
   --color-heat-none: color-mix(
     in oklab,

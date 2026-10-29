@@ -9,6 +9,7 @@
 - Photo, summary and census stats for each suburb
 - Heatmaps for income, rent, crime, tree canopy and more
 - NRL club territories
+- Custom maps: group suburbs into named, coloured regions and export a PNG
 - Visit progress by council
 - Sign in with Google or GitHub to sync across devices
 

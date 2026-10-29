@@ -4,8 +4,9 @@ import type { Feature, MultiPolygon, Polygon } from "geojson"
 export interface FillLayer {
   key: string
   ids: ReadonlySet<string>
-  // A Tailwind fill class.
-  className: string
+  // A Tailwind fill class, or a CSS colour for colours picked at runtime.
+  className?: string
+  color?: string
   // A picture covering each suburb in the layer, in place of the fill colour.
   image?: string
 }
@@ -24,8 +25,19 @@ export interface MapMarker {
   label: string
 }
 
+// A name pinned to a lon/lat point, shown once the zoom gives it `bounds`
+// (a lon/lat box) room enough for the text.
+export interface MapLabel {
+  key: string
+  coords: [number, number]
+  bounds: [[number, number], [number, number]]
+  text: string
+}
+
 export interface MapLayers {
   fills: FillLayer[]
   outlines: OutlineLayer[]
   markers: MapMarker[]
+  // Area names, drawn over the suburb names, which dim to let them read.
+  labels?: MapLabel[]
 }
