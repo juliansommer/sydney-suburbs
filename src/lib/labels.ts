@@ -1,5 +1,5 @@
 // Rough average glyph width of the UI font, as a fraction of font size.
-const CHAR_WIDTH = 0.55
+export const CHAR_WIDTH = 0.55
 
 // Breathing room kept between neighbouring labels, in screen pixels.
 const LABEL_GAP = 4

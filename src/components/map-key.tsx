@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils"
 
 interface MapKeyProps {
   children: JSX.Element
+  // The small-screen toggle's text.
+  label?: string
 }
 
 // On small screens the key starts hidden behind a toggle, so it doesn't cover
@@ -33,7 +35,7 @@ export function MapKey(props: MapKeyProps) {
         size="sm"
         variant="outline"
       >
-        Key
+        {props.label ?? "Key"}
         <ChevronUpIcon
           class={cn("transition-transform", open() && "rotate-180")}
           data-icon="inline-end"

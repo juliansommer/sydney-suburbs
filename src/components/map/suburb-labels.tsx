@@ -2,6 +2,7 @@ import type { ZoomTransform } from "d3-zoom"
 import { createMemo, For } from "solid-js"
 
 import { labelVisible, placeLabels, type Rect } from "@/lib/labels"
+import { cn } from "@/lib/utils"
 
 import type { ProjectedSuburb } from "./project"
 
@@ -15,6 +16,8 @@ interface SuburbLabelsProps {
   height: number
   // Screen space already taken, which labels give way to.
   obstacles?: readonly Rect[]
+  // Faded, so names drawn over them win.
+  dimmed?: boolean
 }
 
 // Drawn in screen space, outside the zoomed group, so text is never scaled
@@ -40,7 +43,10 @@ export function SuburbLabels(props: SuburbLabelsProps) {
 
   return (
     <g
-      class="pointer-events-none fill-map-label stroke-map-halo [paint-order:stroke]"
+      class={cn(
+        "pointer-events-none fill-map-label stroke-map-halo [paint-order:stroke]",
+        props.dimmed && "opacity-60",
+      )}
       dominant-baseline="central"
       font-size={FONT_SIZE}
       stroke-linejoin="round"

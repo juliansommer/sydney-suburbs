@@ -1,6 +1,7 @@
 import { type SearchParams, useSearchParams } from "@solidjs/router"
 import {
   createMemo,
+  createSignal,
   Errored,
   For,
   lazy,
@@ -13,13 +14,20 @@ import { HeatmapLegend } from "@/components/heatmap-legend"
 import { GitHubLogo } from "@/components/logos"
 import { MapKey } from "@/components/map-key"
 import { SearchPlaceholder } from "@/components/map/search-placeholder"
-import { SuburbMap, type SuburbMapHandle } from "@/components/map/suburb-map"
+import {
+  type SuburbHover,
+  SuburbMap,
+  type SuburbMapHandle,
+} from "@/components/map/suburb-map"
+import { SuburbTooltip } from "@/components/regions/suburb-tooltip"
 import { Button, buttonVariants } from "@/components/ui/button"
+import { useCustomMap } from "@/hooks/use-custom-map"
 import { useShortcut } from "@/hooks/use-shortcut"
 import { getSession, signOut } from "@/lib/auth"
 import type { Heatmap } from "@/lib/heatmap"
 import { whenIdle } from "@/lib/idle"
 import { preload } from "@/lib/load"
+import { regionBySuburb } from "@/lib/regions"
 import {
   DEFAULT_HEATMAP_STAT,
   type HeatmapStat,
@@ -72,7 +80,14 @@ const NrlLegend = lazy(async () => {
   return { default: component }
 })
 
-const MAP_MODES = ["visited", "heatmap", "birthplace", "nrl"] as const
+const RegionsPanel = lazy(async () => {
+  const { RegionsPanel: component } =
+    await import("@/components/regions/regions-panel")
+
+  return { default: component }
+})
+
+const MAP_MODES = ["visited", "heatmap", "birthplace", "nrl", "custom"] as const
 
 type MapMode = (typeof MAP_MODES)[number]
 
@@ -81,6 +96,7 @@ const MODE_LABELS: Record<MapMode, string> = {
   nrl: "NRL",
   heatmap: "Heatmap",
   birthplace: "Birthplace",
+  custom: "Custom map",
 }
 
 // Visited is the default mode and only the heatmap has a stat, so neither the
@@ -89,6 +105,8 @@ interface MapSearch extends SearchParams {
   mode?: MapMode
   stat?: HeatmapStat
   suburb?: string
+  // The custom map region being edited.
+  region?: string
 }
 
 const NO_LAYERS: MapLayers = { fills: [], outlines: [], markers: [] }
@@ -224,6 +242,30 @@ function MapView(props: MapViewProps) {
   const [search, setSearch] = useSearchParams<MapSearch>()
   const mode = (): MapMode => search.mode ?? "visited"
   const stat = (): HeatmapStat => search.stat ?? DEFAULT_HEATMAP_STAT
+  const customMode = () => mode() === "custom"
+
+  const knownIds = createMemo(() => new Set(props.suburbs.map((s) => s.id)))
+  const custom = useCustomMap(knownIds, () => search.region, activateRegion)
+
+  // The region maths loads with the mode, then draws every change in step.
+  const regionTools = createMemo(
+    async () =>
+      customMode() ? await import("@/lib/region-layers") : undefined,
+    { loadingValue: undefined },
+  )
+
+  const customLayers = createMemo((): MapLayers => {
+    const tools = regionTools()
+
+    if (!tools) {
+      return NO_LAYERS
+    }
+
+    return tools.regionLayers(custom.map(), props.data)
+  })
+
+  const [hover, setHover] = createSignal<SuburbHover | null>(null)
+  const regionOf = createMemo(() => regionBySuburb(custom.map()))
 
   // Only the current mode's layers load, and the map keeps what it has until
   // they're ready.
@@ -249,6 +291,10 @@ function MapView(props: MapViewProps) {
   )
 
   const layers = createMemo((): MapLayers => {
+    if (customMode()) {
+      return customLayers()
+    }
+
     if (mode() !== "visited") {
       return overlayLayers() ?? NO_LAYERS
     }
@@ -275,10 +321,21 @@ function MapView(props: MapViewProps) {
   }
 
   const byId = createMemo(() => new Map(props.suburbs.map((s) => [s.id, s])))
-  // An id the map doesn't draw is no selection at all.
-  const selected = () => byId().get(search.suburb ?? "")
 
+  // An id the map doesn't draw is no selection at all.
+  const selected = () =>
+    customMode() ? undefined : byId().get(search.suburb ?? "")
+
+  // In the custom map a click adds or removes a suburb instead.
   function select(id: string | null) {
+    if (customMode()) {
+      if (id) {
+        custom.toggle(id)
+      }
+
+      return
+    }
+
     const current = selected()
 
     if (id === (current?.id ?? null)) {
@@ -292,9 +349,18 @@ function MapView(props: MapViewProps) {
 
   function switchMode(next: MapMode) {
     setSearch(
-      { mode: next === "visited" ? undefined : next, stat: undefined },
+      {
+        mode: next === "visited" ? undefined : next,
+        stat: undefined,
+        region: undefined,
+        suburb: next === "custom" ? undefined : search.suburb,
+      },
       { replace: true },
     )
+  }
+
+  function activateRegion(id: string) {
+    setSearch({ region: id }, { replace: true })
   }
 
   function showHeatmap(next: HeatmapStat) {
@@ -322,6 +388,8 @@ function MapView(props: MapViewProps) {
         BirthplaceLegend.preload,
         async () => await import("@/lib/nrl"),
         async () => await import("@/lib/birthplace"),
+        RegionsPanel.preload,
+        async () => await import("@/lib/region-layers"),
       )
     }),
   )
@@ -331,6 +399,7 @@ function MapView(props: MapViewProps) {
       <SuburbMap
         data={props.data}
         layers={layers()}
+        onHover={setHover}
         onSelect={select}
         ref={(handle) => {
           props.map.current = handle
@@ -339,7 +408,7 @@ function MapView(props: MapViewProps) {
       />
       <div class="absolute inset-x-4 bottom-4 flex flex-col items-start gap-2 md:right-auto">
         <Show when={mode() !== "visited"}>
-          <MapKey>
+          <MapKey label={customMode() ? "Regions" : "Key"}>
             <Loading>
               <Show when={mode() === "nrl"}>
                 <NrlLegend />
@@ -357,6 +426,16 @@ function MapView(props: MapViewProps) {
                 <BirthplaceLegend />
               </Show>
             </Loading>
+            <Loading>
+              <Show when={customMode()}>
+                <RegionsPanel
+                  custom={custom}
+                  data={props.data}
+                  onActivate={activateRegion}
+                  suburbs={props.suburbs}
+                />
+              </Show>
+            </Loading>
           </MapKey>
         </Show>
         <fieldset class="flex gap-1 rounded-lg border bg-background p-0.5 shadow-sm">
@@ -371,7 +450,10 @@ function MapView(props: MapViewProps) {
                 size="sm"
                 variant={m === mode() ? "secondary" : "ghost"}
               >
-                {MODE_LABELS[m]}
+                {/* Phones are too narrow for every mode's full label. */}
+                <Show fallback={MODE_LABELS[m]} when={m === "custom"}>
+                  Custom<span class="hidden sm:inline"> map</span>
+                </Show>
               </Button>
             )}
           </For>
@@ -381,7 +463,13 @@ function MapView(props: MapViewProps) {
         <Loading fallback={<SearchPlaceholder />}>
           <SuburbSearch
             onPick={(id) => {
-              select(id)
+              // Searching adds, since a toggle could take the suburb away.
+              if (customMode()) {
+                custom.addMany([id])
+              } else {
+                select(id)
+              }
+
               props.map.current?.zoomTo(id)
             }}
             suburbs={props.suburbs}
@@ -389,6 +477,11 @@ function MapView(props: MapViewProps) {
           />
         </Loading>
       </div>
+      <SuburbTooltip
+        hover={hover()}
+        name={(id) => byId().get(id)?.name}
+        region={(id) => (customMode() ? regionOf().get(id)?.name : undefined)}
+      />
       <Loading>
         <SuburbPanel
           onClose={() => {

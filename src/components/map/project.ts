@@ -34,7 +34,8 @@ export interface ProjectedLanduse {
 export interface ProjectedFill {
   key: string
   d: string
-  className: string
+  className?: string
+  color?: string
   image?: string
   // Each suburb's path on its own, for an image fill.
   parts: { id: string; d: string }[]
@@ -53,6 +54,16 @@ export interface ProjectedMarker {
   label: string
 }
 
+export interface ProjectedLabel {
+  key: string
+  text: string
+  x: number
+  y: number
+  // The room the label has, in unzoomed pixels.
+  width: number
+  height: number
+}
+
 export interface ProjectedBase {
   projection: GeoProjection
   suburbs: ProjectedSuburb[]
@@ -66,6 +77,7 @@ export interface ProjectedLayers {
   fills: ProjectedFill[]
   outlines: ProjectedOutline[]
   markers: ProjectedMarker[]
+  labels: ProjectedLabel[]
 }
 
 // d3's default scale, which fitting multiplies up from.
@@ -153,7 +165,7 @@ export function projectBase(
 // Separate from the base so changing layers skips re-projecting every
 // suburb. Fills reuse the projected suburb paths.
 export function projectLayers(
-  { fills, outlines, markers }: MapLayers,
+  { fills, outlines, markers, labels = [] }: MapLayers,
   { suburbs, projection }: ProjectedBase,
 ): ProjectedLayers {
   const path = planarPath(projection)
@@ -167,6 +179,7 @@ export function projectLayers(
       return {
         key: f.key,
         className: f.className,
+        color: f.color,
         image: f.image,
         d: parts.map((p) => p.d).join(""),
         parts: f.image ? parts : [],
@@ -178,6 +191,24 @@ export function projectLayers(
 
       return point
         ? [{ key: m.key, x: point[0], y: point[1], src: m.src, label: m.label }]
+        : []
+    }),
+    labels: labels.flatMap((l) => {
+      const point = projection(l.coords)
+      const [x0, y1] = projection(l.bounds[0]) ?? [0, 0]
+      const [x1, y0] = projection(l.bounds[1]) ?? [0, 0]
+
+      return point
+        ? [
+            {
+              key: l.key,
+              text: l.text,
+              x: point[0],
+              y: point[1],
+              width: x1 - x0,
+              height: y1 - y0,
+            },
+          ]
         : []
     }),
   }

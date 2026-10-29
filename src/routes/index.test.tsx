@@ -282,6 +282,18 @@ describe("map page", () => {
     })
   })
 
+  it("names the suburb under the mouse", async () => {
+    await renderRoute("/")
+
+    fireEvent.pointerMove(await screen.findByRole("button", { name: "Beta" }), {
+      pointerType: "mouse",
+    })
+
+    await expect(screen.findByRole("tooltip")).resolves.toHaveTextContent(
+      /^Beta$/u,
+    )
+  })
+
   it("selects a suburb on click and shows its panel", async () => {
     const { search } = await renderRoute("/")
 

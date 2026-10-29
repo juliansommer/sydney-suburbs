@@ -58,4 +58,59 @@ describe("SuburbMap", () => {
       "true",
     )
   })
+
+  it("fills colour layers through a custom property and outlines them", () => {
+    const data = toSuburbMap(suburbsTopology)
+
+    const { container } = renderMap({
+      data,
+      layers: {
+        fills: [{ key: "harbour", ids: new Set(["1"]), color: "#4363d8" }],
+        outlines: [
+          {
+            key: "harbour",
+            feature: {
+              type: "Feature",
+              geometry: data.land.geometry,
+              properties: {},
+            },
+          },
+        ],
+        markers: [],
+      },
+    })
+
+    const fill = container.querySelector('[data-layer="harbour"]')
+
+    expect(fill).toHaveClass("fill-region")
+    expect(fill).toHaveStyle({ "--region": "#4363d8" })
+    expect(container.querySelectorAll('path[fill="none"]')).toHaveLength(1)
+  })
+
+  it("names areas over dimmed suburb names", () => {
+    const { container } = renderMap({
+      layers: {
+        fills: [],
+        outlines: [],
+        markers: [],
+        labels: [
+          {
+            key: "harbour",
+            text: "Harbour",
+            coords: [151.215, -33.805],
+            bounds: [
+              [151.2, -33.81],
+              [151.23, -33.8],
+            ],
+          },
+        ],
+      },
+    })
+
+    expect(screen.getByText("Harbour").parentElement).toHaveAttribute(
+      "font-weight",
+      "600",
+    )
+    expect(container.querySelector(".opacity-60")).not.toBeNull()
+  })
 })
