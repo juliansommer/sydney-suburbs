@@ -245,7 +245,7 @@ function MapView(props: MapViewProps) {
   const customMode = () => mode() === "custom"
 
   const knownIds = createMemo(() => new Set(props.suburbs.map((s) => s.id)))
-  const custom = useCustomMap(knownIds, () => search.region)
+  const custom = useCustomMap(knownIds, () => search.region, activateRegion)
 
   // The region maths loads with the mode, then draws every change in step.
   const regionTools = createMemo(
@@ -261,9 +261,7 @@ function MapView(props: MapViewProps) {
       return NO_LAYERS
     }
 
-    const draft = { ids: custom.selection(), color: custom.draftColor() }
-
-    return tools.regionLayers(custom.map(), props.data, draft)
+    return tools.regionLayers(custom.map(), props.data)
   })
 
   const [hover, setHover] = createSignal<SuburbHover | null>(null)
@@ -361,9 +359,8 @@ function MapView(props: MapViewProps) {
     )
   }
 
-  function activateRegion(id: string | null) {
-    custom.clearSelection()
-    setSearch({ region: id ?? undefined }, { replace: true })
+  function activateRegion(id: string) {
+    setSearch({ region: id }, { replace: true })
   }
 
   function showHeatmap(next: HeatmapStat) {
@@ -377,13 +374,7 @@ function MapView(props: MapViewProps) {
   }
 
   useShortcut("Escape", () => {
-    if (!customMode()) {
-      select(null)
-    } else if (custom.active()) {
-      activateRegion(null)
-    } else {
-      custom.clearSelection()
-    }
+    select(null)
   })
 
   // The map has rendered by now, so fetch the facts and the other modes' code
@@ -408,7 +399,7 @@ function MapView(props: MapViewProps) {
       <SuburbMap
         data={props.data}
         layers={layers()}
-        onHover={customMode() ? setHover : undefined}
+        onHover={setHover}
         onSelect={select}
         ref={(handle) => {
           props.map.current = handle
@@ -486,13 +477,11 @@ function MapView(props: MapViewProps) {
           />
         </Loading>
       </div>
-      <Show when={customMode()}>
-        <SuburbTooltip
-          hover={hover()}
-          name={(id) => byId().get(id)?.name}
-          region={(id) => regionOf().get(id)?.name}
-        />
-      </Show>
+      <SuburbTooltip
+        hover={hover()}
+        name={(id) => byId().get(id)?.name}
+        region={(id) => (customMode() ? regionOf().get(id)?.name : undefined)}
+      />
       <Loading>
         <SuburbPanel
           onClose={() => {

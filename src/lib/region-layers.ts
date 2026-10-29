@@ -20,14 +20,6 @@ const LABEL_PRECISION = 0.0005
 // and a click merges only the region it changed.
 const MAX_CACHED_AREAS = 200
 
-export const DRAFT_KEY = "draft"
-
-// Suburbs picked for a region not yet named.
-export interface DraftRegion {
-  ids: ReadonlySet<string>
-  color: string
-}
-
 interface RegionArea {
   geometry: MultiPolygon
   // Where the name goes, and the box it has room in, in lon/lat.
@@ -135,12 +127,10 @@ function areaOf(
 }
 
 // Fills each region in its colour, outlines it as one area, and names it.
-// Empty regions draw nothing. A draft is drawn over the regions, since
-// naming it takes its suburbs from them.
+// Empty regions draw nothing.
 export function regionLayers(
   map: RegionMap,
   { topology }: SuburbMapData,
-  draft?: DraftRegion,
 ): MapLayers {
   const layers: Required<MapLayers> = {
     fills: [],
@@ -149,37 +139,25 @@ export function regionLayers(
     labels: [],
   }
 
-  const entries = [
-    ...map.regions.map((r) => ({
-      key: r.id,
-      name: r.name,
-      color: r.color,
-      ids: r.suburbIds.filter((id) => !draft?.ids.has(id)),
-    })),
-    ...(draft
-      ? [{ key: DRAFT_KEY, name: "", color: draft.color, ids: [...draft.ids] }]
-      : []),
-  ]
-
-  for (const entry of entries) {
-    const area = areaOf(topology, entry.ids)
+  for (const region of map.regions) {
+    const area = areaOf(topology, region.suburbIds)
 
     if (!area) {
       continue
     }
 
     layers.fills.push({
-      key: entry.key,
-      ids: new Set(entry.ids),
-      color: entry.color,
+      key: region.id,
+      ids: new Set(region.suburbIds),
+      color: region.color,
     })
     layers.outlines.push({
-      key: entry.key,
+      key: region.id,
       feature: { type: "Feature", geometry: area.geometry, properties: {} },
     })
 
-    if (area.label && entry.name) {
-      layers.labels.push({ key: entry.key, text: entry.name, ...area.label })
+    if (area.label) {
+      layers.labels.push({ key: region.id, text: region.name, ...area.label })
     }
   }
 

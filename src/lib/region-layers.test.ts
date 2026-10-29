@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import { toSuburbMap } from "@/queries/suburbs-topo"
 import { suburbsTopology } from "@/test/fixtures"
 
-import { DRAFT_KEY, regionLayers } from "./region-layers"
+import { regionLayers } from "./region-layers"
 import { EMPTY_REGION_MAP, type RegionMap } from "./regions"
 
 const map: RegionMap = {
@@ -23,17 +23,5 @@ describe("regionLayers", () => {
     ])
     expect(layers.outlines.map((o) => o.key)).toStrictEqual(["a"])
     expect(layers.labels?.map((l) => l.text)).toStrictEqual(["Harbour"])
-  })
-
-  it("draws a draft over the regions it takes suburbs from", () => {
-    const layers = regionLayers(map, toSuburbMap(suburbsTopology), {
-      ids: new Set(["2"]),
-      color: "#000000",
-    })
-
-    expect(layers.fills.map((f) => [f.key, [...f.ids]])).toStrictEqual([
-      ["a", ["1"]],
-      [DRAFT_KEY, ["2"]],
-    ])
   })
 })

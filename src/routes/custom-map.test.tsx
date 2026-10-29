@@ -31,14 +31,6 @@ function suburb(name: string) {
   return screen.getByRole("button", { name })
 }
 
-async function createRegion(name: string) {
-  await userEvent.type(
-    await screen.findByRole("textbox", { name: "Region name" }),
-    name,
-  )
-  await userEvent.click(screen.getByRole("button", { name: "Create" }))
-}
-
 function savedRegions() {
   const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}") as {
     regions?: { id: string; name: string; suburbIds: string[] }[]
@@ -75,7 +67,7 @@ describe("custom map", () => {
     ).resolves.toBeInTheDocument()
   })
 
-  it("names the selected suburbs as a region in the next colour", async () => {
+  it("starts a region in the first colour with the first click", async () => {
     const { search } = await renderRoute("/?mode=custom")
 
     await screen.findByRole("region", { name: "Custom map" })
@@ -83,56 +75,87 @@ describe("custom map", () => {
     fireEvent.click(suburb("Alpha"))
     fireEvent.click(suburb("Beta"))
 
-    await expect(
-      screen.findByText("2 suburbs selected"),
-    ).resolves.toBeInTheDocument()
-    await createRegion("Harbour")
-
-    const list = await screen.findByRole("list", { name: "Regions" })
-    expect(within(list).getByText("Harbour")).toBeInTheDocument()
-    expect(savedRegions()).toMatchObject([
-      { name: "Harbour", color: "#e6194b", suburbIds: ["1", "2"] },
-    ])
+    await waitFor(() => {
+      expect(savedRegions()).toMatchObject([
+        { name: "Region 1", color: "#e6194b", suburbIds: ["1", "2"] },
+      ])
+    })
 
     const [region] = savedRegions()
     await waitFor(() => {
       expect(search()).toStrictEqual({ mode: "custom", region: region?.id })
     })
-    expect(fillOf(region?.id ?? "")).toHaveStyle({ "--region": "#e6194b" })
+    await waitFor(() => {
+      expect(fillOf(region?.id ?? "")).toHaveStyle({ "--region": "#e6194b" })
+    })
   })
 
-  it("lets the default colour be changed before creating", async () => {
+  it("adds to the region picked in the list", async () => {
     await renderRoute("/?mode=custom")
 
     await screen.findByRole("region", { name: "Custom map" })
     fireEvent.click(suburb("Alpha"))
-    await userEvent.click(
-      await screen.findByRole("button", { name: "Colour for the new region" }),
-    )
-    await userEvent.click(
-      await screen.findByRole("button", { name: "#4363d8" }),
-    )
-    await createRegion("Blue")
+    await userEvent.click(screen.getByRole("button", { name: "New region" }))
 
-    expect(savedRegions()).toMatchObject([{ name: "Blue", color: "#4363d8" }])
-  })
-
-  it("toggles suburbs in the region being edited", async () => {
-    await renderRoute("/?mode=custom")
-
-    await screen.findByRole("region", { name: "Custom map" })
-    fireEvent.click(suburb("Alpha"))
-    await createRegion("Harbour")
-    await screen.findByText(/Click suburbs to add them/u)
+    // The new region's name is focused, to type over.
+    const name = await screen.findByRole("textbox", { name: "Region name" })
+    await waitFor(() => {
+      expect(name).toHaveFocus()
+    })
+    expect(name).toHaveValue("Region 2")
+    await userEvent.clear(name)
+    await userEvent.type(name, "Beach")
 
     fireEvent.click(suburb("Gamma"))
     await waitFor(() => {
-      expect(savedRegions()[0]?.suburbIds).toStrictEqual(["1", "3"])
+      expect(savedRegions()).toMatchObject([
+        { name: "Region 1", suburbIds: ["1"] },
+        { name: "Beach", color: "#3cb44b", suburbIds: ["3"] },
+      ])
+    })
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Add to Region 1" }),
+    )
+    fireEvent.click(suburb("Gamma"))
+    await waitFor(() => {
+      expect(savedRegions()).toMatchObject([
+        { suburbIds: ["1", "3"] },
+        { suburbIds: [] },
+      ])
+    })
+  })
+
+  it("takes a suburb out when clicked again", async () => {
+    await renderRoute("/?mode=custom")
+
+    await screen.findByRole("region", { name: "Custom map" })
+    fireEvent.click(suburb("Alpha"))
+    await waitFor(() => {
+      expect(savedRegions()[0]?.suburbIds).toStrictEqual(["1"])
     })
 
     fireEvent.click(suburb("Alpha"))
     await waitFor(() => {
-      expect(savedRegions()[0]?.suburbIds).toStrictEqual(["3"])
+      expect(savedRegions()[0]?.suburbIds).toStrictEqual([])
+    })
+  })
+
+  it("lets a region's colour be changed", async () => {
+    await renderRoute("/?mode=custom")
+
+    await userEvent.click(
+      await screen.findByRole("button", { name: "New region" }),
+    )
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Colour for Region 1" }),
+    )
+    await userEvent.click(
+      await screen.findByRole("button", { name: "#4363d8" }),
+    )
+
+    await waitFor(() => {
+      expect(savedRegions()).toMatchObject([{ color: "#4363d8" }])
     })
   })
 
@@ -146,9 +169,9 @@ describe("custom map", () => {
       await screen.findByRole("option", { name: /Sydney/u }),
     )
 
-    await expect(
-      screen.findByText("3 suburbs selected"),
-    ).resolves.toBeInTheDocument()
+    await waitFor(() => {
+      expect(savedRegions()[0]?.suburbIds).toStrictEqual(["1", "2", "3"])
+    })
   })
 
   it("keeps the regions across a remount", async () => {
@@ -156,24 +179,41 @@ describe("custom map", () => {
 
     await screen.findByRole("region", { name: "Custom map" })
     fireEvent.click(suburb("Beta"))
-    await createRegion("Kept")
+    await waitFor(() => {
+      expect(savedRegions()).toHaveLength(1)
+    })
     cleanup()
 
     await renderRoute("/?mode=custom")
 
     const list = await screen.findByRole("list", { name: "Regions" })
-    expect(within(list).getByText("Kept")).toBeInTheDocument()
+    expect(
+      within(list).getByRole("textbox", { name: "Region name" }),
+    ).toHaveValue("Region 1")
   })
 
-  it("treats an unknown region in the link as none", async () => {
+  it("adds to the newest region when the link's is unknown", async () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        version: 1,
+        title: "Mine",
+        regions: [
+          { id: "a", name: "Old", color: "#e6194b", suburbIds: [] },
+          { id: "b", name: "New", color: "#3cb44b", suburbIds: [] },
+        ],
+      }),
+    )
     await renderRoute("/?mode=custom&region=nope")
 
-    await screen.findByRole("region", { name: "Custom map" })
+    await expect(
+      screen.findByRole("textbox", { name: "Region name" }),
+    ).resolves.toHaveValue("New")
     fireEvent.click(suburb("Alpha"))
 
-    await expect(
-      screen.findByText("1 suburb selected"),
-    ).resolves.toBeInTheDocument()
+    await waitFor(() => {
+      expect(savedRegions()[1]?.suburbIds).toStrictEqual(["1"])
+    })
   })
 
   it("opens no suburb panel on click", async () => {
@@ -182,8 +222,25 @@ describe("custom map", () => {
     await screen.findByRole("region", { name: "Custom map" })
     fireEvent.click(suburb("Alpha"))
 
-    await screen.findByText("1 suburb selected")
+    await waitFor(() => {
+      expect(savedRegions()).toHaveLength(1)
+    })
     expect(search()).not.toHaveProperty("suburb")
     expect(screen.queryByRole("region", { name: "Alpha" })).toBeNull()
+  })
+
+  it("names the suburb and its region on hover", async () => {
+    await renderRoute("/?mode=custom")
+
+    await screen.findByRole("region", { name: "Custom map" })
+    fireEvent.click(suburb("Alpha"))
+    await waitFor(() => {
+      expect(savedRegions()).toHaveLength(1)
+    })
+    fireEvent.pointerMove(suburb("Alpha"), { pointerType: "mouse" })
+
+    await expect(screen.findByRole("tooltip")).resolves.toHaveTextContent(
+      "Alpha · Region 1",
+    )
   })
 })
