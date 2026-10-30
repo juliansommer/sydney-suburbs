@@ -22,7 +22,7 @@ import {
 
 import { useElementSize } from "@/hooks/use-element-size"
 import { CHAR_WIDTH, labelFits, placeLabels, type Rect } from "@/lib/labels"
-import { type Bounds, fitBounds } from "@/lib/zoom"
+import { type Bounds, type Covered, fitBounds, unionBounds } from "@/lib/zoom"
 import type { MapLayers } from "@/types/map-layers"
 import type { LanduseKind, SuburbMapData } from "@/types/suburb"
 
@@ -76,6 +76,11 @@ const LANDUSE_FILL: Record<LanduseKind, string> = {
 interface SuburbMapProps {
   data: SuburbMapData
   selectedId: string | null
+  // The suburb the selected one is being compared with, outlined in its own
+  // colour.
+  comparedId?: string | null
+  // Kept clear when zooming to suburbs, for the panel over the map.
+  covered?: Covered
   layers: MapLayers
   // Called with null when a click lands off the suburbs (water, surrounds).
   onSelect: (id: string | null) => void
@@ -95,6 +100,8 @@ export interface SuburbMapHandle {
   // Both animate to fit the area on screen, and do nothing before the first
   // draw. A council stays outlined until a suburb is picked.
   zoomTo: (id: string) => void
+  // Fits every one of the suburbs on screen together.
+  zoomToSuburbs: (ids: readonly string[]) => void
   zoomToCouncil: (lga: string) => void
 }
 
@@ -125,6 +132,8 @@ export function SuburbMap(props: SuburbMapProps) {
             layers={props.layers}
             onHover={props.onHover}
             onSelect={props.onSelect}
+            comparedId={props.comparedId ?? null}
+            covered={props.covered}
             projected={base()}
             ref={props.ref}
             selectedId={props.selectedId}
@@ -152,8 +161,12 @@ function ZoomableMap(props: ZoomableMapProps) {
     () => props.height,
     () => {
       // Runs once the map is first drawn.
-      if (props.selectedId) {
-        zoomTo(props.selectedId, false)
+      const ids = [props.selectedId, props.comparedId].filter(
+        (id): id is string => !!id,
+      )
+
+      if (ids.length > 0) {
+        zoomToSuburbs(ids, false)
       }
     },
   )
@@ -185,7 +198,12 @@ function ZoomableMap(props: ZoomableMapProps) {
     props.onSelect(next)
   }
 
-  function zoomToBounds(bounds: Bounds, animate: boolean, minZoom?: number) {
+  function zoomToBounds(
+    bounds: Bounds,
+    animate: boolean,
+    minZoom?: number,
+    covered?: Covered,
+  ) {
     const current = zoomer()
 
     if (!current) {
@@ -193,7 +211,15 @@ function ZoomableMap(props: ZoomableMapProps) {
     }
 
     const { selection, behaviour } = current
-    const { x, y, k } = fitBounds(bounds, props.width, props.height, minZoom)
+
+    const { x, y, k } = fitBounds(
+      bounds,
+      props.width,
+      props.height,
+      minZoom,
+      covered,
+    )
+
     // The pan limits are the viewport itself.
     const extent = behaviour.translateExtent()
 
@@ -220,18 +246,24 @@ function ZoomableMap(props: ZoomableMapProps) {
     }
   }
 
-  function zoomTo(id: string, animate: boolean) {
-    const suburb = props.projected.suburbs.find((s) => s.id === id)
+  function zoomToSuburbs(ids: readonly string[], animate: boolean) {
+    const bounds = props.projected.suburbs
+      .filter((s) => ids.includes(s.id))
+      .map((s) => s.bounds)
 
-    if (suburb) {
-      zoomToBounds(suburb.bounds, animate)
+    if (bounds.length > 0) {
+      zoomToBounds(unionBounds(bounds), animate, undefined, props.covered)
     }
   }
 
   props.ref?.({
     zoomTo: (id) => {
       setOutlinedLga(null)
-      zoomTo(id, true)
+      zoomToSuburbs([id], true)
+    },
+    zoomToSuburbs: (ids) => {
+      setOutlinedLga(null)
+      zoomToSuburbs(ids, true)
     },
     zoomToCouncil: (lga) => {
       const council = props.projected.councils.find((c) => c.lga === lga)
@@ -312,6 +344,14 @@ function ZoomableMap(props: ZoomableMapProps) {
               <Outline
                 d={
                   props.projected.suburbs.find((s) => s.id === props.selectedId)
+                    ?.d
+                }
+                strokeWidth={2.5}
+              />
+              <Outline
+                class="stroke-map-compare"
+                d={
+                  props.projected.suburbs.find((s) => s.id === props.comparedId)
                     ?.d
                 }
                 strokeWidth={2.5}
@@ -629,13 +669,15 @@ function FillPath(props: FillPathProps) {
 interface OutlineProps {
   d: string | undefined
   strokeWidth: number
+  // The stroke colour, dark by default.
+  class?: string
 }
 
 function Outline(props: OutlineProps): JSX.Element {
   return (
     <Show when={props.d}>
       <path
-        class="pointer-events-none stroke-foreground"
+        class={["pointer-events-none", props.class ?? "stroke-foreground"]}
         d={props.d}
         fill="none"
         stroke-linejoin="round"

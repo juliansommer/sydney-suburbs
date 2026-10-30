@@ -22,6 +22,7 @@ import {
 import { SuburbTooltip } from "@/components/regions/suburb-tooltip"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { useCustomMap } from "@/hooks/use-custom-map"
+import { useMediaQuery } from "@/hooks/use-media-query"
 import { useShortcut } from "@/hooks/use-shortcut"
 import { getSession, signOut } from "@/lib/auth"
 import type { Heatmap } from "@/lib/heatmap"
@@ -33,6 +34,7 @@ import {
   type HeatmapStat,
   type Overlay,
 } from "@/lib/stats"
+import type { Covered } from "@/lib/zoom"
 import { getBirthplace } from "@/queries/birthplace"
 import { getHeatmap } from "@/queries/heatmap"
 import { createMySuburbs, MySuburbsContext } from "@/queries/my-suburbs"
@@ -105,9 +107,16 @@ interface MapSearch extends SearchParams {
   mode?: MapMode
   stat?: HeatmapStat
   suburb?: string
+  // The suburb the selected one is compared with.
+  compare?: string
   // The custom map region being edited.
   region?: string
 }
+
+// What the suburb panel hides: the card's width and margin beside the map,
+// or the sheet's peek below it.
+const CARD_COVER = 336
+const SHEET_COVER = 152
 
 const NO_LAYERS: MapLayers = { fills: [], outlines: [], markers: [] }
 const NO_IDS: ReadonlySet<string> = new Set()
@@ -326,6 +335,29 @@ function MapView(props: MapViewProps) {
   const selected = () =>
     customMode() ? undefined : byId().get(search.suburb ?? "")
 
+  // Comparing a suburb with itself is no comparison.
+  const compared = () => {
+    const current = selected()
+
+    return current && search.compare !== current.id
+      ? byId().get(search.compare ?? "")
+      : undefined
+  }
+
+  const [picking, setPicking] = createSignal(false)
+  const desktop = useMediaQuery("(min-width: 768px)")
+
+  // The custom map has no suburb panel.
+  const covered = (): Covered | undefined => {
+    if (customMode()) {
+      return undefined
+    }
+
+    return desktop()
+      ? { right: CARD_COVER, bottom: 0 }
+      : { right: 0, bottom: SHEET_COVER }
+  }
+
   // In the custom map a click adds or removes a suburb instead.
   function select(id: string | null) {
     if (customMode()) {
@@ -338,13 +370,50 @@ function MapView(props: MapViewProps) {
 
     const current = selected()
 
+    if (current && (picking() || compared())) {
+      pickCompared(current.id, id)
+
+      return
+    }
+
     if (id === (current?.id ?? null)) {
       return
     }
 
     // Switching suburbs replaces the entry, so Back leaves the map rather
     // than stepping through every suburb looked at.
-    setSearch({ suburb: id }, { replace: !!current && !!id })
+    setSearch(
+      { suburb: id, compare: undefined },
+      { replace: !!current && !!id },
+    )
+  }
+
+  // While comparing, a click picks the other suburb. Clicking off the
+  // suburbs, or either of the two, goes back to the first on its own.
+  function pickCompared(currentId: string, id: string | null) {
+    setPicking(false)
+
+    const stop = id === null || id === currentId || id === compared()?.id
+
+    setSearch({ compare: stop ? undefined : id }, { replace: true })
+
+    if (!stop) {
+      props.map.current?.zoomToSuburbs([currentId, id])
+    }
+  }
+
+  function swapCompared() {
+    const current = selected()
+    const other = compared()
+
+    if (current && other) {
+      setSearch({ suburb: other.id, compare: current.id }, { replace: true })
+    }
+  }
+
+  function close() {
+    setPicking(false)
+    setSearch({ suburb: undefined, compare: undefined })
   }
 
   function switchMode(next: MapMode) {
@@ -354,6 +423,7 @@ function MapView(props: MapViewProps) {
         stat: undefined,
         region: undefined,
         suburb: next === "custom" ? undefined : search.suburb,
+        compare: next === "custom" ? undefined : search.compare,
       },
       { replace: true },
     )
@@ -374,7 +444,11 @@ function MapView(props: MapViewProps) {
   }
 
   useShortcut("Escape", () => {
-    select(null)
+    if (picking()) {
+      setPicking(false)
+    } else {
+      select(null)
+    }
   })
 
   // The map has rendered by now, so fetch the facts and the other modes' code
@@ -397,6 +471,8 @@ function MapView(props: MapViewProps) {
   return (
     <>
       <SuburbMap
+        comparedId={compared()?.id ?? null}
+        covered={covered()}
         data={props.data}
         layers={layers()}
         onHover={setHover}
@@ -466,11 +542,19 @@ function MapView(props: MapViewProps) {
               // Searching adds, since a toggle could take the suburb away.
               if (customMode()) {
                 custom.addMany([id])
-              } else {
-                select(id)
+                props.map.current?.zoomTo(id)
+
+                return
               }
 
-              props.map.current?.zoomTo(id)
+              // Picking a suburb to compare zooms to fit both instead.
+              const comparing = picking() || !!compared()
+
+              select(id)
+
+              if (!comparing) {
+                props.map.current?.zoomTo(id)
+              }
             }}
             suburbs={props.suburbs}
             visitedIds={props.visitedIds}
@@ -484,9 +568,13 @@ function MapView(props: MapViewProps) {
       />
       <Loading>
         <SuburbPanel
-          onClose={() => {
-            select(null)
+          compared={compared()}
+          onClose={close}
+          onPickCompare={setPicking}
+          onStopComparing={() => {
+            setSearch({ compare: undefined }, { replace: true })
           }}
+          onSwap={swapCompared}
           // Picking what's already on the map goes back to the visited mode.
           onToggleOverlay={(next) => {
             if (next === overlay()) {
@@ -501,6 +589,7 @@ function MapView(props: MapViewProps) {
             props.map.current?.zoomToCouncil(lga)
           }}
           overlay={overlay()}
+          picking={picking()}
           signedIn={props.signedIn}
           suburb={selected()}
         />

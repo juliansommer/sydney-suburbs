@@ -73,6 +73,7 @@
   --color-map-border: var(--map-border);
   --color-map-visited: var(--map-visited);
   --color-map-label: var(--map-label);
+  --color-map-compare: var(--map-compare);
   --color-map-halo: var(--map-halo);
   --color-club-rabbitohs: color-mix(in oklab, #00843d 70%, var(--map-land));
   --color-club-roosters: color-mix(in oklab, #002b5c 70%, var(--map-land));
@@ -209,6 +210,7 @@
   --map-border: oklch(0.8 0.01 95);
   --map-visited: oklch(0.75 0.14 300);
   --map-label: oklch(0.35 0 0);
+  --map-compare: oklch(0.65 0.2 45);
   --map-halo: oklch(1 0 0 / 80%);
   --heat-red: oklch(0.58 0.22 27);
   --canopy-green: oklch(0.5 0.15 145);
@@ -278,6 +280,7 @@
   --map-border: oklch(0.42 0.01 95);
   --map-visited: oklch(0.5 0.14 300);
   --map-label: oklch(0.88 0 0);
+  --map-compare: oklch(0.75 0.17 55);
   --map-halo: oklch(0.2 0 0 / 80%);
   --heat-red: oklch(0.6 0.2 27);
   --canopy-green: oklch(0.6 0.15 145);

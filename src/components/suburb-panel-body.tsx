@@ -1,3 +1,4 @@
+import ArrowLeftRightIcon from "@lucide/solid/icons/arrow-left-right"
 import XIcon from "@lucide/solid/icons/x"
 import {
   createSignal,
@@ -29,6 +30,55 @@ export interface SuburbPanelProps {
   // What the map is showing from the panel, if anything.
   overlay: Overlay | undefined
   onToggleOverlay: (overlay: Overlay) => void
+  // The suburb it's being compared with, which swaps the panel for a table.
+  compared: Suburb | undefined
+  // Waiting for the next suburb picked to compare with.
+  picking: boolean
+  onPickCompare: (picking: boolean) => void
+  onStopComparing: () => void
+  onSwap: () => void
+}
+
+interface CompareButtonProps {
+  onPick: (picking: boolean) => void
+}
+
+export function CompareButton(props: CompareButtonProps) {
+  return (
+    <Button
+      onClick={() => {
+        props.onPick(true)
+      }}
+      size="sm"
+      variant="outline"
+    >
+      <ArrowLeftRightIcon />
+      Compare
+    </Button>
+  )
+}
+
+interface PickingNoticeProps {
+  name: string
+  onPick: (picking: boolean) => void
+}
+
+// Shown in place of the Compare button until a suburb is picked.
+export function PickingNotice(props: PickingNoticeProps) {
+  return (
+    <div class="flex items-center justify-between gap-2 rounded-lg bg-muted py-1 pr-1 pl-3 text-sm">
+      <p role="status">{`Pick a suburb to compare with ${props.name}`}</p>
+      <Button
+        onClick={() => {
+          props.onPick(false)
+        }}
+        size="sm"
+        variant="ghost"
+      >
+        Cancel
+      </Button>
+    </div>
+  )
 }
 
 interface CouncilButtonProps {
