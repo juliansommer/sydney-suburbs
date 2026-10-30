@@ -43,10 +43,15 @@ function renderPanel({
         component: () => (
           <MySuburbsContext value={createMySuburbs(() => signedIn)}>
             <SuburbPanel
+              compared={undefined}
               onClose={() => {}}
+              onPickCompare={() => {}}
+              onStopComparing={() => {}}
+              onSwap={() => {}}
               onToggleOverlay={onToggleOverlay}
               onZoomToCouncil={onZoomToCouncil}
               overlay={overlay}
+              picking={false}
               signedIn={signedIn}
               suburb={suburb}
             />

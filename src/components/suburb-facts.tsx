@@ -1,5 +1,6 @@
 import ChevronRightIcon from "@lucide/solid/icons/chevron-right"
 import InfoIcon from "@lucide/solid/icons/info"
+import type { JSX } from "@solidjs/web"
 import { Collapsible } from "base-ui-solid/collapsible"
 import {
   type Accessor,
@@ -49,6 +50,8 @@ interface SuburbMediaProps {
   facts: SuburbFacts | undefined
   name: string
   class?: string
+  // Shown in place of a missing photo, which otherwise leaves nothing.
+  placeholder?: JSX.Element
 }
 
 // The photo at the top of the panel, or a skeleton of the same size while the
@@ -66,7 +69,7 @@ export function SuburbMedia(props: SuburbMediaProps) {
           />
         }
       >
-        <Show when={props.facts?.photo}>
+        <Show fallback={props.placeholder} when={props.facts?.photo}>
           {(photo) => (
             <Photo class={props.class} name={props.name} photo={photo()} />
           )}
