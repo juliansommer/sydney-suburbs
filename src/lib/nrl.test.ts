@@ -9,6 +9,7 @@ import { suburbsTopology } from "@/test/fixtures"
 import { nrlLayers } from "./nrl"
 
 const sydney = toSuburbMap(
+  // SAFETY: the build script writes this file as a MapTopology.
   JSON.parse(
     readFileSync("public/sydney-suburbs.topo.json", "utf-8"),
   ) as MapTopology,

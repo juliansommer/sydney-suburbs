@@ -12,8 +12,6 @@ export default defineConfig({
     typeCheck: true,
   },
   rules: {
-    "anti-slop/require-safety-comment-for-type-assertion": "off",
-    "eslint/complexity": "off",
     "eslint/func-style": [
       "error",
       "declaration",
@@ -23,12 +21,10 @@ export default defineConfig({
     ],
     "eslint/no-console": "error",
     "eslint/no-plusplus": ["error", { allowForLoopAfterthoughts: true }],
-    "eslint/no-use-before-define": "off",
+    "eslint/no-use-before-define": ["error", { functions: false }],
     "eslint/require-unicode-regexp": "off",
     "eslint/sort-keys": "off",
     "import/consistent-type-specifier-style": "off",
-    "node/callback-return": "off",
-    "unicorn/no-useless-undefined": "off",
     "typescript/no-misused-promises": [
       "error",
       { checksVoidReturn: { attributes: false } },
@@ -39,10 +35,6 @@ export default defineConfig({
     ],
     "typescript/strict-boolean-expressions": "off",
     "typescript/strict-void-return": "off",
-    "unicorn/filename-case": [
-      "error",
-      { cases: { kebabCase: true, camelCase: true } },
-    ],
   },
   overrides: [
     {

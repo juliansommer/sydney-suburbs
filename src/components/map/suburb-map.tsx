@@ -401,65 +401,66 @@ function useZoom(
     ({ w, h }) => {
       const element = container()
 
-      if (!element) {
-        return undefined
-      }
-
-      const extent: [[number, number], [number, number]] = [
-        [0, 0],
-        [w, h],
-      ]
-
-      let startTransform = zoomIdentity
-
-      const behaviour = zoom<HTMLDivElement, unknown>()
-        .extent(extent)
-        .translateExtent(extent)
-        .scaleExtent([1, MAX_ZOOM])
-        .clickDistance(CLICK_DISTANCE)
-        .on("start", (event: D3ZoomEvent<HTMLDivElement, unknown>) => {
-          startTransform = event.transform
-        })
-        .on("zoom", (event: D3ZoomEvent<HTMLDivElement, unknown>) => {
-          setTransform(event.transform)
-
-          // Zoomed out, a drawing at the old scale is too big to rasterise
-          // quickly, and zoomed in its borders thicken, so either redraws.
-          const drawnScale = untrack(scale)
-          const tooSmall = event.transform.k < drawnScale / MAX_ZOOM_OUT_DRIFT
-          const tooBig = event.transform.k > drawnScale * MAX_ZOOM_IN_DRIFT
-
-          if (tooSmall || tooBig) {
-            setScale(event.transform.k)
-          }
-        })
-        .on("end", (event: D3ZoomEvent<HTMLDivElement, unknown>) => {
-          setScale(event.transform.k)
-
-          // A plain click starts and ends a gesture too, and remounting then
-          // would swap the paths out from under the click.
-          if (REMOUNT_AFTER_GESTURE && event.transform !== startTransform) {
-            setGesture((n) => n + 1)
-          }
-        })
-
-      const selection = select(element)
-      // A click toggles a suburb, so a quick select-then-close would otherwise
-      // read as a double-click and zoom in.
-      selection.call(behaviour).on("dblclick.zoom", null)
-      zoomer = { selection, behaviour }
-
-      if (!drawn) {
-        drawn = true
-        untrack(onFirstDraw)
-      }
-
-      return () => {
-        zoomer = null
-        selection.interrupt().on(".zoom", null)
-      }
+      return element ? attach(element, w, h) : undefined
     },
   )
+
+  // Returns the cleanup that detaches the behaviour.
+  function attach(element: HTMLDivElement, w: number, h: number) {
+    const extent: [[number, number], [number, number]] = [
+      [0, 0],
+      [w, h],
+    ]
+
+    let startTransform = zoomIdentity
+
+    const behaviour = zoom<HTMLDivElement, unknown>()
+      .extent(extent)
+      .translateExtent(extent)
+      .scaleExtent([1, MAX_ZOOM])
+      .clickDistance(CLICK_DISTANCE)
+      .on("start", (event: D3ZoomEvent<HTMLDivElement, unknown>) => {
+        startTransform = event.transform
+      })
+      .on("zoom", (event: D3ZoomEvent<HTMLDivElement, unknown>) => {
+        setTransform(event.transform)
+
+        // Zoomed out, a drawing at the old scale is too big to rasterise
+        // quickly, and zoomed in its borders thicken, so either redraws.
+        const drawnScale = untrack(scale)
+        const tooSmall = event.transform.k < drawnScale / MAX_ZOOM_OUT_DRIFT
+        const tooBig = event.transform.k > drawnScale * MAX_ZOOM_IN_DRIFT
+
+        if (tooSmall || tooBig) {
+          setScale(event.transform.k)
+        }
+      })
+      .on("end", (event: D3ZoomEvent<HTMLDivElement, unknown>) => {
+        setScale(event.transform.k)
+
+        // A plain click starts and ends a gesture too, and remounting then
+        // would swap the paths out from under the click.
+        if (REMOUNT_AFTER_GESTURE && event.transform !== startTransform) {
+          setGesture((n) => n + 1)
+        }
+      })
+
+    const selection = select(element)
+    // A click toggles a suburb, so a quick select-then-close would otherwise
+    // read as a double-click and zoom in.
+    selection.call(behaviour).on("dblclick.zoom", null)
+    zoomer = { selection, behaviour }
+
+    if (!drawn) {
+      drawn = true
+      untrack(onFirstDraw)
+    }
+
+    return () => {
+      zoomer = null
+      selection.interrupt().on(".zoom", null)
+    }
+  }
 
   return { zoomer: () => zoomer, transform, scale, gesture }
 }

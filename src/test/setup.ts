@@ -15,6 +15,7 @@ class FixedResizeObserver {
 
   observe(target: Element) {
     const entry = { target, contentRect: { width: 800, height: 600 } }
+    // SAFETY: the map only reads target and contentRect's width and height.
     this.#callback([entry as ResizeObserverEntry], this)
   }
 

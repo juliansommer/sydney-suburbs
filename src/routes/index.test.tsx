@@ -458,8 +458,8 @@ describe("map page suburb facts", () => {
     await screen.findByRole("button", { name: "Alpha" })
     expect(factsRequests()).toHaveLength(0)
 
-    for (const callback of idleCallbacks) {
-      callback()
+    for (const runIdle of idleCallbacks) {
+      runIdle()
     }
 
     await waitFor(() => {

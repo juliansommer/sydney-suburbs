@@ -32,7 +32,7 @@ export interface ExportOptions {
   framing: Framing
   suburbNames: boolean
   // A data: URL of the font, embedded since an SVG image can't fetch one.
-  fontUrl?: string
+  fontUrl?: string | null
 }
 
 // Long edge of the map, well under iOS Safari's canvas limit.
@@ -337,7 +337,7 @@ export async function downloadPng(
   options: Omit<ExportOptions, "fontUrl">,
 ): Promise<void> {
   // A missing font falls back to the system's sans-serif.
-  const fontUrl = await loadFont().catch(() => undefined)
+  const fontUrl = await loadFont().catch(() => null)
   const { svg, width, height } = exportSvg(data, map, { ...options, fontUrl })
   const svgUrl = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }))
   let pngUrl: string | undefined

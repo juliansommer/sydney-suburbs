@@ -2,6 +2,7 @@ import { vValidator } from "@hono/valibot-validator"
 import { and, eq, isNull } from "drizzle-orm"
 import { Hono } from "hono"
 import { createMiddleware } from "hono/factory"
+import { HTTPException } from "hono/http-exception"
 
 import { getSessionUser, type SessionUser } from "./auth.js"
 import { getDb } from "./db/client.js"
@@ -25,13 +26,13 @@ const requireUser = createMiddleware<MeEnv>(async (c, next) => {
   const user = await getSessionUser(c)
 
   if (!user) {
-    return c.json({ error: "not signed in" }, 401)
+    throw new HTTPException(401, { message: "not signed in" })
   }
 
   c.set("user", user)
+  // Hono middleware awaits next rather than returning it.
+  // oxlint-disable-next-line node/callback-return
   await next()
-
-  return undefined
 })
 
 const FOREIGN_KEY_VIOLATION = "23503"
@@ -60,16 +61,14 @@ export const me = new Hono<MeEnv>()
   })
   .patch(
     "/suburbs/:id",
-    vValidator("json", suburbPatchSchema, (result, c) => {
-      if (!result.success) {
-        return c.json(
-          { error: result.issues[0]?.message ?? "invalid request" },
-          400,
-        )
-      }
-
-      return undefined
-    }),
+    vValidator("json", suburbPatchSchema, (result, c) =>
+      result.success
+        ? undefined
+        : c.json(
+            { error: result.issues[0]?.message ?? "invalid request" },
+            400,
+          ),
+    ),
     async (c) => {
       const db = getDb()
       const patch = c.req.valid("json")

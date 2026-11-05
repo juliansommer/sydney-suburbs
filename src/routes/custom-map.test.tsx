@@ -32,6 +32,8 @@ function suburb(name: string) {
 }
 
 function savedRegions() {
+  // SAFETY: the store under test writes this shape, and the assertions below
+  // fail if it doesn't.
   const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}") as {
     regions?: { id: string; name: string; suburbIds: string[] }[]
   }

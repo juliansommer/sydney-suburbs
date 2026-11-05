@@ -6,6 +6,7 @@ import type { SuburbFactsFile } from "@/types/suburb-facts"
 
 import { COUNTRIES } from "./birthplace-countries"
 
+// SAFETY: the build script writes this file in the SuburbFactsFile shape.
 const facts = JSON.parse(
   readFileSync("src/data/suburb-facts.json", "utf-8"),
 ) as SuburbFactsFile

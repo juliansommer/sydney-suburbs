@@ -13,6 +13,8 @@ const app = new Hono()
   .basePath("/api")
   .use(secureHeaders())
   .use(async (c, next) => {
+    // The header is set after the handler runs, so next is awaited.
+    // oxlint-disable-next-line node/callback-return
     await next()
     // Set on c.res so it also covers Better Auth's raw Response.
     c.res.headers.set("Cache-Control", "no-store")
