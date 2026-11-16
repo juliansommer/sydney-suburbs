@@ -67,7 +67,7 @@ interface PickingNoticeProps {
 export function PickingNotice(props: PickingNoticeProps) {
   return (
     <div class="flex items-center justify-between gap-2 rounded-lg bg-muted py-1 pr-1 pl-3 text-sm">
-      <p role="status">{`Pick a suburb to compare with ${props.name}`}</p>
+      <output>{`Pick a suburb to compare with ${props.name}`}</output>
       <Button
         onClick={() => {
           props.onPick(false)
