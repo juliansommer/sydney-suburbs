@@ -4,5 +4,8 @@ allowBuilds:
   msgpackr-extract: false
   sharp: false
 minimumReleaseAge: 4320
+minimumReleaseAgeExclude:
+  - "@base-ui-solid/utils@0.4.0"
+  - base-ui-solid@0.4.0
 trustPolicy: no-downgrade
 trustPolicyIgnoreAfter: 10080
