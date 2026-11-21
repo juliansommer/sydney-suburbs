@@ -269,7 +269,7 @@ describe("SuburbPanel facts", () => {
     expect(
       screen.queryByRole("button", { name: "Photo credit" }),
     ).not.toBeInTheDocument()
-    expect(screen.queryByText(/people/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/people/u)).not.toBeInTheDocument()
   })
 
   it("shows a skeleton while the facts load", async () => {

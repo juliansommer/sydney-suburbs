@@ -119,7 +119,7 @@ async function readViolentRows(
       }
 
       const lines = (partial + decoder.decode(chunk, { stream: !final })).split(
-        /\r?\n/,
+        /\r?\n/u,
       )
 
       partial = final ? "" : (lines.pop() ?? "")

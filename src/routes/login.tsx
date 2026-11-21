@@ -14,7 +14,7 @@ export default function LoginPage() {
   const redirect = () => {
     const to = search.redirect ?? "/"
 
-    return /^\/(?![/\\])/.test(to) ? to : "/"
+    return /^\/(?![/\\])/u.test(to) ? to : "/"
   }
 
   const [failed, setFailed] = createSignal(false)

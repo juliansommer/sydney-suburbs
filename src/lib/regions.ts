@@ -32,7 +32,7 @@ export const REGION_PALETTE = [
   "#fabed4",
 ] as const
 
-const HEX_COLOR = /^#[\da-f]{6}$/i
+const HEX_COLOR = /^#[\da-f]{6}$/iu
 
 const RegionSchema = object({
   id: string(),

@@ -112,7 +112,7 @@ describe("/api/me/suburbs", () => {
       visited: true,
       visitedOn: "2024-03-01",
       notes: "",
-      updatedAt: expect.stringMatching(/^\d{4}-\d\d-\d\dT[\d:.]+Z$/),
+      updatedAt: expect.stringMatching(/^\d{4}-\d\d-\d\dT[\d:.]+Z$/u),
     })
   })
 

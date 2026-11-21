@@ -138,7 +138,7 @@ export async function queryWikidata(
   const matches = new Map<string, WikiMatch>()
 
   for (const row of results.bindings) {
-    matches.set(row.sal.value.replace(/^SAL/, ""), {
+    matches.set(row.sal.value.replace(/^SAL/u, ""), {
       title: row.article ? titleFromUrl(row.article.value) : null,
       image: row.image ? fileFromUrl(row.image.value) : null,
     })

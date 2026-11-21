@@ -15,7 +15,7 @@ export function normalise(text: string) {
     .normalize("NFD")
     .replaceAll(/\p{M}/gu, "")
     .toLowerCase()
-    .replaceAll(/['’.]/g, "")
+    .replaceAll(/['’.]/gu, "")
     .replaceAll(/[^\p{L}\p{N}]+/gu, " ")
     .trim()
 }

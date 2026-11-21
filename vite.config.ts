@@ -34,7 +34,7 @@ export default defineConfig(({ mode }) => ({
     mode !== "test" &&
       devServer({
         entry: "server/index.ts",
-        exclude: [/^(?!\/api(?:\/|$))/],
+        exclude: [/^(?!\/api(?:\/|$))/u],
         injectClientScript: false,
       }),
   ],

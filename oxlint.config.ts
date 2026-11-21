@@ -22,7 +22,6 @@ export default defineConfig({
     "eslint/no-console": "error",
     "eslint/no-plusplus": ["error", { allowForLoopAfterthoughts: true }],
     "eslint/no-use-before-define": ["error", { functions: false }],
-    "eslint/require-unicode-regexp": "off",
     "import/consistent-type-specifier-style": "off",
     "typescript/no-misused-promises": [
       "error",

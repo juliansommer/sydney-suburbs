@@ -50,7 +50,7 @@ export function parseTable<F extends string>(
   csv: string,
   fields: readonly F[],
 ): Map<string, Row<F>> {
-  const [header = "", ...rows] = csv.trim().split(/\r?\n/)
+  const [header = "", ...rows] = csv.trim().split(/\r?\n/u)
   const columns = header.split(",")
 
   const missing = [CENSUS.fields.salCode, ...fields].filter(

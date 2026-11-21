@@ -318,7 +318,7 @@ export interface SalesFiles {
 }
 
 function readDat(text: string, into: SalesFiles) {
-  for (const line of text.split(/\r?\n/)) {
+  for (const line of text.split(/\r?\n/u)) {
     if (line.startsWith("A;")) {
       const written = line.split(";")[3]?.trim() ?? ""
       into.fileDays.add(written.slice(0, "CCYYMMDD".length))

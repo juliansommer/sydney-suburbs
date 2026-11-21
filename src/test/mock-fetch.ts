@@ -55,7 +55,7 @@ export function mockFetch({
       return Response.json(rows)
     }
 
-    const id = /^\/api\/me\/suburbs\/(?<id>[^/]+)$/.exec(pathname)?.groups?.id
+    const id = /^\/api\/me\/suburbs\/(?<id>[^/]+)$/u.exec(pathname)?.groups?.id
 
     if (id && request.method === "PATCH") {
       // SAFETY: the app only sends PATCH bodies built as UserSuburbPatch.

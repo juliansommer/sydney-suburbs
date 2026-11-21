@@ -306,8 +306,8 @@ async function loadFont(): Promise<string> {
 export function exportFileName(title: string): string {
   const slug = title
     .toLowerCase()
-    .replaceAll(/[^\da-z]+/g, "-")
-    .replaceAll(/^-|-$/g, "")
+    .replaceAll(/[^\da-z]+/gu, "-")
+    .replaceAll(/^-|-$/gu, "")
 
   if (!slug) {
     return "sydney-regions.png"

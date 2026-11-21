@@ -55,14 +55,14 @@ const imageInfo = object({
 // Maps, flags, coats of arms and logos make poor header photos. Words are
 // matched between non-letters, since filenames often use underscores.
 const UNSUITABLE_NAME =
-  /(?<![a-z])(?:maps?|locator|location|flag|coat[ _]of[ _]arms|logo|emblem|crest|diagram|plan)(?![a-z])/i
+  /(?<![a-z])(?:maps?|locator|location|flag|coat[ _]of[ _]arms|logo|emblem|crest|diagram|plan)(?![a-z])/iu
 
 // Also catches names run together, like "ReservesMap.png".
-const JOINED_MAP = /[a-z]Maps?(?![a-z])/
+const JOINED_MAP = /[a-z]Maps?(?![a-z])/u
 
 export function isSuitableFile(file: string): boolean {
   return (
-    !/\.svg$/i.test(file) &&
+    !/\.svg$/iu.test(file) &&
     !UNSUITABLE_NAME.test(file) &&
     !JOINED_MAP.test(file)
   )
@@ -82,14 +82,14 @@ const DECIMAL = 10
 
 function decodeEntities(text: string) {
   return text
-    .replaceAll(/&#x(?<hex>[\da-f]+);/gi, (_, hex: string) =>
+    .replaceAll(/&#x(?<hex>[\da-f]+);/giu, (_, hex: string) =>
       String.fromCodePoint(Number.parseInt(hex, HEX)),
     )
-    .replaceAll(/&#(?<decimal>\d+);/g, (_, decimal: string) =>
+    .replaceAll(/&#(?<decimal>\d+);/gu, (_, decimal: string) =>
       String.fromCodePoint(Number.parseInt(decimal, DECIMAL)),
     )
     .replaceAll(
-      /&(?<name>\w+);/g,
+      /&(?<name>\w+);/gu,
       (entity, name: string) =>
         NAMED_ENTITIES.get(name.toLowerCase()) ?? entity,
     )
@@ -97,18 +97,18 @@ function decodeEntities(text: string) {
 
 // Commons artist fields are HTML, often a link to a user page.
 // Wiki signatures add a talk link and a timestamp, which we drop.
-const TALK_LINK = /\(\s*talk\s*\)/gi
-const SIGNATURE_TIME = /\d{1,2}:\d{2}, \d{1,2} [A-Z][a-z]+ \d{4} \(UTC\)/g
+const TALK_LINK = /\(\s*talk\s*\)/giu
+const SIGNATURE_TIME = /\d{1,2}:\d{2}, \d{1,2} [A-Z][a-z]+ \d{4} \(UTC\)/gu
 
 export function cleanArtist(html: string): string {
   return (
-    decodeEntities(html.replaceAll(/<[^>]*>/g, " "))
+    decodeEntities(html.replaceAll(/<[^>]*>/gu, " "))
       .replaceAll(TALK_LINK, "")
       .replaceAll(SIGNATURE_TIME, "")
-      .replaceAll(/\s+/g, " ")
+      .replaceAll(/\s+/gu, " ")
       // Stripped tags leave spaces inside brackets and before punctuation.
-      .replaceAll(/\(\s+/g, "(")
-      .replaceAll(/\s+(?<punctuation>[).,])/g, "$<punctuation>")
+      .replaceAll(/\(\s+/gu, "(")
+      .replaceAll(/\s+(?<punctuation>[).,])/gu, "$<punctuation>")
       .trim()
   )
 }
